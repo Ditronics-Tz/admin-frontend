@@ -1,0 +1,106 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    /* Brand Colors - PikiPiki Identity */
+    --brand-deep-teal: 180 44% 16%; /* #173B3B */
+    --brand-primary-teal: 172 63% 30%; /* #1C7C70 */
+    --brand-soft-mint: 162 46% 89%; /* #D7EFE8 */
+
+    /* Semantic Tokens (Light) */
+    --background: 200 15% 97%; /* #F5F7F8 Off-white */
+    --foreground: 201 40% 15%; /* #172B36 Main text */
+
+    --card: 0 0% 100%; /* #FFFFFF White surfaces */
+    --card-foreground: 201 40% 15%;
+
+    --popover: 0 0% 100%;
+    --popover-foreground: 201 40% 15%;
+
+    --primary: 172 63% 30%; /* #1C7C70 Primary teal */
+    --primary-foreground: 0 0% 100%;
+
+    --secondary: 162 46% 89%; /* #D7EFE8 Soft mint */
+    --secondary-foreground: 180 44% 16%; /* #173B3B Deep teal */
+
+    --muted: 200 15% 93%;
+    --muted-foreground: 215 16% 47%; /* #64748B Secondary text */
+
+    --accent: 162 46% 92%;
+    --accent-foreground: 180 44% 16%;
+
+    --destructive: 0 68% 58%; /* #DC4C4C Error */
+    --destructive-foreground: 0 0% 100%;
+
+    --success: 164 72% 30%; /* #168568 Success */
+    --success-foreground: 0 0% 100%;
+
+    --border: 201 21% 87%; /* #D7E0E5 Border */
+    --input: 201 21% 87%;
+    --ring: 172 63% 30%;
+
+    --radius: 0.5rem;
+  }
+
+  .dark {
+    --brand-deep-teal: 180 44% 16%;
+    --brand-primary-teal: 172 63% 38%;
+    --brand-soft-mint: 162 46% 25%;
+
+    --background: 201 40% 9%;
+    --foreground: 200 15% 96%;
+
+    --card: 201 40% 12%;
+    --card-foreground: 200 15% 96%;
+
+    --popover: 201 40% 12%;
+    --popover-foreground: 200 15% 96%;
+
+    --primary: 172 63% 38%;
+    --primary-foreground: 0 0% 100%;
+
+    --secondary: 180 44% 18%;
+    --secondary-foreground: 162 46% 89%;
+
+    --muted: 201 25% 18%;
+    --muted-foreground: 215 16% 65%;
+
+    --accent: 180 35% 20%;
+    --accent-foreground: 162 46% 92%;
+
+    --destructive: 0 68% 58%;
+    --destructive-foreground: 0 0% 100%;
+
+    --success: 164 72% 38%;
+    --success-foreground: 0 0% 100%;
+
+    --border: 201 25% 20%;
+    --input: 201 25% 20%;
+    --ring: 172 63% 45%;
+  }
+
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-background text-foreground;
+    font-feature-settings:
+      'rlig' 1,
+      'calt' 1;
+  }
+}
+
+/* Reduced motion accessibility */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  ::before,
+  ::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
