@@ -7,7 +7,6 @@ import { NotFoundPage } from '@/components/common/NotFoundPage'
 
 // Lazy-loaded layouts & feature modules
 const AdminLayout = lazy(() => import('@/components/layout/AdminLayout'))
-const LoginPage = lazy(() => import('@/features/auth/pages/LoginPage'))
 const DashboardPage = lazy(() => import('@/features/dashboard/pages/DashboardPage'))
 const RidesPage = lazy(() => import('@/features/rides/pages/RidesPage'))
 const DriversPage = lazy(() => import('@/features/drivers/pages/DriversPage'))
@@ -51,15 +50,15 @@ const router = createBrowserRouter([
   {
     element: <SuspenseLayout />,
     children: [
-      // Default root redirects to /login
+      // Default root redirects to dashboard (login temporarily bypassed)
       {
         path: ROUTES.HOME,
-        element: <Navigate to={ROUTES.LOGIN} replace />,
+        element: <Navigate to={ROUTES.DASHBOARD} replace />,
       },
-      // Public authentication route
+      // Public authentication route (temporarily redirecting to dashboard while login is disabled)
       {
         path: ROUTES.LOGIN,
-        element: <LoginPage />,
+        element: <Navigate to={ROUTES.DASHBOARD} replace />,
       },
       // Protected Administrative Workspace Layout Shell
       {

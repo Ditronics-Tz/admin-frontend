@@ -8,10 +8,21 @@ import type { AdminUser, AuthState, AuthStatus } from '@/types/auth'
  * NOT stored in browser localStorage. Session cookies (HttpOnly) are preferred.
  * This store retains current active user metadata and lifecycle status only.
  */
+const DEV_ADMIN_USER: AdminUser = {
+  id: 'admin-001',
+  email: 'admin@rida.tz',
+  fullName: 'Juma Ally',
+  role: 'operations_admin',
+  phone: '+255 754 123 456',
+  isActive: true,
+  lastLoginAt: new Date().toISOString(),
+  createdAt: '2025-01-01T00:00:00Z',
+}
+
 export const useAuthStore = create<AuthState>((set) => ({
-  user: null,
-  status: 'idle',
-  isAuthenticated: false,
+  user: DEV_ADMIN_USER,
+  status: 'authenticated',
+  isAuthenticated: true,
   error: null,
 
   setUser: (user: AdminUser | null) =>
@@ -32,9 +43,9 @@ export const useAuthStore = create<AuthState>((set) => ({
 
   resetAuth: () =>
     set({
-      user: null,
-      isAuthenticated: false,
-      status: 'unauthenticated',
+      user: DEV_ADMIN_USER,
+      isAuthenticated: true,
+      status: 'authenticated',
       error: null,
     }),
 }))
