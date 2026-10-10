@@ -105,6 +105,7 @@ export const NAVIGATION_CONFIG: NavGroup[] = [
 export function getBreadcrumbsForPath(
   pathname: string
 ): { label: string; path?: string }[] {
+  // Check exact matches in main config
   for (const group of NAVIGATION_CONFIG) {
     for (const item of group.items) {
       if (item.path === pathname) {
@@ -115,5 +116,43 @@ export function getBreadcrumbsForPath(
       }
     }
   }
+
+  // Nested driver routes
+  if (pathname.startsWith('/drivers/verifications/')) {
+    return [
+      { label: 'Operations' },
+      { label: 'Drivers', path: ROUTES.DRIVERS },
+      { label: 'Verifications', path: ROUTES.DRIVER_VERIFICATIONS },
+      { label: 'Review Submission' },
+    ]
+  }
+
+  if (pathname === ROUTES.DRIVER_VERIFICATIONS) {
+    return [
+      { label: 'Operations' },
+      { label: 'Drivers', path: ROUTES.DRIVERS },
+      { label: 'Verification Queue' },
+    ]
+  }
+
+  if (pathname.startsWith('/drivers/') && pathname.endsWith('/edit')) {
+    const driverId = pathname.replace('/drivers/', '').replace('/edit', '')
+    return [
+      { label: 'Operations' },
+      { label: 'Drivers', path: ROUTES.DRIVERS },
+      { label: 'Profile', path: `/drivers/${driverId}` },
+      { label: 'Edit Driver' },
+    ]
+  }
+
+  if (pathname.startsWith('/drivers/')) {
+    return [
+      { label: 'Operations' },
+      { label: 'Drivers', path: ROUTES.DRIVERS },
+      { label: 'Driver Profile' },
+    ]
+  }
+
   return [{ label: 'Admin' }]
 }
+

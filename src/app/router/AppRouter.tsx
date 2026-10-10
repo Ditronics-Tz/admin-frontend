@@ -11,6 +11,18 @@ const LoginPage = lazy(() => import('@/features/auth/pages/LoginPage'))
 const DashboardPage = lazy(() => import('@/features/dashboard/pages/DashboardPage'))
 const RidesPage = lazy(() => import('@/features/rides/pages/RidesPage'))
 const DriversPage = lazy(() => import('@/features/drivers/pages/DriversPage'))
+const DriverDetailsPage = lazy(
+  () => import('@/features/drivers/pages/DriverDetailsPage')
+)
+const DriverEditPage = lazy(
+  () => import('@/features/drivers/pages/DriverEditPage')
+)
+const DriverVerificationsPage = lazy(
+  () => import('@/features/drivers/pages/DriverVerificationsPage')
+)
+const VerificationDetailsPage = lazy(
+  () => import('@/features/drivers/pages/VerificationDetailsPage')
+)
 const CustomersPage = lazy(() => import('@/features/customers/pages/CustomersPage'))
 const LiveOperationsPage = lazy(
   () => import('@/features/live-operations/pages/LiveOperationsPage')
@@ -68,6 +80,22 @@ const router = createBrowserRouter([
           {
             path: ROUTES.DRIVERS,
             element: <DriversPage />,
+          },
+          {
+            path: ROUTES.DRIVER_VERIFICATIONS,
+            element: <DriverVerificationsPage />,
+          },
+          {
+            path: ROUTES.DRIVER_VERIFICATION_DETAILS,
+            element: <VerificationDetailsPage />,
+          },
+          {
+            path: ROUTES.DRIVER_EDIT,
+            element: <DriverEditPage />,
+          },
+          {
+            path: ROUTES.DRIVER_DETAILS,
+            element: <DriverDetailsPage />,
           },
           {
             path: ROUTES.CUSTOMERS,
