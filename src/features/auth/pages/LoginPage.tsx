@@ -38,7 +38,7 @@ export const LoginPage: React.FC = () => {
         <div className="flex flex-col items-center text-center">
           <div
             className="flex h-16 w-16 items-center justify-center rounded-2xl bg-brand-deep-teal text-white shadow-lg shadow-brand-deep-teal/20 transition-transform duration-200 hover:scale-105"
-            aria-label="PikiPiki Brand Icon"
+            aria-label="Rida Brand Icon"
           >
             <Bike className="h-9 w-9 text-brand-soft-mint" />
           </div>
@@ -176,7 +176,7 @@ export const LoginPage: React.FC = () => {
             <div className="rounded-md bg-muted/50 p-3 text-center text-xs text-muted-foreground">
               <span>Next Phase: </span>
               <strong className="text-foreground">
-                Phase 2 — Pixel-Accurate PikiPiki Login Page Implementation
+                Phase 2 — Pixel-Accurate Rida Login Page Implementation
               </strong>
             </div>
 

@@ -12,7 +12,7 @@ import type { ApiError } from './types'
 const BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000/api/v1'
 
 /**
- * Centralized Axios API client configured for PikiPiki Admin.
+ * Centralized Axios API client configured for Rida Admin.
  * Supports HttpOnly cookie authentication and standard JSON payloads.
  */
 export const apiClient: AxiosInstance = axios.create({

@@ -59,7 +59,7 @@ export const DevPlaceholderPage: React.FC<DevPlaceholderPageProps> = ({
                 Back to Login Screen
               </Link>
             </Button>
-            <span className="text-xs text-muted-foreground">PikiPiki Admin v1.0</span>
+            <span className="text-xs text-muted-foreground">Rida Admin v1.0</span>
           </div>
         </CardContent>
       </Card>

@@ -16,7 +16,7 @@ export const NotFoundPage: React.FC = () => {
       <h2 className="mt-2 text-xl font-semibold text-foreground/90">Page Not Found</h2>
       <p className="mt-2 max-w-md text-sm text-muted-foreground">
         The administration view you requested does not exist or has been relocated within
-        the PikiPiki platform.
+        the Rida platform.
       </p>
       <div className="mt-6 flex items-center gap-3">
         <Button asChild variant="brand">

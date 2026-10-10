@@ -1,9 +1,9 @@
 /**
- * Application Constants for PikiPiki Admin Dashboard
+ * Application Constants for Rida Admin Dashboard
  */
 
 export const APP_CONFIG = {
-  name: 'PikiPiki Admin',
+  name: 'Rida Admin',
   tagline: 'Tanzania Ride-Hailing Operations Platform',
   version: '1.0.0-alpha',
   targetMarket: 'Tanzania',

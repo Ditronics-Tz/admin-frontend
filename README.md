@@ -1,4 +1,4 @@
-# PikiPiki Admin Dashboard — Frontend
+# Rida Admin Dashboard — Frontend
 
 > **Tanzania Ride-Hailing Operations Platform**  
 > Operational administration, driver fleet management, rider safety, trips, transactions (TZS), and reporting.
@@ -7,7 +7,7 @@
 
 ## 1. Project Purpose
 
-**PikiPiki Admin Dashboard** is the centralized web administration console for PikiPiki, an on-demand ride-hailing service in Tanzania. The platform provides real-time oversight for operational dispatch, driver accreditation and verification, rider safety, dispute arbitration, mobile money transactions (M-Pesa, Tigo Pesa, Airtel Money, Halopesa), and regulatory reporting.
+**Rida Admin Dashboard** is the centralized web administration console for Rida, an on-demand ride-hailing service in Tanzania. The platform provides real-time oversight for operational dispatch, driver accreditation and verification, rider safety, dispute arbitration, mobile money transactions (M-Pesa, Tigo Pesa, Airtel Money, Halopesa), and regulatory reporting.
 
 - **Target Market:** Tanzania
 - **Primary Operating Currency:** Tanzanian Shilling (`TZS` / `TSh`)
@@ -82,7 +82,7 @@ src/
 
 ## 4. Design System & Tokens
 
-Visual identity tokens are modeled from the PikiPiki administration palette:
+Visual identity tokens are modeled from the Rida administration palette:
 
 - **Deep Teal:** `#173B3B` (`--brand-deep-teal`)
 - **Primary Teal:** `#1C7C70` (`--brand-primary-teal`)
@@ -156,7 +156,7 @@ VITE_DEFAULT_LOCALE=en
 ## 7. Current Implementation Status (Phase 1)
 
 - [x] Vite + React 19 + TypeScript strict setup
-- [x] Tailwind CSS v3 + CSS variables design system with PikiPiki brand tokens
+- [x] Tailwind CSS v3 + CSS variables design system with Rida brand tokens
 - [x] Centralized React Router with lazy loading and Suspense fallbacks
 - [x] Protected route abstraction with Phase 1 development preview mode
 - [x] Centralized Axios client supporting HttpOnly session cookies and standardized error handling
@@ -171,7 +171,7 @@ VITE_DEFAULT_LOCALE=en
 
 ## 8. Planned Future Phases
 
-1. **Phase 2:** Pixel-Accurate PikiPiki Login Page Implementation (Two-panel layout, brand artwork, responsive form).
+1. **Phase 2:** Pixel-Accurate Rida Login Page Implementation (Two-panel layout, brand artwork, responsive form).
 2. **Phase 3:** Executive Operations Dashboard (KPI counters, active drivers map, real-time demand charts).
 3. **Phase 4:** Driver Management & Document Verification (LATRA, driver license review workflows).
 4. **Phase 5:** Customer Accounts & Safety Center.
