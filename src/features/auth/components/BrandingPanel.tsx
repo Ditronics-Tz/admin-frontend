@@ -33,7 +33,7 @@ export const BrandingPanel: React.FC<BrandingPanelProps> = ({ t }) => {
 
       {/* 5.2 Brand Header */}
       <div className="relative z-10">
-        <BrandLogo subtitle={t.brandSubtitle} isDarkTheme={true} />
+        <BrandLogo subtitle={t.brandSubtitle} isDarkTheme={true} markSize="lg" />
       </div>
 
       {/* 5.4 Welcome Content (Positioned slightly below vertical center) */}

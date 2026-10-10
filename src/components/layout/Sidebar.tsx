@@ -1,6 +1,7 @@
 import React from 'react'
 import { Link } from 'react-router-dom'
-import { ChevronLeft, ChevronRight, Bike } from 'lucide-react'
+import { ChevronLeft, ChevronRight } from 'lucide-react'
+import { RidaLogo } from '@/components/brand/RidaLogo'
 import { NAVIGATION_CONFIG } from '@/config/navigation'
 import { SidebarNavItem } from './SidebarNavItem'
 import { SidebarProfile } from './SidebarProfile'
@@ -27,21 +28,14 @@ export const Sidebar: React.FC = () => {
           <Link
             to={ROUTES.DASHBOARD}
             className="flex items-center gap-2.5 overflow-hidden rounded-md p-1 outline-none focus-visible:ring-2 focus-visible:ring-brand-primary-teal"
+            title="Rida Admin Console"
           >
-            <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-[9px] bg-brand-soft-mint text-brand-deep-teal shadow-sm">
-              <Bike className="h-5 w-5" strokeWidth={2.2} />
-            </div>
-
-            {!isCollapsed && (
-              <div className="flex flex-col text-left">
-                <span className="text-sm font-bold leading-tight tracking-tight text-white">
-                  Rida
-                </span>
-                <span className="text-[10px] font-medium leading-tight text-brand-soft-mint/80">
-                  Admin Console
-                </span>
-              </div>
-            )}
+            <RidaLogo
+              subtitle="Admin Console"
+              isDarkTheme={true}
+              markSize="sm"
+              collapsed={isCollapsed}
+            />
           </Link>
 
           {/* Sidebar Collapse Toggle Button */}

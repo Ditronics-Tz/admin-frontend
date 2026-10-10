@@ -1,6 +1,7 @@
 import React, { useEffect } from 'react'
 import { Link, useLocation } from 'react-router-dom'
-import { X, Bike } from 'lucide-react'
+import { X } from 'lucide-react'
+import { RidaLogo } from '@/components/brand/RidaLogo'
 import { NAVIGATION_CONFIG } from '@/config/navigation'
 import { SidebarNavItem } from './SidebarNavItem'
 import { SidebarProfile } from './SidebarProfile'
@@ -52,17 +53,7 @@ export const MobileNavDrawer: React.FC = () => {
             onClick={() => setMobileNavOpen(false)}
             className="flex items-center gap-2.5"
           >
-            <div className="flex h-8 w-8 items-center justify-center rounded-[8px] bg-brand-soft-mint text-brand-deep-teal shadow-sm">
-              <Bike className="h-4 w-4" strokeWidth={2.2} />
-            </div>
-            <div className="flex flex-col text-left">
-              <span className="text-sm font-bold leading-tight tracking-tight text-white">
-                Rida
-              </span>
-              <span className="text-[10px] font-medium leading-tight text-brand-soft-mint/80">
-                Admin Console
-              </span>
-            </div>
+            <RidaLogo subtitle="Admin Console" isDarkTheme={true} markSize="sm" />
           </Link>
 
           <button
