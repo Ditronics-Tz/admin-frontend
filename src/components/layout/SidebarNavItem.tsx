@@ -3,6 +3,7 @@ import { NavLink } from 'react-router-dom'
 import type { NavItem } from '@/config/navigation'
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
 import { cn } from '@/lib/utils'
+import {SOSNavBadge} from '@/features/operations/safety.live'
 
 interface SidebarNavItemProps {
   item: NavItem
@@ -54,6 +55,7 @@ export const SidebarNavItem: React.FC<SidebarNavItemProps> = ({
               {item.badge}
             </span>
           )}
+          {item.path==='/safety'&&<SOSNavBadge/>}
         </>
       )}
     </NavLink>

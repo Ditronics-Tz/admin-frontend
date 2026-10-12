@@ -1,3 +1,4 @@
+import { FraudDashboardCount } from '@/features/operations/FraudPage'
 import React from 'react'
 import { CarFront, Users, UserRound, Wallet, Calendar, Sparkles } from 'lucide-react'
 import { MetricCard } from '../components/MetricCard'
@@ -14,6 +15,7 @@ export const DashboardPage: React.FC = () => {
 
   return (
     <div className="space-y-6 p-4 sm:p-6 lg:p-8">
+      <FraudDashboardCount />
       {/* Dashboard Header */}
       <div className="flex flex-col gap-3 border-b border-slate-200/60 pb-5 sm:flex-row sm:items-center sm:justify-between">
         <div>

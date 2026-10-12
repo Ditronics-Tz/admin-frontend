@@ -136,7 +136,7 @@ export function formatApiError(error: unknown): ApiClientError {
       )
     case 429:
       return new ApiClientError(
-        'Too many requests. Please wait a moment before trying again.',
+        `Too many requests. Try again in ${Math.max(1, Number(axiosErr.response?.headers?.['retry-after']) || 60)} seconds.`,
         {
           status,
           code: 'TOO_MANY_REQUESTS',

@@ -13,6 +13,8 @@ import { DriverPerformanceTab } from '../components/DriverPerformanceTab'
 import { DriverActivityTab } from '../components/DriverActivityTab'
 import { useDriver } from '../hooks/useDrivers'
 import { ROUTES } from '@/lib/constants'
+import { UserFraud } from '@/features/operations/FraudPage'
+import { UserReports } from '@/features/operations/ReportsPage'
 
 export const DriverDetailsPage: React.FC = () => {
   const { driverId } = useParams<{ driverId: string }>()
@@ -70,6 +72,8 @@ export const DriverDetailsPage: React.FC = () => {
       <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">
         <div className="overflow-x-auto pb-1">
           <TabsList className="h-11 bg-slate-100/80 p-1">
+            <TabsTrigger value="fraud">Fraud</TabsTrigger>
+            <TabsTrigger value="reports">Reports</TabsTrigger>
             <TabsTrigger value="overview" className="px-4 text-xs">
               Overview
             </TabsTrigger>
@@ -93,6 +97,12 @@ export const DriverDetailsPage: React.FC = () => {
 
         <TabsContent value="overview">
           <DriverOverviewTab driver={driver} />
+        </TabsContent>
+        <TabsContent value="fraud">
+          <UserFraud id={driver.id} />
+        </TabsContent>
+        <TabsContent value="reports">
+          <UserReports id={driver.id} />
         </TabsContent>
 
         <TabsContent value="vehicle">

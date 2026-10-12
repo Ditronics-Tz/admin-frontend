@@ -36,6 +36,73 @@ const PromotionsPage = lazy(() => import('@/features/promotions/pages/Promotions
 const PromoDetailPage = lazy(() => import('@/features/promotions/pages/PromoDetailPage'))
 const PromoEditorPage = lazy(() => import('@/features/promotions/pages/PromoEditorPage'))
 const ReferralsPage = lazy(() => import('@/features/promotions/pages/ReferralsPage'))
+const ReportsPage = lazy(() =>
+  import('@/features/operations/ReportsPage').then((m) => ({ default: m.ReportsPage }))
+)
+const ReportDetailPage = lazy(() =>
+  import('@/features/operations/ReportsPage').then((m) => ({
+    default: m.ReportDetailPage,
+  }))
+)
+const FlagsPage = lazy(() =>
+  import('@/features/operations/ReportsPage').then((m) => ({ default: m.FlagsPage }))
+)
+const SafetyPage = lazy(() =>
+  import('@/features/operations/SafetyPage').then((m) => ({ default: m.SafetyPage }))
+)
+const SOSDetailPage = lazy(() =>
+  import('@/features/operations/SafetyPage').then((m) => ({ default: m.SOSDetailPage }))
+)
+const SOSHistoryPage = lazy(() =>
+  import('@/features/operations/SafetyPage').then((m) => ({ default: m.SOSHistoryPage }))
+)
+const IncidentsPage = lazy(() =>
+  import('@/features/operations/SafetyPage').then((m) => ({ default: m.IncidentsPage }))
+)
+const IncidentDetailPage = lazy(() =>
+  import('@/features/operations/SafetyPage').then((m) => ({
+    default: m.IncidentDetailPage,
+  }))
+)
+const FinanceDashboard = lazy(() =>
+  import('@/features/operations/FinancePage').then((m) => ({
+    default: m.FinanceDashboard,
+  }))
+)
+const PaymentDetailPage = lazy(() =>
+  import('@/features/operations/FinancePage').then((m) => ({
+    default: m.PaymentDetailPage,
+  }))
+)
+const RefundsPage = lazy(() =>
+  import('@/features/operations/FinancePage').then((m) => ({ default: m.RefundsPage }))
+)
+const PayoutsPage = lazy(() =>
+  import('@/features/operations/FinancePage').then((m) => ({ default: m.PayoutsPage }))
+)
+const WalletsPage = lazy(() =>
+  import('@/features/operations/FinancePage').then((m) => ({ default: m.WalletsPage }))
+)
+const PaymentSettingsPage = lazy(() =>
+  import('@/features/operations/FinancePage').then((m) => ({
+    default: m.PaymentSettingsPage,
+  }))
+)
+const ReconciliationPage = lazy(() =>
+  import('@/features/operations/FinancePage').then((m) => ({
+    default: m.ReconciliationPage,
+  }))
+)
+
+const FraudPage = lazy(() =>
+  import('@/features/operations/FraudPage').then((m) => ({ default: m.FraudPage }))
+)
+const FraudDetailPage = lazy(() =>
+  import('@/features/operations/FraudPage').then((m) => ({ default: m.FraudDetailPage }))
+)
+const FraudRulesPage = lazy(() =>
+  import('@/features/operations/FraudPage').then((m) => ({ default: m.FraudRulesPage }))
+)
 
 /**
  * Root suspense layout boundary
@@ -79,6 +146,24 @@ const router = createBrowserRouter([
           </ProtectedRoute>
         ),
         children: [
+          { path: '/fraud', element: <FraudPage /> },
+          { path: '/fraud/rules', element: <FraudRulesPage /> },
+          { path: '/fraud/:id', element: <FraudDetailPage /> },
+          { path: '/reports', element: <ReportsPage /> },
+          { path: '/reports/flags', element: <FlagsPage /> },
+          { path: '/reports/:id', element: <ReportDetailPage /> },
+          { path: '/safety', element: <SafetyPage /> },
+          { path: '/safety/history', element: <SOSHistoryPage /> },
+          { path: '/safety/sos/:id', element: <SOSDetailPage /> },
+          { path: '/safety/incidents', element: <IncidentsPage /> },
+          { path: '/safety/incidents/:id', element: <IncidentDetailPage /> },
+          { path: '/finance', element: <FinanceDashboard /> },
+          { path: '/payments/:id', element: <PaymentDetailPage /> },
+          { path: '/finance/refunds', element: <RefundsPage /> },
+          { path: '/finance/payouts', element: <PayoutsPage /> },
+          { path: '/finance/wallets', element: <WalletsPage /> },
+          { path: '/finance/settings', element: <PaymentSettingsPage /> },
+          { path: '/finance/reconciliation', element: <ReconciliationPage /> },
           { path: ROUTES.PROMOTIONS, element: <PromotionsPage /> },
           { path: ROUTES.PROMOTION_CREATE, element: <PromoEditorPage /> },
           { path: ROUTES.REFERRALS, element: <ReferralsPage /> },

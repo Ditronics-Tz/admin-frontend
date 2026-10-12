@@ -956,16 +956,14 @@ test('403 switches promotions to read-only and support sees no promo write contr
   }
   usePromotionAccess.setState({ deniedFor: null })
   const setRole = (role) =>
-    useAuthStore
-      .getState()
-      .setUser({
-        id: 'promo-staff',
-        role,
-        fullName: 'Promo staff',
-        email: 'promo@example.test',
-        isActive: true,
-        createdAt: '',
-      })
+    useAuthStore.getState().setUser({
+      id: 'promo-staff',
+      role,
+      fullName: 'Promo staff',
+      email: 'promo@example.test',
+      isActive: true,
+      createdAt: '',
+    })
   setRole('admin')
   assert.ok(
     render(React.createElement(PromoActions, { promo: promoFixture })).includes('Archive')
@@ -1040,32 +1038,28 @@ test('promo edit locks used financial fields and referral settings are read-only
     }
   }
   usePromotionAccess.setState({ deniedFor: null })
-  useAuthStore
-    .getState()
-    .setUser({
-      id: 'editor-admin',
-      role: 'admin',
-      fullName: 'Admin',
-      email: 'admin@example.test',
-      isActive: true,
-      createdAt: '',
-    })
+  useAuthStore.getState().setUser({
+    id: 'editor-admin',
+    role: 'admin',
+    fullName: 'Admin',
+    email: 'admin@example.test',
+    isActive: true,
+    createdAt: '',
+  })
   cache.setQueryData(['promotions', 'detail', 'promo-1'], promoFixture)
   const editor = render(React.createElement(PromoEditorPage), '/promotions/promo-1/edit')
   assert.match(editor, /<input[^>]*id="promo-code"[^>]*disabled/)
   assert.match(editor, /<input[^>]*id="promo-discount_value"[^>]*disabled/)
   assert.ok(editor.includes('locked because this promo has already been used'))
   assert.ok(editor.includes('Save changes'))
-  useAuthStore
-    .getState()
-    .setUser({
-      id: 'editor-support',
-      role: 'support',
-      fullName: 'Support',
-      email: 'support@example.test',
-      isActive: true,
-      createdAt: '',
-    })
+  useAuthStore.getState().setUser({
+    id: 'editor-support',
+    role: 'support',
+    fullName: 'Support',
+    email: 'support@example.test',
+    isActive: true,
+    createdAt: '',
+  })
   const settings = render(
     React.createElement(ReferralSettingsForm, { initial: referralSettings })
   )
@@ -1073,4 +1067,184 @@ test('promo edit locks used financial fields and referral settings are read-only
   assert.ok(!settings.includes('Save changes'))
   assert.match(settings, /<input[^>]*role="switch"[^>]*disabled/)
   cache.clear()
+})
+
+test('report operations use staff contracts, respect 403 and mask phone labels', async () => {
+  const { operationsApi, useOperationsAccess } =
+    await import('../src/features/operations/api.ts')
+  const { maskPhone } = await import('../src/features/operations/shared.tsx')
+  handle = (req, json) =>
+    json(
+      200,
+      req.path.includes('/reports/')
+        ? { id: 'report', action: 'note' }
+        : { reports: [], total: 0, limit: 20, offset: 0 }
+    )
+  await operationsApi.reports({ status: 'open', category: 'fraud', offset: 20 })
+  await operationsApi.reportAction('report', 'resolve', {
+    outcome: 'suspended',
+    note: 'Review completed',
+    until: '2026-10-15T09:00:00Z',
+  })
+  assert.ok(requests.some((r) => r.path.includes('/admin/reports?status=open')))
+  assert.deepEqual(requests.at(-1).body, {
+    outcome: 'suspended',
+    note: 'Review completed',
+    until: '2026-10-15T09:00:00Z',
+  })
+  assert.equal(maskPhone('+255712345123'), '+2557** *** 123')
+  handle = (_req, json) => json(403, { error: 'Read only' })
+  await assert.rejects(operationsApi.reportAction('report', 'note', { note: 'Note' }))
+  assert.equal(
+    useOperationsAccess.getState().deniedFor,
+    (await import('../src/stores/useAuthStore.ts')).useAuthStore.getState().user?.id ||
+      null
+  )
+})
+
+test('safety, finance and fraud API clients send staff contracts and stable idempotency headers', async () => {
+  const { safetyApi } = await import('../src/features/operations/safety.api.ts')
+  const { financeApi, moneyHeaders } =
+    await import('../src/features/operations/finance.api.ts')
+  const { fraudApi, canResolveFraud, canEditFraudRules } =
+    await import('../src/features/operations/fraud.api.ts')
+  handle = (req, json) =>
+    json(
+      200,
+      req.path.includes('/fraud/rules')
+        ? { rules: [], total: 0, limit: 100, offset: 0 }
+        : {
+            alerts: [],
+            payouts: [],
+            payments: [],
+            flags: [],
+            holds: [],
+            total: 0,
+            limit: 20,
+            offset: 0,
+          }
+    )
+  await safetyApi.alerts({ status: 'open', offset: 20, from: '2026-10-11T21:00:00.000Z' })
+  await safetyApi.action('sos-id', 'acknowledge', {})
+  await financeApi.payments({
+    min_amount: '1000',
+    max_amount: '8000',
+    ride: 'ride-id',
+    offset: 20,
+  })
+  await financeApi.adjust('driver-id', 500, 'Correction', 'finance-key-001')
+  await fraudApi.flags({ severity: 'high', hold: 'active', offset: 40 })
+  await fraudApi.action('flag-id', 'resolve', { status: 'dismissed', note: 'Reviewed' })
+  await fraudApi.update([
+    {
+      key: 'shared_device',
+      enabled: true,
+      params: '{"max_accounts":3,"window_days":30}',
+      severity: 'medium',
+      auto_mitigation: '',
+    },
+  ])
+  assert.ok(requests.some((r) => r.path.includes('/admin/sos?status=open')))
+  assert.ok(requests.some((r) => r.path.includes('/admin/sos/sos-id/acknowledge')))
+  assert.ok(requests.some((r) => r.path.includes('min_amount=1000')))
+  assert.equal(
+    requests.find((r) => r.path.includes('/wallets/driver-id/adjust')).authorization,
+    'Bearer access'
+  )
+  assert.equal(
+    requests.find((r) => r.path.includes('/wallets/driver-id/adjust')).body.reason,
+    'Correction'
+  )
+  assert.ok(requests.some((r) => r.path.includes('/admin/fraud/flags?severity=high')))
+  assert.equal(canResolveFraud('support', 'low', 'dismissed'), true)
+  assert.equal(canResolveFraud('support', 'high', 'dismissed'), false)
+  assert.equal(canResolveFraud('support', 'low', 'confirmed'), false)
+  assert.equal(canResolveFraud('admin', 'high', 'confirmed'), true)
+  assert.equal(canEditFraudRules('support', true), false)
+  assert.equal(canEditFraudRules('admin', false), false)
+  assert.equal(canEditFraudRules('admin', true), true)
+  assert.equal(moneyHeaders('stable-key').headers['Idempotency-Key'], 'stable-key')
+})
+
+test('support fraud rules stay read-only while the admin can edit them', async () => {
+  const React = await import('react')
+  const { renderToStaticMarkup } = await import('react-dom/server')
+  const { createMemoryRouter, RouterProvider } = await import('react-router-dom')
+  const { QueryClient, QueryClientProvider } = await import('@tanstack/react-query')
+  const { useAuthStore } = await import('../src/stores/useAuthStore.ts')
+  const { useOperationsAccess } = await import('../src/features/operations/api.ts')
+  const { FraudRulesPage } = await import('../src/features/operations/FraudPage.tsx')
+  const client = new QueryClient({ defaultOptions: { queries: { staleTime: Infinity } } })
+  client.setQueryData(['operations', 'fraud-rules'], {
+    rules: [
+      {
+        rule: {
+          key: 'shared_device',
+          enabled: true,
+          params: '{"max_accounts":3,"window_days":30}',
+          severity: 'medium',
+          auto_mitigation: '',
+        },
+        effective_enabled: true,
+        disabled_reason: '',
+      },
+    ],
+    total: 1,
+    limit: 100,
+    offset: 0,
+  })
+  const authState = useAuthStore.getState(),
+    accessState = useOperationsAccess.getState()
+  const restore = { ...authState },
+    restoreAccess = { ...accessState }
+  const render = () => {
+    const router = createMemoryRouter(
+      [{ path: '/fraud/rules', element: React.createElement(FraudRulesPage) }],
+      { initialEntries: ['/fraud/rules'] }
+    )
+    try {
+      return renderToStaticMarkup(
+        React.createElement(
+          QueryClientProvider,
+          { client },
+          React.createElement(RouterProvider, { router })
+        )
+      )
+    } finally {
+      router.dispose()
+    }
+  }
+  try {
+    useOperationsAccess.setState({ deniedFor: null })
+    useAuthStore
+      .getState()
+      .setUser({
+        id: 'support-fraud',
+        role: 'support',
+        fullName: 'Support',
+        email: 'support@example.test',
+        isActive: true,
+        createdAt: '',
+      })
+    const support = render()
+    assert.match(support, /<input[^>]*type="checkbox"[^>]*disabled/)
+    assert.ok(!support.includes('Save rule'))
+    assert.ok(!support.includes('Dry run (30 days)'))
+    useAuthStore
+      .getState()
+      .setUser({
+        id: 'admin-fraud',
+        role: 'admin',
+        fullName: 'Admin',
+        email: 'admin@example.test',
+        isActive: true,
+        createdAt: '',
+      })
+    const admin = render()
+    assert.ok(!admin.includes('Save rule'))
+  } finally {
+    Object.assign(authState, restore)
+    Object.assign(accessState, restoreAccess)
+    client.clear()
+  }
 })

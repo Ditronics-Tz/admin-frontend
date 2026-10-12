@@ -11,6 +11,8 @@ import { QueryError } from '@/components/feedback/QueryError'
 import { UserRoleAction } from './UserRoleAction'
 import { AccountSupportPanel } from './AccountSupportPanel'
 import { PassengerPromos } from '@/features/promotions/components/PassengerPromos'
+import { UserFraud } from '@/features/operations/FraudPage'
+import { UserReports } from '@/features/operations/ReportsPage'
 
 export function UserDetailsDialog({ id, onClose }: { id: string; onClose: () => void }) {
   const query = useQuery({
@@ -78,6 +80,8 @@ export function UserDetailsDialog({ id, onClose }: { id: string; onClose: () => 
               onChanged={onClose}
             />
             <AccountSupportPanel id={id} />
+            <UserReports id={id} />
+            <UserFraud id={id} />
             {query.data.user.role === 'passenger' && <PassengerPromos id={id} />}
           </div>
         )}

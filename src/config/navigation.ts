@@ -10,6 +10,8 @@ import {
   Bell,
   Settings,
   TicketPercent,
+  Flag,
+  ShieldAlert,
   type LucideIcon,
 } from 'lucide-react'
 import { ROUTES } from '@/lib/constants'
@@ -40,6 +42,9 @@ export const NAVIGATION_CONFIG: NavGroup[] = [
   {
     group: 'Operations',
     items: [
+      { title: 'Fraud', path: '/fraud', icon: ShieldAlert },
+      { title: 'Reports', path: '/reports', icon: Flag },
+      { title: 'Safety', path: '/safety', icon: ShieldAlert },
       {
         title: 'Rides',
         path: ROUTES.RIDES,
@@ -66,6 +71,7 @@ export const NAVIGATION_CONFIG: NavGroup[] = [
   {
     group: 'Finance',
     items: [
+      { title: 'Finance dashboard', path: '/finance', icon: Wallet },
       { title: 'Promotions', path: ROUTES.PROMOTIONS, icon: TicketPercent },
       {
         title: 'Payments',
