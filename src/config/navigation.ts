@@ -9,6 +9,7 @@ import {
   Headset,
   Bell,
   Settings,
+  TicketPercent,
   type LucideIcon,
 } from 'lucide-react'
 import { ROUTES } from '@/lib/constants'
@@ -65,6 +66,7 @@ export const NAVIGATION_CONFIG: NavGroup[] = [
   {
     group: 'Finance',
     items: [
+      { title: 'Promotions', path: ROUTES.PROMOTIONS, icon: TicketPercent },
       {
         title: 'Payments',
         path: ROUTES.PAYMENTS,
@@ -118,6 +120,22 @@ export function getBreadcrumbsForPath(
   }
 
   // Nested driver routes
+  if (pathname.startsWith('/promotions/')) {
+    return [
+      { label: 'Finance' },
+      { label: 'Promotions', path: ROUTES.PROMOTIONS },
+      {
+        label:
+          pathname === ROUTES.REFERRALS
+            ? 'Referrals'
+            : pathname === ROUTES.PROMOTION_CREATE
+              ? 'Create promo'
+              : pathname.endsWith('/edit')
+                ? 'Edit promo'
+                : 'Promo details',
+      },
+    ]
+  }
   if (pathname.startsWith('/drivers/verifications/')) {
     return [
       { label: 'Operations' },
@@ -155,4 +173,3 @@ export function getBreadcrumbsForPath(
 
   return [{ label: 'Admin' }]
 }
-

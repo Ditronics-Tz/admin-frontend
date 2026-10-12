@@ -1,0 +1,47 @@
+.promo-select {
+  width: 100%;
+  min-height: 2.5rem;
+  border: 1px solid hsl(var(--input));
+  border-radius: 0.375rem;
+  background: white;
+  padding: 0.5rem 0.75rem;
+  font-size: 0.875rem;
+}
+.promo-select:focus-visible,
+.promo-table button:focus-visible {
+  outline: 2px solid #149d94;
+  outline-offset: 2px;
+}
+@media (max-width: 767px) {
+  .promo-table,
+  .promo-table tbody {
+    display: block;
+    width: 100%;
+  }
+  .promo-table thead {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+  }
+  .promo-table tr {
+    display: block;
+    margin-bottom: 0.75rem;
+    border: 1px solid #e2e8f0;
+    border-radius: 0.5rem;
+    padding: 0.5rem;
+  }
+  .promo-table td {
+    display: grid;
+    grid-template-columns: minmax(6rem, 35%) minmax(0, 1fr);
+    gap: 0.75rem;
+    overflow-wrap: anywhere;
+    padding: 0.5rem;
+  }
+  .promo-table td::before {
+    content: attr(data-label);
+    font-weight: 500;
+    color: #64748b;
+  }
+}

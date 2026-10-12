@@ -7,6 +7,7 @@ export interface BackendErrorPayload {
   require_2fa?: boolean
   code?: string
   errors?: Record<string, string[]>
+  fields?: Record<string, string>
 }
 
 export class ApiClientError extends Error {
@@ -80,7 +81,13 @@ export function formatApiError(error: unknown): ApiClientError {
         {
           status,
           code: data?.code || 'BAD_REQUEST',
-          validationErrors: data?.errors,
+          validationErrors:
+            data?.errors ||
+            (data?.fields
+              ? Object.fromEntries(
+                  Object.entries(data.fields).map(([key, value]) => [key, [value]])
+                )
+              : undefined),
         }
       )
     case 401:
@@ -118,6 +125,13 @@ export function formatApiError(error: unknown): ApiClientError {
         {
           status,
           code: 'CONFLICT',
+          validationErrors:
+            data?.errors ||
+            (data?.fields
+              ? Object.fromEntries(
+                  Object.entries(data.fields).map(([key, value]) => [key, [value]])
+                )
+              : undefined),
         }
       )
     case 429:

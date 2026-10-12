@@ -32,6 +32,10 @@ const server = createServer(async (req, res) => {
     json(500, { error: error.message })
   }
 })
+// CPU-heavy component rendering can outlast Node's five-second idle timeout.
+// Keep fixture sockets alive so the next Axios contract test cannot reuse a
+// socket that expired while the event loop was busy rendering the previous test.
+server.keepAliveTimeout = 60_000
 server.listen(0, '127.0.0.1')
 await once(server, 'listening')
 process.env.VITE_API_BASE_URL = `http://127.0.0.1:${server.address().port}/api/v1`
@@ -657,4 +661,416 @@ test('dates render in Tanzania time regardless of browser timezone', async () =>
     formatDateTime('2026-10-12T22:30:00Z', 'yyyy-MM-dd HH:mm'),
     '2026-10-13 01:30'
   )
+})
+
+const promoFixture = {
+  id: 'promo-1',
+  code: 'WELCOME20',
+  title: 'Welcome aboard',
+  description: 'Your first ride',
+  discount_type: 'percent',
+  discount_value: 20,
+  max_discount: 5000,
+  min_fare: 1000,
+  audience: 'all',
+  first_ride_only: true,
+  starts_at: '2026-10-01T00:00:00Z',
+  expires_at: '2026-12-31T23:59:00Z',
+  max_redemptions: 100,
+  max_per_user: 1,
+  redeemed_count: 2,
+  total_discount_given: 2000,
+  audience_count: 12,
+  status: 'active',
+  effective_status: 'active',
+  created_at: '2026-10-01T00:00:00Z',
+}
+const referralSettings = {
+  enabled: true,
+  referee_reward_type: 'fixed',
+  referee_reward_value: 1000,
+  referrer_reward_type: 'percent',
+  referrer_reward_value: 20,
+  qualifying_min_fare: 3000,
+  max_rewards_per_referrer: 10,
+  reward_valid_days: 30,
+}
+
+test('promotions use every staff contract with filters, pagination and exact audience payloads', async () => {
+  const { promoService } = await import('../src/features/promotions/promo.service.ts')
+  handle = (_req, json) => json(200, { ...promoFixture, user, notified_count: 1 })
+  await promoService.list({
+    status: 'scheduled',
+    audience: 'selected',
+    q: 'welcome',
+    limit: 20,
+    offset: 40,
+  })
+  await promoService.detail('promo-1')
+  await promoService.create({ code: 'NEW20', audience_user_ids: ['passenger-1'] })
+  await promoService.update('promo-1', { title: 'Updated title' })
+  for (const action of ['pause', 'resume', 'archive'])
+    await promoService.action('promo-1', action)
+  await promoService.audience('promo-1', 'Jane', 20, 20)
+  const audience = {
+    user_ids: ['passenger-1'],
+    phones: ['+255712345678'],
+    emails: ['jane@example.test'],
+  }
+  await promoService.addAudience('promo-1', audience)
+  await promoService.removeAudience('promo-1', 'passenger-1')
+  assert.equal((await promoService.share('promo-1')).notified_count, 1)
+  await promoService.redemptions('promo-1', 20, 40)
+  await promoService.passengers('Jane', 20, 20)
+  await promoService.user('passenger-1')
+  await promoService.userPromos('passenger-1')
+  await promoService.settings()
+  await promoService.saveSettings(referralSettings)
+  await promoService.referrals('rewarded', 20, 20)
+  assert.deepEqual(
+    requests.map((r) => `${r.method} ${r.path}`),
+    [
+      'GET /api/v1/admin/promos?status=scheduled&audience=selected&q=welcome&limit=20&offset=40',
+      'GET /api/v1/admin/promos/promo-1',
+      'POST /api/v1/admin/promos',
+      'PATCH /api/v1/admin/promos/promo-1',
+      'POST /api/v1/admin/promos/promo-1/pause',
+      'POST /api/v1/admin/promos/promo-1/resume',
+      'POST /api/v1/admin/promos/promo-1/archive',
+      'GET /api/v1/admin/promos/promo-1/audience?q=Jane&limit=20&offset=20',
+      'POST /api/v1/admin/promos/promo-1/audience',
+      'DELETE /api/v1/admin/promos/promo-1/audience/passenger-1',
+      'POST /api/v1/admin/promos/promo-1/share',
+      'GET /api/v1/admin/promos/promo-1/redemptions?limit=20&offset=40',
+      'GET /api/v1/admin/users?role=passenger&q=Jane&limit=20&offset=20',
+      'GET /api/v1/admin/users/passenger-1',
+      'GET /api/v1/admin/users/passenger-1/promos',
+      'GET /api/v1/admin/referral-settings',
+      'PUT /api/v1/admin/referral-settings',
+      'GET /api/v1/admin/referrals?status=rewarded&limit=20&offset=20',
+    ]
+  )
+  assert.deepEqual(requests[8].body, audience)
+  assert.deepEqual(requests[16].body, referralSettings)
+  assert.ok(requests.every((r) => r.authorization === 'Bearer access'))
+})
+
+test('promo queries reuse the shared refresh flow when the 15 minute staff token expires', async () => {
+  const { promoService } = await import('../src/features/promotions/promo.service.ts')
+  let refreshes = 0
+  handle = async (req, json) => {
+    if (req.path === '/api/v1/staff/auth/refresh') {
+      refreshes++
+      await delay(20)
+      json(200, {
+        access_token: 'promo-fresh',
+        refresh_token: 'promo-refresh',
+        user: staff,
+      })
+    } else if (req.authorization !== 'Bearer promo-fresh')
+      json(401, { error: 'Token expired' })
+    else json(200, { ...promoFixture, promos: [promoFixture], total: 1 })
+  }
+  await Promise.all([
+    promoService.list(),
+    promoService.detail('promo-1'),
+    promoService.settings(),
+  ])
+  assert.equal(refreshes, 1)
+  assert.equal(requests.filter((r) => r.authorization === 'Bearer promo-fresh').length, 3)
+})
+
+test('backend field errors and duplicate code conflicts survive normalization', async () => {
+  const { promoService } = await import('../src/features/promotions/promo.service.ts')
+  handle = (_req, json) =>
+    json(400, {
+      error: 'Invalid expiry',
+      fields: { expires_at: 'Expiry must be after start' },
+    })
+  await assert.rejects(
+    promoService.update('promo-1', {}),
+    (e) =>
+      e.status === 400 &&
+      e.validationErrors.expires_at[0] === 'Expiry must be after start'
+  )
+  handle = (_req, json) =>
+    json(409, { error: 'code already exists', fields: { code: 'code already exists' } })
+  await assert.rejects(
+    promoService.create({ code: 'WELCOME20' }),
+    (e) => e.status === 409 && e.validationErrors.code[0] === 'code already exists'
+  )
+})
+
+test('promotion form validation, field locking, CSV parsing and Tanzania input dates', async () => {
+  const {
+    validatePromo,
+    validateSettings,
+    parseAudienceText,
+    lockedPromoPatch,
+    money,
+    localDateInput,
+    dateInputISO,
+    discountLabel,
+    generatePromoCode,
+  } = await import('../src/features/promotions/utils.ts')
+  assert.deepEqual(validatePromo(promoFixture), {})
+  for (const [field, value] of [
+    ['code', 'bad!'],
+    ['title', ''],
+    ['discount_value', 101],
+    ['max_discount', 0],
+    ['min_fare', -1],
+    ['max_per_user', 0],
+    ['max_redemptions', 0],
+    ['expires_at', promoFixture.starts_at],
+  ]) {
+    assert.ok(validatePromo({ ...promoFixture, [field]: value })[field], field)
+  }
+  assert.ok(
+    validatePromo({
+      ...promoFixture,
+      discount_type: 'fixed',
+      discount_value: 1.5,
+      max_discount: null,
+    }).discount_value
+  )
+  assert.ok(
+    validatePromo({ ...promoFixture, discount_value: Number.MAX_SAFE_INTEGER + 1 })
+      .discount_value
+  )
+  assert.deepEqual(validateSettings(referralSettings), {})
+  assert.ok(
+    validateSettings({ ...referralSettings, referrer_reward_value: 101 })
+      .referrer_reward_value
+  )
+  assert.ok(
+    validateSettings({ ...referralSettings, reward_valid_days: 3651 }).reward_valid_days
+  )
+  const patch = lockedPromoPatch(promoFixture, promoFixture)
+  for (const field of [
+    'code',
+    'discount_type',
+    'discount_value',
+    'max_discount',
+    'audience',
+    'id',
+    'status',
+    'redeemed_count',
+    'effective_status',
+    'created_at',
+  ])
+    assert.ok(!(field in patch), field)
+  assert.equal(patch.title, promoFixture.title)
+  assert.equal(
+    lockedPromoPatch(promoFixture, { ...promoFixture, redeemed_count: 0 }).code,
+    'WELCOME20'
+  )
+  assert.deepEqual(
+    parseAudienceText(
+      'phone,email\n"+255 712 345678",Jane@Example.test\n+255712345678;jane@example.test'
+    ),
+    { user_ids: [], phones: ['+255712345678'], emails: ['jane@example.test'] }
+  )
+  assert.equal(money(5000), 'TSh 5,000')
+  assert.equal(discountLabel(promoFixture), '20% off, up to TSh 5,000')
+  assert.equal(
+    discountLabel({ ...promoFixture, discount_type: 'fixed', discount_value: 3000 }),
+    'TSh 3,000 off'
+  )
+  assert.equal(localDateInput('2026-10-12T22:30:00Z'), '2026-10-13T01:30')
+  assert.equal(dateInputISO('2026-10-13T01:30'), '2026-10-12T22:30:00.000Z')
+  assert.match(generatePromoCode(), /^[A-Z0-9-]{4,20}$/)
+})
+
+test('promotion summary follows all pages and sums applied discount detail totals', async () => {
+  const { promoService } = await import('../src/features/promotions/promo.service.ts')
+  let active = 0,
+    maxActive = 0
+  handle = async (req, json) => {
+    const url = new URL(req.path, 'http://test')
+    if (url.pathname === '/api/v1/admin/promos') {
+      const offset = Number(url.searchParams.get('offset'))
+      const promos = Array.from({ length: offset === 0 ? 100 : 1 }, (_, i) => ({
+        ...promoFixture,
+        id: `promo-${offset + i}`,
+        effective_status: offset === 0 ? 'active' : 'expired',
+      }))
+      json(200, { promos, total: 101, limit: 100, offset })
+    } else {
+      active++
+      maxActive = Math.max(active, maxActive)
+      await delay(1)
+      active--
+      json(200, { ...promoFixture, total_discount_given: 10 })
+    }
+  }
+  assert.deepEqual(await promoService.summary(), {
+    active: 100,
+    scheduled: 0,
+    expired: 1,
+    discount: 1010,
+  })
+  assert.ok(maxActive <= 6)
+  assert.equal(requests.filter((r) => r.path.includes('limit=100')).length, 2)
+})
+
+test('403 switches promotions to read-only and support sees no promo write controls', async () => {
+  const React = await import('react')
+  const { renderToStaticMarkup } = await import('react-dom/server')
+  const { MemoryRouter } = await import('react-router-dom')
+  const { QueryClient, QueryClientProvider } = await import('@tanstack/react-query')
+  const { useAuthStore } = await import('../src/stores/useAuthStore.ts')
+  const { usePromotionAccess, canWritePromotions } =
+    await import('../src/features/promotions/access.ts')
+  const { promoService } = await import('../src/features/promotions/promo.service.ts')
+  const { PromoActions } =
+    await import('../src/features/promotions/components/PromoActions.tsx')
+  const { ReadOnlyNotice } =
+    await import('../src/features/promotions/components/shared.tsx')
+  const { default: PromotionsPage } =
+    await import('../src/features/promotions/pages/PromotionsPage.tsx')
+  const { PassengerPromos } =
+    await import('../src/features/promotions/components/PassengerPromos.tsx')
+  const cache = new QueryClient({ defaultOptions: { queries: { retry: false } } })
+  const render = (child) => {
+    // Server rendering reads Zustand's initial snapshot; point it at the test's
+    // current session to exercise the same role gates as a hydrated browser.
+    const authInitial = useAuthStore.getInitialState(),
+      accessInitial = usePromotionAccess.getInitialState()
+    const authSnapshot = { ...authInitial },
+      accessSnapshot = { ...accessInitial }
+    Object.assign(authInitial, useAuthStore.getState())
+    Object.assign(accessInitial, usePromotionAccess.getState())
+    try {
+      return renderToStaticMarkup(
+        React.createElement(
+          MemoryRouter,
+          {},
+          React.createElement(QueryClientProvider, { client: cache }, child)
+        )
+      )
+    } finally {
+      Object.assign(authInitial, authSnapshot)
+      Object.assign(accessInitial, accessSnapshot)
+    }
+  }
+  usePromotionAccess.setState({ deniedFor: null })
+  const setRole = (role) =>
+    useAuthStore
+      .getState()
+      .setUser({
+        id: 'promo-staff',
+        role,
+        fullName: 'Promo staff',
+        email: 'promo@example.test',
+        isActive: true,
+        createdAt: '',
+      })
+  setRole('admin')
+  assert.ok(
+    render(React.createElement(PromoActions, { promo: promoFixture })).includes('Archive')
+  )
+  handle = (_req, json) => json(403, { error: 'Admin permission required' })
+  await assert.rejects(promoService.share('promo-1'))
+  assert.equal(usePromotionAccess.getState().deniedFor, 'promo-staff')
+  assert.equal(canWritePromotions('admin', true), false)
+  assert.equal(render(React.createElement(PromoActions, { promo: promoFixture })), '')
+  assert.ok(render(React.createElement(ReadOnlyNotice)).includes('Read-only access'))
+  setRole('support')
+  usePromotionAccess.setState({ deniedFor: null })
+  cache.setQueryData(
+    ['promotions', 'list', { q: '', status: '', audience: '', offset: 0 }],
+    { promos: [promoFixture], total: 1, limit: 20, offset: 0 }
+  )
+  cache.setQueryData(['promotions', 'summary'], {
+    active: 1,
+    scheduled: 0,
+    expired: 0,
+    discount: 2000,
+  })
+  const page = render(React.createElement(PromotionsPage))
+  assert.ok(page.includes('WELCOME20'))
+  assert.ok(!page.includes('Create promo'))
+  assert.ok(page.includes('Read-only access'))
+  cache.setQueryData(['promotions', 'user', 'passenger-1'], {
+    granted: [promoFixture],
+    redemptions: [],
+  })
+  const passenger = render(React.createElement(PassengerPromos, { id: 'passenger-1' }))
+  assert.ok(passenger.includes('Granted promos'))
+  assert.ok(passenger.includes('WELCOME20'))
+  cache.clear()
+})
+
+test('promo edit locks used financial fields and referral settings are read-only for support', async () => {
+  const React = await import('react')
+  const { renderToStaticMarkup } = await import('react-dom/server')
+  const { createMemoryRouter, RouterProvider } = await import('react-router-dom')
+  const { QueryClient, QueryClientProvider } = await import('@tanstack/react-query')
+  const { useAuthStore } = await import('../src/stores/useAuthStore.ts')
+  const { usePromotionAccess } = await import('../src/features/promotions/access.ts')
+  const { default: PromoEditorPage } =
+    await import('../src/features/promotions/pages/PromoEditorPage.tsx')
+  const { ReferralSettingsForm } =
+    await import('../src/features/promotions/pages/ReferralsPage.tsx')
+  const cache = new QueryClient()
+  const render = (child, path = '/') => {
+    const router = createMemoryRouter(
+      [{ path: path === '/' ? '/' : '/promotions/:id/edit', element: child }],
+      { initialEntries: [path] }
+    )
+    const authInitial = useAuthStore.getInitialState(),
+      accessInitial = usePromotionAccess.getInitialState()
+    const authSnapshot = { ...authInitial },
+      accessSnapshot = { ...accessInitial }
+    Object.assign(authInitial, useAuthStore.getState())
+    Object.assign(accessInitial, usePromotionAccess.getState())
+    try {
+      return renderToStaticMarkup(
+        React.createElement(
+          QueryClientProvider,
+          { client: cache },
+          React.createElement(RouterProvider, { router })
+        )
+      )
+    } finally {
+      router.dispose()
+      Object.assign(authInitial, authSnapshot)
+      Object.assign(accessInitial, accessSnapshot)
+    }
+  }
+  usePromotionAccess.setState({ deniedFor: null })
+  useAuthStore
+    .getState()
+    .setUser({
+      id: 'editor-admin',
+      role: 'admin',
+      fullName: 'Admin',
+      email: 'admin@example.test',
+      isActive: true,
+      createdAt: '',
+    })
+  cache.setQueryData(['promotions', 'detail', 'promo-1'], promoFixture)
+  const editor = render(React.createElement(PromoEditorPage), '/promotions/promo-1/edit')
+  assert.match(editor, /<input[^>]*id="promo-code"[^>]*disabled/)
+  assert.match(editor, /<input[^>]*id="promo-discount_value"[^>]*disabled/)
+  assert.ok(editor.includes('locked because this promo has already been used'))
+  assert.ok(editor.includes('Save changes'))
+  useAuthStore
+    .getState()
+    .setUser({
+      id: 'editor-support',
+      role: 'support',
+      fullName: 'Support',
+      email: 'support@example.test',
+      isActive: true,
+      createdAt: '',
+    })
+  const settings = render(
+    React.createElement(ReferralSettingsForm, { initial: referralSettings })
+  )
+  assert.ok(settings.includes('Reward for invited passenger'))
+  assert.ok(!settings.includes('Save changes'))
+  assert.match(settings, /<input[^>]*role="switch"[^>]*disabled/)
+  cache.clear()
 })

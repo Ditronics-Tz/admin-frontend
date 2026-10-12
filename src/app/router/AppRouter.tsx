@@ -32,6 +32,10 @@ const NotificationsPage = lazy(
   () => import('@/features/notifications/pages/NotificationsPage')
 )
 const SettingsPage = lazy(() => import('@/features/settings/pages/SettingsPage'))
+const PromotionsPage = lazy(() => import('@/features/promotions/pages/PromotionsPage'))
+const PromoDetailPage = lazy(() => import('@/features/promotions/pages/PromoDetailPage'))
+const PromoEditorPage = lazy(() => import('@/features/promotions/pages/PromoEditorPage'))
+const ReferralsPage = lazy(() => import('@/features/promotions/pages/ReferralsPage'))
 
 /**
  * Root suspense layout boundary
@@ -75,6 +79,11 @@ const router = createBrowserRouter([
           </ProtectedRoute>
         ),
         children: [
+          { path: ROUTES.PROMOTIONS, element: <PromotionsPage /> },
+          { path: ROUTES.PROMOTION_CREATE, element: <PromoEditorPage /> },
+          { path: ROUTES.REFERRALS, element: <ReferralsPage /> },
+          { path: ROUTES.PROMOTION_DETAILS, element: <PromoDetailPage /> },
+          { path: ROUTES.PROMOTION_EDIT, element: <PromoEditorPage /> },
           {
             path: ROUTES.DASHBOARD,
             element: <DashboardPage />,

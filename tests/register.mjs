@@ -23,6 +23,9 @@ registerHooks({
     return nextResolve(specifier, context)
   },
   load(url, context, nextLoad) {
+    if (url.startsWith(sourceRoot.href) && url.endsWith('.css')) {
+      return { format: 'module', shortCircuit: true, source: 'export default {}' }
+    }
     if (url.startsWith(sourceRoot.href) && /\.tsx?$/.test(url)) {
       const source = readFileSync(fileURLToPath(url), 'utf8').replaceAll(
         'import.meta.env',
