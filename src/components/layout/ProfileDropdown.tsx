@@ -12,14 +12,14 @@ import { useAuthStore } from '@/stores/useAuthStore'
 import { ROUTES } from '@/lib/constants'
 import { User, Settings, LogOut } from 'lucide-react'
 
+import { authService } from '@/features/auth/services/authService'
+
 export const ProfileDropdown: React.FC = () => {
-  const { user, resetAuth } = useAuthStore()
+  const { user, logout } = useAuthStore()
   const navigate = useNavigate()
 
-  const displayName = user?.fullName || 'Operations Lead'
-  const displayRole = user?.role
-    ? user.role.replace('_', ' ').toUpperCase()
-    : 'Administrator'
+  const displayName = user?.fullName || 'Administrator'
+  const displayRole = user?.role ? user.role.replace('_', ' ').toUpperCase() : 'STAFF'
   const initials = displayName
     .split(' ')
     .map((n) => n[0])
@@ -27,9 +27,13 @@ export const ProfileDropdown: React.FC = () => {
     .join('')
     .toUpperCase()
 
-  const handleSignOut = () => {
-    resetAuth()
-    navigate(ROUTES.LOGIN, { replace: true })
+  const handleSignOut = async () => {
+    try {
+      await authService.logout()
+    } finally {
+      logout()
+      navigate(ROUTES.LOGIN, { replace: true })
+    }
   }
 
   return (

@@ -9,14 +9,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
 import { Button } from '@/components/ui/button'
-import {
-  MoreHorizontal,
-  Eye,
-  FileCheck2,
-  Edit,
-  UserX,
-  UserCheck,
-} from 'lucide-react'
+import { MoreHorizontal, Eye, FileCheck2, Edit, UserX, UserCheck } from 'lucide-react'
 import type { Driver } from '../types/driver.types'
 import { SuspendDriverDialog } from './SuspendDriverDialog'
 import { ReactivateDriverDialog } from './ReactivateDriverDialog'
@@ -67,6 +60,7 @@ export const DriverRowActions: React.FC<DriverRowActionsProps> = ({ driver }) =>
 
           <DropdownMenuItem
             onClick={() => navigate(`/drivers/${driver.id}/edit`)}
+            disabled
             className="cursor-pointer gap-2 py-2"
           >
             <Edit className="h-3.5 w-3.5 text-slate-500" />
@@ -78,6 +72,7 @@ export const DriverRowActions: React.FC<DriverRowActionsProps> = ({ driver }) =>
           {driver.accountStatus === 'suspended' ? (
             <DropdownMenuItem
               onClick={() => setReactivateOpen(true)}
+              disabled
               className="cursor-pointer gap-2 py-2 text-emerald-700 focus:bg-emerald-50 focus:text-emerald-800"
             >
               <UserCheck className="h-3.5 w-3.5 text-emerald-600" />
@@ -86,6 +81,7 @@ export const DriverRowActions: React.FC<DriverRowActionsProps> = ({ driver }) =>
           ) : (
             <DropdownMenuItem
               onClick={() => setSuspendOpen(true)}
+              disabled
               className="cursor-pointer gap-2 py-2 text-rose-600 focus:bg-rose-50 focus:text-rose-700"
             >
               <UserX className="h-3.5 w-3.5 text-rose-500" />

@@ -80,6 +80,8 @@ export function getAvailabilityStatusLabel(status: DriverAvailabilityStatus): st
       return 'On Trip'
     case 'unavailable':
       return 'Unavailable'
+    case 'unknown':
+      return 'Not available'
     default:
       return status
   }
@@ -96,6 +98,8 @@ export function getVehicleTypeLabel(type: VehicleType): string {
       return 'Bajaji (Three-wheeler)'
     case 'car':
       return 'Car (Standard)'
+    case 'unknown':
+      return 'Not collected'
     default:
       return type
   }

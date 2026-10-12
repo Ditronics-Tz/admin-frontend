@@ -24,13 +24,10 @@ import { ROUTES } from '@/lib/constants'
 
 export const DriverVerificationsPage: React.FC = () => {
   const navigate = useNavigate()
-  const { data: requests, isLoading, isError, refetch } =
-    useVerificationRequests()
+  const { data: requests, isLoading, isError, refetch } = useVerificationRequests()
 
-  const pendingCount =
-    requests?.filter((r) => r.status === 'pending').length ?? 0
-  const rejectedCount =
-    requests?.filter((r) => r.status === 'rejected').length ?? 0
+  const pendingCount = requests?.filter((r) => r.status === 'pending').length ?? 0
+  const missingDocumentCount = requests?.filter((r) => r.documentsCount === 0).length ?? 0
 
   return (
     <div className="space-y-6 p-4 sm:p-6 lg:p-8">
@@ -46,13 +43,13 @@ export const DriverVerificationsPage: React.FC = () => {
           </Link>
         </div>
 
-        <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between border-b border-slate-200/60 pb-5">
+        <div className="flex flex-col gap-2 border-b border-slate-200/60 pb-5 sm:flex-row sm:items-center sm:justify-between">
           <div>
             <h1 className="text-2xl font-bold tracking-tight text-[#172B36] sm:text-3xl">
               Driver Verification Queue
             </h1>
             <p className="mt-1 text-xs text-slate-500 sm:text-sm">
-              Review pending Tanzania driving licenses, NIDA identity cards, and LATRA compliance certificates.
+              Review uploaded driving licences and verify driver profiles.
             </p>
           </div>
         </div>
@@ -61,12 +58,10 @@ export const DriverVerificationsPage: React.FC = () => {
       {/* KPI Status Strip */}
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
         <Card className="border-slate-200/80 shadow-none">
-          <CardContent className="p-4 flex items-center justify-between">
+          <CardContent className="flex items-center justify-between p-4">
             <div>
               <span className="text-xs text-slate-500">Pending Review</span>
-              <p className="text-2xl font-bold text-amber-600 mt-1">
-                {pendingCount}
-              </p>
+              <p className="mt-1 text-2xl font-bold text-amber-600">{pendingCount}</p>
             </div>
             <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-amber-50 text-amber-600">
               <Clock3 className="h-5 w-5" />
@@ -75,10 +70,10 @@ export const DriverVerificationsPage: React.FC = () => {
         </Card>
 
         <Card className="border-slate-200/80 shadow-none">
-          <CardContent className="p-4 flex items-center justify-between">
+          <CardContent className="flex items-center justify-between p-4">
             <div>
               <span className="text-xs text-slate-500">Total In Queue</span>
-              <p className="text-2xl font-bold text-[#172B36] mt-1">
+              <p className="mt-1 text-2xl font-bold text-[#172B36]">
                 {requests?.length ?? 0}
               </p>
             </div>
@@ -89,11 +84,11 @@ export const DriverVerificationsPage: React.FC = () => {
         </Card>
 
         <Card className="border-slate-200/80 shadow-none">
-          <CardContent className="p-4 flex items-center justify-between">
+          <CardContent className="flex items-center justify-between p-4">
             <div>
-              <span className="text-xs text-slate-500">Rejected / Action Needed</span>
-              <p className="text-2xl font-bold text-rose-600 mt-1">
-                {rejectedCount}
+              <span className="text-xs text-slate-500">Licence image missing</span>
+              <p className="mt-1 text-2xl font-bold text-rose-600">
+                {missingDocumentCount}
               </p>
             </div>
             <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-rose-50 text-rose-600">
@@ -104,17 +99,17 @@ export const DriverVerificationsPage: React.FC = () => {
       </div>
 
       {/* Verification Queue Table */}
-      <div className="rounded-xl border border-slate-200/80 bg-white overflow-hidden shadow-sm">
+      <div className="overflow-hidden rounded-xl border border-slate-200/80 bg-white shadow-sm">
         <div className="overflow-x-auto">
           <table className="w-full min-w-[800px] text-left text-xs">
-            <thead className="bg-slate-50/75 text-[11px] font-semibold uppercase tracking-wider text-slate-500 border-b border-slate-100">
+            <thead className="border-b border-slate-100 bg-slate-50/75 text-[11px] font-semibold uppercase tracking-wider text-slate-500">
               <tr>
                 <th className="py-3.5 pl-6 pr-3">Applicant Driver</th>
                 <th className="px-3 py-3.5">Driver ID</th>
                 <th className="px-3 py-3.5">Phone</th>
                 <th className="px-3 py-3.5">Vehicle Category</th>
                 <th className="px-3 py-3.5">Documents</th>
-                <th className="px-3 py-3.5">Submission Date</th>
+                <th className="px-3 py-3.5">Profile Created</th>
                 <th className="px-3 py-3.5">Status</th>
                 <th className="py-3.5 pl-3 pr-6 text-right">Review Action</th>
               </tr>
@@ -123,26 +118,42 @@ export const DriverVerificationsPage: React.FC = () => {
               {isLoading ? (
                 Array.from({ length: 4 }).map((_, i) => (
                   <tr key={i} className="h-16">
-                    <td className="pl-6"><Skeleton className="h-4 w-36" /></td>
-                    <td className="px-3"><Skeleton className="h-4 w-20" /></td>
-                    <td className="px-3"><Skeleton className="h-4 w-24" /></td>
-                    <td className="px-3"><Skeleton className="h-4 w-20" /></td>
-                    <td className="px-3"><Skeleton className="h-4 w-12" /></td>
-                    <td className="px-3"><Skeleton className="h-4 w-24" /></td>
-                    <td className="px-3"><Skeleton className="h-5 w-16 rounded-full" /></td>
-                    <td className="pr-6 text-right"><Skeleton className="ml-auto h-7 w-20" /></td>
+                    <td className="pl-6">
+                      <Skeleton className="h-4 w-36" />
+                    </td>
+                    <td className="px-3">
+                      <Skeleton className="h-4 w-20" />
+                    </td>
+                    <td className="px-3">
+                      <Skeleton className="h-4 w-24" />
+                    </td>
+                    <td className="px-3">
+                      <Skeleton className="h-4 w-20" />
+                    </td>
+                    <td className="px-3">
+                      <Skeleton className="h-4 w-12" />
+                    </td>
+                    <td className="px-3">
+                      <Skeleton className="h-4 w-24" />
+                    </td>
+                    <td className="px-3">
+                      <Skeleton className="h-5 w-16 rounded-full" />
+                    </td>
+                    <td className="pr-6 text-right">
+                      <Skeleton className="ml-auto h-7 w-20" />
+                    </td>
                   </tr>
                 ))
               ) : isError ? (
                 <tr>
                   <td colSpan={8} className="py-12 text-center text-xs text-rose-600">
-                    <AlertCircle className="mx-auto h-6 w-6 mb-2" />
+                    <AlertCircle className="mx-auto mb-2 h-6 w-6" />
                     Failed to load verification queue.
                     <Button
                       variant="outline"
                       size="sm"
                       onClick={() => refetch()}
-                      className="mt-3 block mx-auto"
+                      className="mx-auto mt-3 block"
                     >
                       Retry
                     </Button>
@@ -151,21 +162,21 @@ export const DriverVerificationsPage: React.FC = () => {
               ) : !requests || requests.length === 0 ? (
                 <tr>
                   <td colSpan={8} className="py-16 text-center">
-                    <CheckCircle2 className="mx-auto h-8 w-8 text-emerald-500 mb-2" />
+                    <CheckCircle2 className="mx-auto mb-2 h-8 w-8 text-emerald-500" />
                     <h3 className="text-sm font-semibold text-[#172B36]">
                       Queue is completely clear!
                     </h3>
-                    <p className="text-xs text-slate-500 mt-1">
+                    <p className="mt-1 text-xs text-slate-500">
                       No driver compliance applications awaiting review.
                     </p>
                   </td>
                 </tr>
               ) : (
                 requests.map((item) => (
-                  <tr key={item.id} className="hover:bg-slate-50/60 transition-colors">
+                  <tr key={item.id} className="transition-colors hover:bg-slate-50/60">
                     <td className="py-3.5 pl-6 pr-3">
                       <div className="flex items-center gap-3">
-                        <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-brand-soft-mint font-semibold text-brand-deep-teal text-xs">
+                        <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-brand-soft-mint text-xs font-semibold text-brand-deep-teal">
                           {getDriverInitials(item.driverName)}
                         </div>
                         <span className="font-semibold text-[#172B36]">
@@ -178,7 +189,7 @@ export const DriverVerificationsPage: React.FC = () => {
                       {item.driverCode}
                     </td>
 
-                    <td className="px-3 py-3.5 text-slate-700 font-medium">
+                    <td className="px-3 py-3.5 font-medium text-slate-700">
                       {formatTzPhone(item.driverPhone)}
                     </td>
 
@@ -219,7 +230,7 @@ export const DriverVerificationsPage: React.FC = () => {
                         onClick={() =>
                           navigate(`/drivers/verifications/${item.driverId}`)
                         }
-                        className="h-8 gap-1.5 text-xs bg-brand-primary-teal hover:bg-brand-primary-hover text-white font-medium"
+                        className="hover:bg-brand-primary-hover h-8 gap-1.5 bg-brand-primary-teal text-xs font-medium text-white"
                       >
                         <Eye className="h-3.5 w-3.5" />
                         <span>Inspect & Review</span>

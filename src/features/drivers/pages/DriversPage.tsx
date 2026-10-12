@@ -22,12 +22,7 @@ export const DriversPage: React.FC = () => {
 
   const [addDriverOpen, setAddDriverOpen] = useState(false)
 
-  const {
-    data: driversData,
-    isLoading,
-    isError,
-    refetch,
-  } = useDrivers(filters)
+  const { data: driversData, isLoading, isError, refetch } = useDrivers(filters)
 
   const { data: stats, isLoading: isStatsLoading } = useDriverStats()
 
@@ -49,13 +44,14 @@ export const DriversPage: React.FC = () => {
   return (
     <div className="space-y-6 p-4 sm:p-6 lg:p-8">
       {/* Page Header */}
-      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between border-b border-slate-200/60 pb-5">
+      <div className="flex flex-col gap-4 border-b border-slate-200/60 pb-5 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <h1 className="text-2xl font-bold tracking-tight text-[#172B36] sm:text-3xl">
             Drivers
           </h1>
           <p className="mt-1 text-xs text-slate-500 sm:text-sm">
-            Manage driver accounts, verification, vehicles, and operational availability in Tanzania.
+            Manage driver accounts, verification, vehicles, and operational availability
+            in Tanzania.
           </p>
         </div>
 
@@ -65,13 +61,13 @@ export const DriversPage: React.FC = () => {
             asChild
             variant="outline"
             size="sm"
-            className="h-9 gap-1.5 text-xs font-medium border-amber-200 bg-amber-50/50 text-amber-800 hover:bg-amber-100/60"
+            className="h-9 gap-1.5 border-amber-200 bg-amber-50/50 text-xs font-medium text-amber-800 hover:bg-amber-100/60"
           >
             <Link to={ROUTES.DRIVER_VERIFICATIONS}>
               <Clock3 className="h-3.5 w-3.5 text-amber-600" />
               <span>Verification Queue</span>
               {stats?.pendingVerification ? (
-                <span className="ml-1 rounded-full bg-amber-500 px-1.5 py-0.2 text-[10px] font-bold text-white">
+                <span className="py-0.2 ml-1 rounded-full bg-amber-500 px-1.5 text-[10px] font-bold text-white">
                   {stats.pendingVerification}
                 </span>
               ) : null}
@@ -82,7 +78,9 @@ export const DriversPage: React.FC = () => {
           <Button
             size="sm"
             onClick={() => setAddDriverOpen(true)}
-            className="h-9 gap-1.5 bg-brand-primary-teal hover:bg-brand-primary-hover text-white text-xs font-semibold shadow-xs"
+            disabled
+            title="Drivers must register through the driver application"
+            className="hover:bg-brand-primary-hover shadow-xs h-9 gap-1.5 bg-brand-primary-teal text-xs font-semibold text-white"
           >
             <Plus className="h-4 w-4" />
             <span>Add Driver</span>
@@ -105,7 +103,7 @@ export const DriversPage: React.FC = () => {
       <DriversTable
         drivers={driversData?.items ?? []}
         total={driversData?.total ?? 0}
-        filters={filters}
+        filters={{ ...filters, page: driversData?.page ?? filters.page }}
         onFiltersChange={handleFiltersChange}
         onResetFilters={handleResetFilters}
         isLoading={isLoading}
@@ -114,10 +112,7 @@ export const DriversPage: React.FC = () => {
       />
 
       {/* Add Driver Dialog */}
-      <AddDriverDialog
-        open={addDriverOpen}
-        onOpenChange={setAddDriverOpen}
-      />
+      <AddDriverDialog open={addDriverOpen} onOpenChange={setAddDriverOpen} />
     </div>
   )
 }

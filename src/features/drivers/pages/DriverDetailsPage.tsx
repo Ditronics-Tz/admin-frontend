@@ -18,13 +18,7 @@ export const DriverDetailsPage: React.FC = () => {
   const { driverId } = useParams<{ driverId: string }>()
   const [activeTab, setActiveTab] = useState('overview')
 
-  const {
-    data: driver,
-    isLoading,
-    isError,
-    error,
-    refetch,
-  } = useDriver(driverId)
+  const { data: driver, isLoading, isError, error, refetch } = useDriver(driverId)
 
   if (isLoading) {
     return (
@@ -48,10 +42,8 @@ export const DriverDetailsPage: React.FC = () => {
           <div className="flex h-12 w-12 items-center justify-center rounded-full bg-rose-100 text-rose-600">
             <AlertCircle className="h-6 w-6" />
           </div>
-          <h2 className="mt-3 text-lg font-semibold text-[#172B36]">
-            Driver Not Found
-          </h2>
-          <p className="mt-1 text-xs text-slate-500 max-w-sm">
+          <h2 className="mt-3 text-lg font-semibold text-[#172B36]">Driver Not Found</h2>
+          <p className="mt-1 max-w-sm text-xs text-slate-500">
             {error?.message ||
               `Unable to locate driver record with ID "${driverId}". The profile may have been removed or you may have followed an outdated link.`}
           </p>
@@ -78,22 +70,22 @@ export const DriverDetailsPage: React.FC = () => {
       <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">
         <div className="overflow-x-auto pb-1">
           <TabsList className="h-11 bg-slate-100/80 p-1">
-            <TabsTrigger value="overview" className="text-xs px-4">
+            <TabsTrigger value="overview" className="px-4 text-xs">
               Overview
             </TabsTrigger>
-            <TabsTrigger value="vehicle" className="text-xs px-4">
+            <TabsTrigger value="vehicle" className="px-4 text-xs">
               Vehicle & Inspection
             </TabsTrigger>
-            <TabsTrigger value="documents" className="text-xs px-4">
+            <TabsTrigger value="documents" className="px-4 text-xs">
               Documents ({driver.documents.length})
             </TabsTrigger>
-            <TabsTrigger value="rides" className="text-xs px-4">
+            <TabsTrigger value="rides" className="px-4 text-xs">
               Ride History
             </TabsTrigger>
-            <TabsTrigger value="performance" className="text-xs px-4">
+            <TabsTrigger value="performance" className="px-4 text-xs">
               Performance
             </TabsTrigger>
-            <TabsTrigger value="activity" className="text-xs px-4">
+            <TabsTrigger value="activity" className="px-4 text-xs">
               Account Activity
             </TabsTrigger>
           </TabsList>
@@ -108,7 +100,7 @@ export const DriverDetailsPage: React.FC = () => {
         </TabsContent>
 
         <TabsContent value="documents">
-          <DriverDocumentsTab documents={driver.documents} />
+          <DriverDocumentsTab documents={driver.documents} driverId={driver.id} />
         </TabsContent>
 
         <TabsContent value="rides">

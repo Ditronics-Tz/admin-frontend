@@ -69,7 +69,8 @@ export const AddDriverDialog: React.FC<AddDriverDialogProps> = ({
             <div>
               <DialogTitle className="text-lg">Add New Driver</DialogTitle>
               <DialogDescription className="text-xs text-slate-500">
-                Register a new driver account and assigned vehicle in Tanzania
+                Note: Drivers register via the mobile application (/auth/register).
+                Administrative direct provisioning is not exposed by the backend API.
               </DialogDescription>
             </div>
           </div>
@@ -167,7 +168,9 @@ export const AddDriverDialog: React.FC<AddDriverDialogProps> = ({
                   <option value="car">Car (Standard)</option>
                 </select>
                 {errors.vehicleType && (
-                  <p className="text-[11px] text-rose-500">{errors.vehicleType.message}</p>
+                  <p className="text-[11px] text-rose-500">
+                    {errors.vehicleType.message}
+                  </p>
                 )}
               </div>
 
@@ -182,7 +185,9 @@ export const AddDriverDialog: React.FC<AddDriverDialogProps> = ({
                   className="h-9 text-xs"
                 />
                 {errors.vehicleMake && (
-                  <p className="text-[11px] text-rose-500">{errors.vehicleMake.message}</p>
+                  <p className="text-[11px] text-rose-500">
+                    {errors.vehicleMake.message}
+                  </p>
                 )}
               </div>
 
@@ -197,7 +202,9 @@ export const AddDriverDialog: React.FC<AddDriverDialogProps> = ({
                   className="h-9 text-xs"
                 />
                 {errors.vehicleModel && (
-                  <p className="text-[11px] text-rose-500">{errors.vehicleModel.message}</p>
+                  <p className="text-[11px] text-rose-500">
+                    {errors.vehicleModel.message}
+                  </p>
                 )}
               </div>
 
@@ -230,7 +237,9 @@ export const AddDriverDialog: React.FC<AddDriverDialogProps> = ({
                   className="h-9 text-xs"
                 />
                 {errors.vehicleYear && (
-                  <p className="text-[11px] text-rose-500">{errors.vehicleYear.message}</p>
+                  <p className="text-[11px] text-rose-500">
+                    {errors.vehicleYear.message}
+                  </p>
                 )}
               </div>
 
@@ -245,13 +254,15 @@ export const AddDriverDialog: React.FC<AddDriverDialogProps> = ({
                   className="h-9 text-xs"
                 />
                 {errors.vehicleColor && (
-                  <p className="text-[11px] text-rose-500">{errors.vehicleColor.message}</p>
+                  <p className="text-[11px] text-rose-500">
+                    {errors.vehicleColor.message}
+                  </p>
                 )}
               </div>
             </div>
           </div>
 
-          <DialogFooter className="gap-2 sm:gap-0 pt-2">
+          <DialogFooter className="gap-2 pt-2 sm:gap-0">
             <Button
               type="button"
               variant="outline"
@@ -264,8 +275,8 @@ export const AddDriverDialog: React.FC<AddDriverDialogProps> = ({
             <Button
               type="submit"
               size="sm"
-              disabled={isPending}
-              className="gap-1.5 bg-brand-primary-teal hover:bg-brand-primary-hover text-white"
+              disabled
+              className="hover:bg-brand-primary-hover gap-1.5 bg-brand-primary-teal text-white"
             >
               {isPending && <Loader2 className="h-3.5 w-3.5 animate-spin" />}
               Save & Register Driver

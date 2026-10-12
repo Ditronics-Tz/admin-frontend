@@ -43,7 +43,7 @@ export const DriverStatsCards: React.FC<DriverStatsCardsProps> = ({
     {
       title: 'Active Accounts',
       value: stats?.activeDrivers ?? 0,
-      description: 'Accounts eligible for dispatch',
+      description: 'Accounts marked active',
       icon: UserCheck,
       iconBg: 'bg-emerald-50 text-emerald-700',
     },
@@ -55,9 +55,9 @@ export const DriverStatsCards: React.FC<DriverStatsCardsProps> = ({
       iconBg: 'bg-amber-50 text-amber-700',
     },
     {
-      title: 'Suspended Accounts',
-      value: stats?.suspendedDrivers ?? 0,
-      description: 'Restricted from accepting rides',
+      title: 'Deactivated Accounts',
+      value: stats?.deactivatedDrivers ?? 0,
+      description: 'Accounts marked inactive',
       icon: UserX,
       iconBg: 'bg-rose-50 text-rose-700',
     },
@@ -74,9 +74,7 @@ export const DriverStatsCards: React.FC<DriverStatsCardsProps> = ({
           >
             <CardContent className="p-5">
               <div className="flex items-center justify-between">
-                <span className="text-xs font-medium text-slate-500">
-                  {item.title}
-                </span>
+                <span className="text-xs font-medium text-slate-500">{item.title}</span>
                 <div
                   className={`flex h-9 w-9 items-center justify-center rounded-lg ${item.iconBg}`}
                   aria-hidden="true"
@@ -89,9 +87,7 @@ export const DriverStatsCards: React.FC<DriverStatsCardsProps> = ({
                   {item.value}
                 </span>
               </div>
-              <p className="mt-1 text-[11px] text-slate-400">
-                {item.description}
-              </p>
+              <p className="mt-1 text-[11px] text-slate-400">{item.description}</p>
             </CardContent>
           </Card>
         )

@@ -16,11 +16,7 @@ export const DriverEditPage: React.FC = () => {
   const { driverId } = useParams<{ driverId: string }>()
   const navigate = useNavigate()
 
-  const {
-    data: driver,
-    isLoading,
-    isError,
-  } = useDriver(driverId)
+  const { data: driver, isLoading, isError } = useDriver(driverId)
 
   const { mutate: updateDriver, isPending: isSaving } = useUpdateDriver()
 
@@ -28,7 +24,7 @@ export const DriverEditPage: React.FC = () => {
     register,
     handleSubmit,
     reset,
-    formState: { errors, isDirty },
+    formState: { errors },
   } = useForm<DriverFormData>({
     resolver: zodResolver(driverFormSchema),
   })
@@ -42,10 +38,10 @@ export const DriverEditPage: React.FC = () => {
         phone: driver.phone,
         city: driver.city,
         district: driver.district || '',
-        vehicleType: driver.vehicle.type,
+        vehicleType: driver.vehicle.type === 'unknown' ? 'car' : driver.vehicle.type,
         vehicleMake: driver.vehicle.make,
         vehicleModel: driver.vehicle.model,
-        vehicleYear: driver.vehicle.year,
+        vehicleYear: driver.vehicle.year || new Date().getFullYear(),
         vehiclePlateNumber: driver.vehicle.plateNumber,
         vehicleColor: driver.vehicle.color,
       })
@@ -82,9 +78,7 @@ export const DriverEditPage: React.FC = () => {
       <div className="p-4 sm:p-6 lg:p-8">
         <div className="flex flex-col items-center justify-center rounded-xl border border-rose-200/60 bg-rose-50/40 p-12 text-center">
           <AlertCircle className="h-8 w-8 text-rose-600" />
-          <h2 className="mt-3 text-lg font-semibold text-[#172B36]">
-            Driver Not Found
-          </h2>
+          <h2 className="mt-3 text-lg font-semibold text-[#172B36]">Driver Not Found</h2>
           <Button asChild variant="outline" size="sm" className="mt-4">
             <Link to={ROUTES.DRIVERS}>Back to Drivers</Link>
           </Button>
@@ -94,7 +88,7 @@ export const DriverEditPage: React.FC = () => {
   }
 
   return (
-    <div className="space-y-6 p-4 sm:p-6 lg:p-8 max-w-4xl">
+    <div className="max-w-4xl space-y-6 p-4 sm:p-6 lg:p-8">
       {/* Navigation and Title */}
       <div>
         <Link
@@ -107,11 +101,20 @@ export const DriverEditPage: React.FC = () => {
       </div>
 
       <div className="border-b border-slate-200/60 pb-5">
+        <aside
+          role="note"
+          className="mb-4 rounded-lg border border-amber-200 bg-amber-50/70 p-3 text-xs text-amber-900"
+        >
+          <span className="font-semibold">Backend Notice:</span> Driver profile data
+          (vehicle details, plates, contact info) is self-managed by drivers through the
+          mobile app (/driver/profile/me). Direct administrative edits are not supported
+          by the backend API.
+        </aside>
         <div className="flex items-center gap-2">
           <h1 className="text-2xl font-bold tracking-tight text-[#172B36]">
             Edit Driver: {driver.fullName}
           </h1>
-          <span className="font-mono text-xs font-semibold text-slate-500 bg-slate-100 px-2 py-0.5 rounded">
+          <span className="rounded bg-slate-100 px-2 py-0.5 font-mono text-xs font-semibold text-slate-500">
             {driver.driverCode}
           </span>
         </div>
@@ -129,21 +132,15 @@ export const DriverEditPage: React.FC = () => {
               1. Personal & Contact Details
             </CardTitle>
           </CardHeader>
-          <CardContent className="p-5 space-y-4">
+          <CardContent className="space-y-4 p-5">
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
               <div className="space-y-1">
                 <Label htmlFor="fullName" className="text-xs font-medium">
                   Full Legal Name <span className="text-rose-500">*</span>
                 </Label>
-                <Input
-                  id="fullName"
-                  {...register('fullName')}
-                  className="h-9 text-xs"
-                />
+                <Input id="fullName" {...register('fullName')} className="h-9 text-xs" />
                 {errors.fullName && (
-                  <p className="text-[11px] text-rose-500">
-                    {errors.fullName.message}
-                  </p>
+                  <p className="text-[11px] text-rose-500">{errors.fullName.message}</p>
                 )}
               </div>
 
@@ -158,9 +155,7 @@ export const DriverEditPage: React.FC = () => {
                   className="h-9 text-xs"
                 />
                 {errors.email && (
-                  <p className="text-[11px] text-rose-500">
-                    {errors.email.message}
-                  </p>
+                  <p className="text-[11px] text-rose-500">{errors.email.message}</p>
                 )}
               </div>
 
@@ -168,15 +163,9 @@ export const DriverEditPage: React.FC = () => {
                 <Label htmlFor="phone" className="text-xs font-medium">
                   Tanzania Phone Number <span className="text-rose-500">*</span>
                 </Label>
-                <Input
-                  id="phone"
-                  {...register('phone')}
-                  className="h-9 text-xs"
-                />
+                <Input id="phone" {...register('phone')} className="h-9 text-xs" />
                 {errors.phone && (
-                  <p className="text-[11px] text-rose-500">
-                    {errors.phone.message}
-                  </p>
+                  <p className="text-[11px] text-rose-500">{errors.phone.message}</p>
                 )}
               </div>
 
@@ -184,15 +173,9 @@ export const DriverEditPage: React.FC = () => {
                 <Label htmlFor="district" className="text-xs font-medium">
                   District / Area
                 </Label>
-                <Input
-                  id="district"
-                  {...register('district')}
-                  className="h-9 text-xs"
-                />
+                <Input id="district" {...register('district')} className="h-9 text-xs" />
                 {errors.district && (
-                  <p className="text-[11px] text-rose-500">
-                    {errors.district.message}
-                  </p>
+                  <p className="text-[11px] text-rose-500">{errors.district.message}</p>
                 )}
               </div>
             </div>
@@ -206,7 +189,7 @@ export const DriverEditPage: React.FC = () => {
               2. Vehicle Specifications
             </CardTitle>
           </CardHeader>
-          <CardContent className="p-5 space-y-4">
+          <CardContent className="space-y-4 p-5">
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
               <div className="space-y-1">
                 <Label htmlFor="vehicleType" className="text-xs font-medium">
@@ -267,7 +250,7 @@ export const DriverEditPage: React.FC = () => {
                 <Input
                   id="vehiclePlateNumber"
                   {...register('vehiclePlateNumber')}
-                  className="h-9 text-xs font-mono"
+                  className="h-9 font-mono text-xs"
                 />
                 {errors.vehiclePlateNumber && (
                   <p className="text-[11px] text-rose-500">
@@ -327,8 +310,8 @@ export const DriverEditPage: React.FC = () => {
           <Button
             type="submit"
             size="sm"
-            disabled={isSaving || !isDirty}
-            className="gap-1.5 bg-brand-primary-teal hover:bg-brand-primary-hover text-white text-xs font-semibold"
+            disabled
+            className="hover:bg-brand-primary-hover gap-1.5 bg-brand-primary-teal text-xs font-semibold text-white"
           >
             {isSaving ? (
               <Loader2 className="h-3.5 w-3.5 animate-spin" />

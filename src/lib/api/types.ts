@@ -1,12 +1,13 @@
 /**
- * API Type Definitions
+ * API Type Definitions & Backend Contract Interfaces
  */
 
+// Legacy frontend wrapper compatibility
 export interface ApiResponse<T = unknown> {
   data: T
   message?: string
   status: 'success' | 'error'
-  timestamp: string
+  timestamp?: string
 }
 
 export interface ApiError {
@@ -29,4 +30,151 @@ export interface PaginatedResponse<T> {
   data: T[]
   meta: PaginationMeta
   status: 'success' | 'error'
+}
+
+// -------------------------------------------------------------
+// Real Backend API Contract Schemas (Go Fiber + GORM Models)
+// -------------------------------------------------------------
+
+/**
+ * Backend Staff Role Enum
+ */
+export type BackendStaffRole = 'admin' | 'support'
+
+/**
+ * Backend Staff User representation (from models.StaffUserResponse)
+ */
+export interface BackendStaffUser {
+  id: string
+  name: string
+  email: string
+  role: BackendStaffRole
+  is_active: boolean
+  must_change_password: boolean
+  totp_enabled: boolean
+  last_login_at?: string | null
+  created_at: string
+  updated_at: string
+}
+
+/**
+ * Backend Staff Login Response
+ */
+export interface BackendStaffLoginResponse {
+  access_token: string
+  refresh_token: string
+  must_change_password: boolean
+  user: BackendStaffUser
+}
+
+/**
+ * Backend Staff Refresh Response
+ */
+export interface BackendStaffRefreshResponse {
+  access_token: string
+  refresh_token: string
+  user: BackendStaffUser
+}
+
+/**
+ * Backend App User representation (models.UserResponse)
+ */
+export interface BackendUserResponse {
+  id: string
+  name: string
+  email: string
+  role: 'driver' | 'passenger'
+  is_active: boolean
+}
+
+/**
+ * Backend Driver Profile (models.DriverProfile)
+ */
+export interface BackendDriverProfile {
+  user_id: string
+  licence_number: string
+  vehicle_card_number: string
+  plate_number: string
+  licence_image_url: string
+  profile_picture_url: string
+  verified: boolean
+  average_rating: number
+  total_ratings: number
+  created_at: string
+  updated_at: string
+}
+
+/**
+ * Backend Passenger Profile (models.PassengerProfile)
+ */
+export interface BackendPassengerProfile {
+  user_id: string
+  full_name: string
+  profile_picture_url: string
+  phone: string
+  average_rating: number
+  total_ratings: number
+  created_at: string
+  updated_at: string
+}
+
+/**
+ * Backend Admin Users List Response
+ */
+export interface BackendUsersListResponse {
+  count: number
+  users: BackendUserResponse[]
+}
+
+/**
+ * Backend Admin User Detail Response (GET /api/v1/admin/users/:id)
+ */
+export interface BackendUserDetailResponse {
+  user: BackendUserResponse
+  driver_profile?: BackendDriverProfile
+  passenger_profile?: BackendPassengerProfile
+  average_rating: number
+  total_ratings: number
+}
+
+/**
+ * Backend Admin Stats Response (GET /api/v1/admin/stats)
+ */
+export interface BackendAdminStatsResponse {
+  total_drivers: number
+  total_passengers: number
+  active_rides: number
+  open_tickets: number
+  open_complaints: number
+}
+
+/**
+ * Backend Staff Audit Log (models.StaffAuditLog)
+ */
+export interface BackendStaffAuditLog {
+  id: string
+  actor_id: string
+  action: string
+  target_type: string
+  target_id: string
+  ip: string
+  meta: string
+  created_at: string
+}
+
+/**
+ * Backend Staff Audit Logs List Response
+ */
+export interface BackendAuditLogsResponse {
+  total: number
+  limit: number
+  logs: BackendStaffAuditLog[]
+}
+
+/**
+ * Backend Staff List Response
+ */
+export interface BackendStaffListResponse {
+  count: number
+  staff: BackendStaffUser[]
 }

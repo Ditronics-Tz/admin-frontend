@@ -1,12 +1,6 @@
 import React, { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
-import {
-  ArrowLeft,
-  Edit,
-  FileCheck2,
-  UserX,
-  UserCheck,
-} from 'lucide-react'
+import { ArrowLeft, Edit, FileCheck2, UserX, UserCheck } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import {
   DriverAccountStatusBadge,
@@ -18,14 +12,13 @@ import { ReactivateDriverDialog } from './ReactivateDriverDialog'
 import { getDriverInitials, formatTzPhone } from '../utils/driver-formatters'
 import type { Driver } from '../types/driver.types'
 import { ROUTES } from '@/lib/constants'
+import { UserRoleAction } from '@/features/customers/components/UserRoleAction'
 
 interface DriverProfileHeaderProps {
   driver: Driver
 }
 
-export const DriverProfileHeader: React.FC<DriverProfileHeaderProps> = ({
-  driver,
-}) => {
+export const DriverProfileHeader: React.FC<DriverProfileHeaderProps> = ({ driver }) => {
   const navigate = useNavigate()
   const [suspendOpen, setSuspendOpen] = useState(false)
   const [reactivateOpen, setReactivateOpen] = useState(false)
@@ -51,7 +44,7 @@ export const DriverProfileHeader: React.FC<DriverProfileHeaderProps> = ({
           {/* Avatar and Basic Details */}
           <div className="flex items-start gap-4">
             <div
-              className="flex h-16 w-16 shrink-0 items-center justify-center rounded-2xl bg-brand-soft-mint text-xl font-bold text-brand-deep-teal shadow-xs"
+              className="shadow-xs flex h-16 w-16 shrink-0 items-center justify-center rounded-2xl bg-brand-soft-mint text-xl font-bold text-brand-deep-teal"
               aria-hidden="true"
             >
               {initials}
@@ -83,10 +76,13 @@ export const DriverProfileHeader: React.FC<DriverProfileHeaderProps> = ({
 
           {/* Action Buttons */}
           <div className="flex flex-wrap items-center gap-2">
+            <UserRoleAction id={driver.id} name={driver.fullName} role="driver" />
             <Button
               variant="outline"
               size="sm"
               onClick={() => navigate(`/drivers/${driver.id}/edit`)}
+              disabled
+              title="Staff editing of driver profiles is not supported by the server"
               className="h-9 gap-1.5 text-xs font-medium"
             >
               <Edit className="h-3.5 w-3.5" />
@@ -97,7 +93,7 @@ export const DriverProfileHeader: React.FC<DriverProfileHeaderProps> = ({
               variant="outline"
               size="sm"
               onClick={() => navigate(`/drivers/verifications/${driver.id}`)}
-              className="h-9 gap-1.5 text-xs font-medium border-brand-primary-teal/30 text-brand-primary-teal hover:bg-teal-50"
+              className="h-9 gap-1.5 border-brand-primary-teal/30 text-xs font-medium text-brand-primary-teal hover:bg-teal-50"
             >
               <FileCheck2 className="h-3.5 w-3.5" />
               <span>Review Documents</span>
@@ -108,7 +104,9 @@ export const DriverProfileHeader: React.FC<DriverProfileHeaderProps> = ({
                 variant="outline"
                 size="sm"
                 onClick={() => setReactivateOpen(true)}
-                className="h-9 gap-1.5 text-xs font-medium border-emerald-300 text-emerald-700 hover:bg-emerald-50"
+                disabled
+                title="Driver reactivation is not supported by the server"
+                className="h-9 gap-1.5 border-emerald-300 text-xs font-medium text-emerald-700 hover:bg-emerald-50"
               >
                 <UserCheck className="h-3.5 w-3.5" />
                 <span>Reactivate</span>
@@ -118,7 +116,9 @@ export const DriverProfileHeader: React.FC<DriverProfileHeaderProps> = ({
                 variant="outline"
                 size="sm"
                 onClick={() => setSuspendOpen(true)}
-                className="h-9 gap-1.5 text-xs font-medium border-rose-300 text-rose-600 hover:bg-rose-50"
+                disabled
+                title="Driver suspension is not supported by the server"
+                className="h-9 gap-1.5 border-rose-300 text-xs font-medium text-rose-600 hover:bg-rose-50"
               >
                 <UserX className="h-3.5 w-3.5" />
                 <span>Suspend</span>

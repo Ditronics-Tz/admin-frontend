@@ -1,13 +1,15 @@
-import React from 'react'
-import { DevPlaceholderPage } from '@/components/layout/DevPlaceholderPage'
-
-export const SupportPage: React.FC = () => {
+import { WorkQueue } from '../components/WorkQueue'
+export default function SupportPage() {
   return (
-    <DevPlaceholderPage
-      moduleTitle="Support Requests & Disputes"
-      moduleDescription="Ticket handling, rider and driver complaints, lost item cases, incident escalations, and resolution logs."
-      plannedPhase="Phase 9"
-    />
+    <div className="space-y-6 p-4 sm:p-8">
+      <div>
+        <h1 className="text-2xl font-bold">Support</h1>
+        <p className="mt-2 text-sm text-muted-foreground">
+          Customer tickets and complaints.
+        </p>
+      </div>
+      <WorkQueue kind="tickets" />
+      <WorkQueue kind="complaints" />
+    </div>
   )
 }
-export default SupportPage

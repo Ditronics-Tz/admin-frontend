@@ -4,21 +4,24 @@ import { MetricCard } from '../components/MetricCard'
 import { RideActivityChart } from '../components/RideActivityChart'
 import { OperationsStatus } from '../components/OperationsStatus'
 import { RecentRidesTable } from '../components/RecentRidesTable'
-import { formatTZS, formatDateTime } from '@/lib/utils/formatters'
+import { formatDateTime } from '@/lib/utils/formatters'
+import { useDashboardStats } from '../hooks/useDashboard'
+import { QueryError } from '@/components/feedback/QueryError'
 
 export const DashboardPage: React.FC = () => {
   const currentDate = new Date()
+  const { data: stats, isLoading, error, refetch } = useDashboardStats()
 
   return (
     <div className="space-y-6 p-4 sm:p-6 lg:p-8">
-      {/* 7. Dashboard Header */}
+      {/* Dashboard Header */}
       <div className="flex flex-col gap-3 border-b border-slate-200/60 pb-5 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <h1 className="text-2xl font-bold tracking-tight text-[#172B36] sm:text-3xl">
             Dashboard
           </h1>
           <p className="mt-1 text-xs text-[#64748B] sm:text-sm">
-            Welcome to Rida Admin. Here's your operations overview.
+            Welcome to Rida Admin. Operations overview connected to live Go backend.
           </p>
         </div>
 
@@ -32,62 +35,73 @@ export const DashboardPage: React.FC = () => {
 
           <div className="hidden items-center gap-1 rounded-lg border border-brand-soft-mint bg-brand-soft-mint/50 px-2.5 py-1 text-xs font-semibold text-brand-deep-teal sm:inline-flex">
             <Sparkles className="h-3 w-3 text-primary" />
-            <span>Dar es Salaam Live</span>
+            <span>Dar es Salaam Operations</span>
           </div>
         </div>
       </div>
 
-      {/* 7. Overview Metric Cards Grid */}
+      {/* Overview Metric Cards Grid with Real Backend Data */}
+      {error && <QueryError error={error} retry={() => void refetch()} />}
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <MetricCard
-          label="Total Rides"
-          value="24,580"
+          label="Active Rides"
+          value={
+            isLoading ? '...' : stats ? stats.activeRides.toLocaleString() : 'Unavailable'
+          }
           icon={CarFront}
           change={{
-            value: '+12.4%',
+            value: 'Not deployed',
             isPositive: true,
-            period: 'vs last week',
+            period: 'dispatch service pending',
           }}
         />
         <MetricCard
-          label="Active Drivers"
-          value="842"
+          label="Registered Drivers"
+          value={
+            isLoading
+              ? '...'
+              : stats
+                ? stats.totalDrivers.toLocaleString()
+                : 'Unavailable'
+          }
           icon={Users}
           change={{
-            value: '+5.1%',
+            value: 'Real count',
             isPositive: true,
-            period: 'fleet online',
+            period: 'registered accounts',
           }}
         />
         <MetricCard
           label="Total Customers"
-          value="118,920"
+          value={
+            isLoading
+              ? '...'
+              : stats
+                ? stats.totalPassengers.toLocaleString()
+                : 'Unavailable'
+          }
           icon={UserRound}
           change={{
-            value: '+8.2%',
+            value: 'Real count',
             isPositive: true,
             period: 'registered riders',
           }}
         />
         <MetricCard
           label="Gross Revenue"
-          value={formatTZS(148250000)}
+          value="Unavailable"
           icon={Wallet}
-          change={{
-            value: '+15.8%',
-            isPositive: true,
-            period: 'month-to-date',
-          }}
+          subtext="Financial service not deployed in backend"
         />
       </div>
 
-      {/* 8. Ride Activity Chart & 9. Operations Status */}
+      {/* Ride Activity Trends & Operations Status */}
       <div className="space-y-6">
         <RideActivityChart />
         <OperationsStatus />
       </div>
 
-      {/* 10. Recent Rides Table */}
+      {/* Recent Rides Table */}
       <RecentRidesTable />
     </div>
   )

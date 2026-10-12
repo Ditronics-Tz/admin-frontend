@@ -1,5 +1,7 @@
 # Rida Admin Dashboard — Frontend
 
+For the implemented admin API connections, local setup, backend limitations, and validation commands, see [Admin API integration](docs/ADMIN_API_INTEGRATION.md). Some product capabilities described below are planned and have no backend endpoint yet.
+
 > **Tanzania Ride-Hailing Operations Platform**  
 > Operational administration, driver fleet management, rider safety, trips, transactions (TZS), and reporting.
 

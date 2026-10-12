@@ -1,43 +1,58 @@
 import { useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useQueryClient } from '@tanstack/react-query'
+import { useNavigate, useLocation } from 'react-router-dom'
 import { authService } from '../services/authService'
 import { useAuthStore } from '@/stores/useAuthStore'
 import { ROUTES } from '@/lib/constants'
+import { formatApiError, ApiClientError } from '@/lib/api/errors'
 import type { LoginFormValues } from '../schemas/authSchema'
 import type { LoginTranslations } from '@/lib/constants/translations'
-import type { ApiError } from '@/lib/api/types'
 
 export const useLogin = (t: LoginTranslations) => {
   const [isLoading, setIsLoading] = useState(false)
   const [authError, setAuthError] = useState<string | null>(null)
+  const [requires2FA, setRequires2FA] = useState(false)
   const navigate = useNavigate()
+  const location = useLocation()
   const setUser = useAuthStore((state) => state.setUser)
+  const queryClient = useQueryClient()
 
   const handleLogin = async (values: LoginFormValues) => {
     setIsLoading(true)
     setAuthError(null)
 
     try {
-      // Execute authentication request against backend service
+      // Execute real Go backend authentication request against /api/v1/staff/auth/login
       const session = await authService.login({
         email: values.email,
         password: values.password,
         rememberMe: values.rememberMe,
+        totpCode: values.totpCode,
       })
 
-      // On successful backend authentication response:
+      // Set authenticated staff user in store
+      queryClient.clear()
       setUser(session.user)
-      navigate(ROUTES.DASHBOARD, { replace: true })
+
+      // Respect intended destination if redirected from a protected route
+      const from =
+        (location.state as { from?: { pathname: string } })?.from?.pathname ||
+        ROUTES.DASHBOARD
+      navigate(session.user.mustChangePassword ? ROUTES.CHANGE_PASSWORD : from, {
+        replace: true,
+      })
     } catch (err: unknown) {
-      // In Phase 1/2 without a running backend server, provide an honest, clear status
-      const apiErr = err as ApiError
-      if (apiErr?.status === 401) {
-        setAuthError(apiErr.message || 'Invalid administrative credentials provided.')
-      } else if (apiErr?.message && !apiErr.message.includes('Network Error')) {
+      const apiErr = formatApiError(err)
+
+      if (apiErr.require2FA) {
+        setRequires2FA(true)
+        setAuthError('Two-factor authentication code is required.')
+      } else if (apiErr.isNetworkError) {
+        setAuthError(t.backendOfflineMessage || apiErr.message)
+      } else if (apiErr instanceof ApiClientError) {
         setAuthError(apiErr.message)
       } else {
-        // Honest notification that backend service endpoint is currently offline/unconnected
-        setAuthError(t.backendOfflineMessage)
+        setAuthError('An unexpected authentication error occurred.')
       }
     } finally {
       setIsLoading(false)
@@ -47,6 +62,7 @@ export const useLogin = (t: LoginTranslations) => {
   return {
     isLoading,
     authError,
+    requires2FA,
     clearAuthError: () => setAuthError(null),
     handleLogin,
   }

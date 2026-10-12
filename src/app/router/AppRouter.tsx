@@ -5,17 +5,16 @@ import { LoadingFallback } from '@/components/feedback/LoadingFallback'
 import { ProtectedRoute } from '@/components/layout/ProtectedRoute'
 import { NotFoundPage } from '@/components/common/NotFoundPage'
 
+const LoginPage = lazy(() => import('@/features/auth/pages/LoginPage'))
+const ChangePasswordPage = lazy(() => import('@/features/auth/pages/ChangePasswordPage'))
+
 // Lazy-loaded layouts & feature modules
 const AdminLayout = lazy(() => import('@/components/layout/AdminLayout'))
 const DashboardPage = lazy(() => import('@/features/dashboard/pages/DashboardPage'))
 const RidesPage = lazy(() => import('@/features/rides/pages/RidesPage'))
 const DriversPage = lazy(() => import('@/features/drivers/pages/DriversPage'))
-const DriverDetailsPage = lazy(
-  () => import('@/features/drivers/pages/DriverDetailsPage')
-)
-const DriverEditPage = lazy(
-  () => import('@/features/drivers/pages/DriverEditPage')
-)
+const DriverDetailsPage = lazy(() => import('@/features/drivers/pages/DriverDetailsPage'))
+const DriverEditPage = lazy(() => import('@/features/drivers/pages/DriverEditPage'))
 const DriverVerificationsPage = lazy(
   () => import('@/features/drivers/pages/DriverVerificationsPage')
 )
@@ -50,17 +49,25 @@ const router = createBrowserRouter([
   {
     element: <SuspenseLayout />,
     children: [
-      // Default root redirects to dashboard (login temporarily bypassed)
+      // Default root redirects to dashboard
       {
         path: ROUTES.HOME,
         element: <Navigate to={ROUTES.DASHBOARD} replace />,
       },
-      // Public authentication route (temporarily redirecting to dashboard while login is disabled)
+      // Public administrative authentication route
       {
         path: ROUTES.LOGIN,
-        element: <Navigate to={ROUTES.DASHBOARD} replace />,
+        element: <LoginPage />,
       },
       // Protected Administrative Workspace Layout Shell
+      {
+        path: ROUTES.CHANGE_PASSWORD,
+        element: (
+          <ProtectedRoute>
+            <ChangePasswordPage />
+          </ProtectedRoute>
+        ),
+      },
       {
         element: (
           <ProtectedRoute>

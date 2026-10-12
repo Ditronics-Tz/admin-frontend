@@ -5,7 +5,7 @@
 export const APP_CONFIG = {
   name: 'Rida Admin',
   tagline: 'Tanzania Ride-Hailing Operations Platform',
-  version: '1.0.0-alpha',
+  version: '1.0.0',
   targetMarket: 'Tanzania',
   defaultTimezone: 'Africa/Dar_es_Salaam',
   defaultCurrency: 'TZS',
@@ -17,6 +17,7 @@ export const APP_CONFIG = {
 export const ROUTES = {
   HOME: '/',
   LOGIN: '/login',
+  CHANGE_PASSWORD: '/change-password',
   DASHBOARD: '/dashboard',
   RIDES: '/rides',
   DRIVERS: '/drivers',
@@ -33,25 +34,51 @@ export const ROUTES = {
   SETTINGS: '/settings',
 } as const
 
+/**
+ * Real Backend API Routes (Go Fiber /api/v1 service)
+ */
 export const API_ENDPOINTS = {
+  SYSTEM: {
+    HEALTH: '/health',
+  },
   AUTH: {
-    LOGIN: '/auth/login',
-    LOGOUT: '/auth/logout',
-    ME: '/auth/me',
-    REFRESH: '/auth/refresh',
+    LOGIN: '/staff/auth/login',
+    REFRESH: '/staff/auth/refresh',
+    LOGOUT: '/staff/auth/logout',
+    LOGOUT_ALL: '/staff/auth/logout-all',
+    ME: '/staff/auth/me',
+    CHANGE_PASSWORD: '/staff/auth/change-password',
+    SETUP_2FA: '/staff/auth/2fa/setup',
+    VERIFY_2FA: '/staff/auth/2fa/verify',
+    DISABLE_2FA: '/staff/auth/2fa/disable',
+  },
+  ADMIN: {
+    USERS: '/admin/users',
+    USER_DETAILS: (id: string) => `/admin/users/${id}`,
+    UPDATE_USER_ROLE: (id: string) => `/admin/users/${id}/role`,
+    VERIFY_DRIVER: (id: string) => `/admin/drivers/${id}/verify`,
+    STATS: '/admin/stats',
+    RIDES: '/admin/rides',
+    COMPLAINTS: '/admin/complaints',
+    UPDATE_COMPLAINT: (id: string) => `/admin/complaints/${id}`,
+    TICKETS: '/admin/tickets',
+    UPDATE_TICKET: (id: string) => `/admin/tickets/${id}`,
+    AUDIT_LOGS: '/admin/audit-logs',
+    STAFF: '/admin/staff',
+    UPDATE_STAFF: (id: string) => `/admin/staff/${id}`,
+    UPDATE_STAFF_ROLE: (id: string) => `/admin/staff/${id}/role`,
+    RESET_STAFF_PASSWORD: (id: string) => `/admin/staff/${id}/reset-password`,
+    REVOKE_STAFF_SESSIONS: (id: string) => `/admin/staff/${id}/revoke-sessions`,
+  },
+  FILES: {
+    LICENCE_DOC: (id: string) => `/files/licences/${id}`,
+    UPLOADS: (path: string) => `/uploads/${path}`,
   },
   DRIVERS: {
-    LIST: '/drivers',
-    STATS: '/drivers/stats',
-    DETAILS: (id: string) => `/drivers/${id}`,
-    CREATE: '/drivers',
-    UPDATE: (id: string) => `/drivers/${id}`,
-    SUSPEND: (id: string) => `/drivers/${id}/suspend`,
-    REACTIVATE: (id: string) => `/drivers/${id}/reactivate`,
-    VERIFICATIONS: '/drivers/verifications',
-    VERIFICATION_DETAILS: (id: string) => `/drivers/verifications/${id}`,
-    APPROVE_VERIFICATION: (id: string) => `/drivers/verifications/${id}/approve`,
-    REJECT_VERIFICATION: (id: string) => `/drivers/verifications/${id}/reject`,
+    LIST: '/admin/users?role=driver',
+    STATS: '/admin/stats',
+    DETAILS: (id: string) => `/admin/users/${id}`,
+    VERIFY: (id: string) => `/admin/drivers/${id}/verify`,
+    LICENCE_DOC: (id: string) => `/files/licences/${id}`,
   },
 } as const
-

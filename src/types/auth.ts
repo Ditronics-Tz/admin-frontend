@@ -1,15 +1,11 @@
 /**
  * Administrator Role Definitions
+ * Aligned with Backend StaffRealm roles: 'admin' and 'support'
  */
-export type AdminRole =
-  | 'super_admin'
-  | 'operations_admin'
-  | 'driver_manager'
-  | 'support_agent'
-  | 'finance_admin'
+export type AdminRole = 'admin' | 'support'
 
 /**
- * Administrator User Entity
+ * Administrator User Entity (mapped from BackendStaffUser)
  */
 export interface AdminUser {
   id: string
@@ -19,8 +15,11 @@ export interface AdminUser {
   phone?: string
   avatarUrl?: string
   isActive: boolean
-  lastLoginAt?: string
+  mustChangePassword?: boolean
+  totpEnabled?: boolean
+  lastLoginAt?: string | null
   createdAt: string
+  updatedAt?: string
 }
 
 /**
@@ -29,6 +28,7 @@ export interface AdminUser {
 export interface LoginCredentials {
   email: string
   password: string
+  totpCode?: string
   rememberMe?: boolean
 }
 
@@ -37,7 +37,10 @@ export interface LoginCredentials {
  */
 export interface AuthSession {
   user: AdminUser
-  expiresAt: string
+  accessToken?: string
+  refreshToken?: string
+  mustChangePassword?: boolean
+  expiresAt?: string
 }
 
 /**
@@ -53,9 +56,11 @@ export interface AuthState {
   user: AdminUser | null
   status: AuthStatus
   isAuthenticated: boolean
+  isInitialized: boolean
   error: string | null
   setUser: (user: AdminUser | null) => void
   setStatus: (status: AuthStatus) => void
   setError: (error: string | null) => void
+  logout: () => void
   resetAuth: () => void
 }

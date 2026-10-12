@@ -47,14 +47,15 @@ export const LOGIN_TRANSLATIONS: Record<AppLocale, LoginTranslations> = {
     passwordHide: 'Hide password',
     submitButton: 'Sign in',
     submittingButton: 'Signing in...',
-    demoNotice: 'Demo preview: authentication is not yet connected.',
+    demoNotice:
+      'Sign in with your staff account. Passenger and driver accounts cannot access this console.',
     accessDeniedButton: 'Access denied',
     accessDeniedTitle: 'Administrative Access Policy',
     accessDeniedMessage:
       'Only authorized Rida staff can access this console. If you believe you should have access, contact your system administrator.',
     closeButton: 'Understood',
     backendOfflineMessage:
-      'Authentication service is not configured yet. Backend connection is currently offline.',
+      'Unable to reach the sign-in service. Check your connection and try again.',
   },
   sw: {
     brandSubtitle: 'Dashibodi ya uendeshaji',
@@ -75,13 +76,14 @@ export const LOGIN_TRANSLATIONS: Record<AppLocale, LoginTranslations> = {
     passwordHide: 'Ficha nenosiri',
     submitButton: 'Ingia',
     submittingButton: 'Inaingia...',
-    demoNotice: 'Hakikisho la jaribio: mfumo wa uthibitishaji bado haujaunganishwa.',
+    demoNotice:
+      'Ingia kwa akaunti ya mtumishi. Akaunti za abiria na madereva haziwezi kufikia dashibodi hii.',
     accessDeniedButton: 'Huna idhini',
     accessDeniedTitle: 'Sera ya Ufikiaji wa Utawala',
     accessDeniedMessage:
       'Watumishi wa Rida walioidhinishwa pekee ndio wanaoweza kufikia dashibodi hii. Ikiwa unaamini unapaswa kuwa na idhini, wasiliana na msimamizi wa mfumo.',
     closeButton: 'Nimeelewa',
     backendOfflineMessage:
-      'Huduma ya uthibitishaji bado haijasanidiwa. Muunganisho wa seva haupatikani kwa sasa.',
+      'Huduma ya kuingia haipatikani. Angalia muunganisho wako kisha ujaribu tena.',
   },
 }

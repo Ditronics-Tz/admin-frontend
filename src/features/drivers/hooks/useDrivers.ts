@@ -1,5 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { driverService } from '../services/driver.service'
+import { driverService, filterDrivers } from '../services/driver.service'
+import { mapDriverToVerificationRequest } from '../adapters/driverAdapter'
 import type {
   DriverFilters,
   CreateDriverInput,
@@ -9,17 +10,28 @@ import { toast } from 'sonner'
 
 export function useDrivers(filters: DriverFilters) {
   return useQuery({
-    queryKey: ['drivers', filters],
-    queryFn: () => driverService.listDrivers(filters),
+    queryKey: ['drivers', 'directory'],
+    queryFn: () => driverService.getDirectory(),
+    select: (drivers) => filterDrivers(drivers, filters),
     staleTime: 30000,
   })
 }
 
 export function useDriverStats() {
   return useQuery({
-    queryKey: ['drivers', 'stats'],
-    queryFn: () => driverService.getDriverStatistics(),
-    staleTime: 60000,
+    queryKey: ['drivers', 'directory'],
+    queryFn: () => driverService.getDirectory(),
+    staleTime: 30000,
+    select: (drivers) => ({
+      totalDrivers: drivers.length,
+      activeDrivers: drivers.filter((driver) => driver.accountStatus === 'active').length,
+      pendingVerification: drivers.filter(
+        (driver) => driver.verificationStatus === 'pending'
+      ).length,
+      deactivatedDrivers: drivers.filter(
+        (driver) => driver.accountStatus === 'deactivated'
+      ).length,
+    }),
   })
 }
 
@@ -36,8 +48,12 @@ export function useDriver(driverId: string | undefined) {
 
 export function useVerificationRequests() {
   return useQuery({
-    queryKey: ['drivers', 'verifications'],
-    queryFn: () => driverService.listVerificationRequests(),
+    queryKey: ['drivers', 'directory'],
+    queryFn: () => driverService.getDirectory(),
+    select: (drivers) =>
+      drivers
+        .filter((driver) => driver.verificationStatus === 'pending')
+        .map(mapDriverToVerificationRequest),
     staleTime: 30000,
   })
 }
@@ -86,8 +102,7 @@ export function useApproveVerification() {
   const queryClient = useQueryClient()
 
   return useMutation({
-    mutationFn: (driverId: string) =>
-      driverService.approveVerification(driverId),
+    mutationFn: (driverId: string) => driverService.approveVerification(driverId),
     onSuccess: (driver) => {
       toast.success(
         `Verification approved for driver ${driver.fullName} (${driver.driverCode})`
@@ -148,13 +163,8 @@ export function useUpdateDriver() {
   const queryClient = useQueryClient()
 
   return useMutation({
-    mutationFn: ({
-      driverId,
-      data,
-    }: {
-      driverId: string
-      data: UpdateDriverInput
-    }) => driverService.updateDriver(driverId, data),
+    mutationFn: ({ driverId, data }: { driverId: string; data: UpdateDriverInput }) =>
+      driverService.updateDriver(driverId, data),
     onSuccess: (driver) => {
       toast.success(`Driver ${driver.fullName} updated successfully`)
       queryClient.invalidateQueries({ queryKey: ['drivers'] })
@@ -162,6 +172,22 @@ export function useUpdateDriver() {
     },
     onError: (err: Error) => {
       toast.error(err.message || 'Failed to update driver details')
+    },
+  })
+}
+
+export function useUpdateUserRole() {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: ({ userId, role }: { userId: string; role: 'driver' | 'passenger' }) =>
+      driverService.updateUserRole(userId, role),
+    onSuccess: () => {
+      toast.success('User role updated successfully')
+      queryClient.invalidateQueries({ queryKey: ['drivers'] })
+    },
+    onError: (err: Error) => {
+      toast.error(err.message || 'Failed to update user role')
     },
   })
 }

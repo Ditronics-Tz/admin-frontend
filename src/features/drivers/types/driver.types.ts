@@ -6,29 +6,22 @@
 export type DriverAccountStatus = 'active' | 'suspended' | 'deactivated'
 
 export type DriverVerificationStatus =
-  | 'not_submitted'
-  | 'pending'
-  | 'approved'
-  | 'rejected'
-  | 'expired'
+  'not_submitted' | 'pending' | 'approved' | 'rejected' | 'expired'
 
 export type DriverAvailabilityStatus =
-  | 'online'
-  | 'offline'
-  | 'on_trip'
-  | 'unavailable'
+  'online' | 'offline' | 'on_trip' | 'unavailable' | 'unknown'
 
-export type VehicleType = 'motorcycle' | 'bajaji' | 'car'
+export type VehicleType = 'motorcycle' | 'bajaji' | 'car' | 'unknown'
 
 export interface DriverVehicle {
   id: string
   type: VehicleType
   make: string
   model: string
-  year: number
+  year: number | null
   plateNumber: string
   color: string
-  inspectionStatus: 'passed' | 'pending' | 'failed' | 'expired'
+  inspectionStatus: 'passed' | 'pending' | 'failed' | 'expired' | 'unknown'
   inspectionExpiry?: string
 }
 
@@ -84,10 +77,10 @@ export interface Driver {
   vehicle: DriverVehicle
   rating: number | null
   ratingCount: number
-  totalTrips: number
-  totalEarningsTZS: number
-  acceptanceRate: number
-  cancellationRate: number
+  totalTrips: number | null
+  totalEarningsTZS: number | null
+  acceptanceRate: number | null
+  cancellationRate: number | null
   joinedAt: string
   avatarUrl?: string
   documents: DriverDocument[]
@@ -100,7 +93,7 @@ export interface DriverStatistics {
   totalDrivers: number
   activeDrivers: number
   pendingVerification: number
-  suspendedDrivers: number
+  deactivatedDrivers: number
 }
 
 export interface DriverFilters {

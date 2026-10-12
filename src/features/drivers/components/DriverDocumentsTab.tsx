@@ -1,24 +1,22 @@
 import React, { useState } from 'react'
 import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-} from '@/components/ui/dialog'
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { FileText, Eye } from 'lucide-react'
 import { Badge } from '@/components/ui/badge'
 import type { DriverDocument } from '../types/driver.types'
 import { getDocumentTypeLabel } from '../utils/driver-formatters'
 import { formatDateTime } from '@/lib/utils/formatters'
+import { LicencePreview } from './LicencePreview'
 
 interface DriverDocumentsTabProps {
   documents: DriverDocument[]
+  driverId: string
 }
 
 export const DriverDocumentsTab: React.FC<DriverDocumentsTabProps> = ({
   documents,
+  driverId,
 }) => {
   const [selectedDoc, setSelectedDoc] = useState<DriverDocument | null>(null)
 
@@ -44,7 +42,7 @@ export const DriverDocumentsTab: React.FC<DriverDocumentsTabProps> = ({
                 key={doc.id}
                 className="border-slate-200/80 bg-white transition-all hover:border-slate-300"
               >
-                <CardContent className="p-5 flex flex-col justify-between h-full space-y-4">
+                <CardContent className="flex h-full flex-col justify-between space-y-4 p-5">
                   <div className="space-y-3">
                     <div className="flex items-start justify-between gap-2">
                       <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-teal-50 text-brand-primary-teal">
@@ -65,17 +63,17 @@ export const DriverDocumentsTab: React.FC<DriverDocumentsTabProps> = ({
                     </div>
 
                     <div>
-                      <h4 className="font-semibold text-xs text-[#172B36]">
+                      <h4 className="text-xs font-semibold text-[#172B36]">
                         {doc.title || getDocumentTypeLabel(doc.type)}
                       </h4>
-                      <p className="font-mono text-[11px] text-slate-500 mt-0.5">
+                      <p className="mt-0.5 font-mono text-[11px] text-slate-500">
                         {doc.documentNumber}
                       </p>
                     </div>
 
-                    <div className="space-y-1 text-[11px] text-slate-500 border-t border-slate-100 pt-2.5">
+                    <div className="space-y-1 border-t border-slate-100 pt-2.5 text-[11px] text-slate-500">
                       <div className="flex justify-between">
-                        <span>Submitted:</span>
+                        <span>Profile created:</span>
                         <span className="font-medium text-slate-700">
                           {formatDateTime(doc.submissionDate)}
                         </span>
@@ -89,9 +87,9 @@ export const DriverDocumentsTab: React.FC<DriverDocumentsTabProps> = ({
                         </div>
                       )}
                       {doc.rejectionReason && (
-                        <div className="rounded bg-rose-50 p-2 text-rose-700 mt-2">
-                          <p className="font-semibold text-[10px]">Rejection Reason:</p>
-                          <p className="text-[10px] mt-0.5">{doc.rejectionReason}</p>
+                        <div className="mt-2 rounded bg-rose-50 p-2 text-rose-700">
+                          <p className="text-[10px] font-semibold">Rejection Reason:</p>
+                          <p className="mt-0.5 text-[10px]">{doc.rejectionReason}</p>
                         </div>
                       )}
                     </div>
@@ -101,7 +99,7 @@ export const DriverDocumentsTab: React.FC<DriverDocumentsTabProps> = ({
                     variant="outline"
                     size="sm"
                     onClick={() => setSelectedDoc(doc)}
-                    className="w-full gap-1.5 text-xs border-slate-200 text-slate-700 hover:bg-slate-50 mt-auto"
+                    className="mt-auto w-full gap-1.5 border-slate-200 text-xs text-slate-700 hover:bg-slate-50"
                   >
                     <Eye className="h-3.5 w-3.5" />
                     <span>Preview Document</span>
@@ -126,34 +124,18 @@ export const DriverDocumentsTab: React.FC<DriverDocumentsTabProps> = ({
                   ? getDocumentTypeLabel(selectedDoc.type)
                   : 'Document Preview')}
             </DialogTitle>
-            <p className="text-xs text-slate-500 font-mono">
+            <p className="font-mono text-xs text-slate-500">
               Document Ref: {selectedDoc?.documentNumber}
             </p>
           </DialogHeader>
 
-          <div className="flex flex-col items-center justify-center rounded-xl border border-slate-200 bg-slate-900/95 p-6 text-white min-h-[340px]">
-            <img
-              src="/brand/rida-logo-transparent.png"
-              alt="Document Preview"
-              className="max-h-[220px] object-contain opacity-90"
-            />
-            <div className="mt-4 text-center">
-              <span className="rounded-full bg-white/10 px-3 py-1 text-[11px] font-medium text-brand-soft-mint">
-                Authorized Compliance Inspection View
-              </span>
-              <p className="mt-2 text-[11px] text-slate-400">
-                Encrypted Tanzanian regulatory record. Access strictly audited for staff.
-              </p>
-            </div>
-          </div>
+          {selectedDoc && <LicencePreview driverId={driverId} />}
 
           <div className="flex items-center justify-between pt-2 text-xs text-slate-500">
-            <span>Status: <strong className="capitalize">{selectedDoc?.status}</strong></span>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => setSelectedDoc(null)}
-            >
+            <span>
+              Status: <strong className="capitalize">{selectedDoc?.status}</strong>
+            </span>
+            <Button variant="outline" size="sm" onClick={() => setSelectedDoc(null)}>
               Close
             </Button>
           </div>
