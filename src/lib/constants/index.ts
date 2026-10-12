@@ -25,7 +25,7 @@ export const ROUTES = {
   DRIVER_VERIFICATION_DETAILS: '/drivers/verifications/:verificationId',
   DRIVER_DETAILS: '/drivers/:driverId',
   DRIVER_EDIT: '/drivers/:driverId/edit',
-  CUSTOMERS: '/customers',
+  PASSENGERS: '/passengers',
   LIVE_OPERATIONS: '/live-operations',
   PAYMENTS: '/payments',
   ANALYTICS: '/analytics',

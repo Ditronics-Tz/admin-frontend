@@ -25,11 +25,10 @@ export const CustomersPage: React.FC = () => {
       <div className="flex flex-col gap-2 border-b border-slate-200/60 pb-5 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <h1 className="text-2xl font-bold tracking-tight text-[#172B36] sm:text-3xl">
-            Customer Directory
+            Passenger Directory
           </h1>
           <p className="mt-1 text-xs text-[#64748B] sm:text-sm">
-            Registered riders in Tanzania retrieved from Go backend
-            (/api/v1/admin/users?role=passenger).
+            View registered passengers and their account details.
           </p>
         </div>
         <Button
@@ -47,7 +46,7 @@ export const CustomersPage: React.FC = () => {
         <CardHeader className="p-5 pb-3">
           <div className="flex items-center justify-between">
             <CardTitle className="text-base font-bold text-[#172B36]">
-              Registered Riders ({customers?.length ?? 0})
+              Registered Passengers ({customers?.length ?? 0})
             </CardTitle>
             <span className="rounded bg-teal-50 px-2 py-0.5 text-xs font-semibold text-brand-primary-teal">
               Connected API
@@ -64,7 +63,7 @@ export const CustomersPage: React.FC = () => {
               <AlertCircle className="h-6 w-6 text-rose-500" />
               <p className="mt-2 text-xs text-rose-600">
                 {(error as Error)?.message ||
-                  'Failed to load customers from backend service.'}
+                  'Failed to load passengers from backend service.'}
               </p>
               <Button
                 size="sm"
@@ -80,7 +79,7 @@ export const CustomersPage: React.FC = () => {
               <table className="w-full text-left text-xs">
                 <thead className="border-b border-slate-200 bg-slate-50/70 font-semibold text-[#64748B]">
                   <tr>
-                    <th className="px-3.5 py-3">Customer Name</th>
+                    <th className="px-3.5 py-3">Passenger Name</th>
                     <th className="px-3.5 py-3">Work / Contact Email</th>
                     <th className="px-3.5 py-3">System Role</th>
                     <th className="px-3.5 py-3 text-center">Account Status</th>
@@ -123,7 +122,7 @@ export const CustomersPage: React.FC = () => {
             <div className="py-12 text-center">
               <Users className="mx-auto h-8 w-8 text-slate-400" />
               <h4 className="mt-2 text-xs font-semibold text-slate-700">
-                No Customers Registered Yet
+                No Passengers Registered Yet
               </h4>
               <p className="mt-1 text-[11px] text-slate-500">
                 When passengers register via the Rida mobile app, their profiles appear

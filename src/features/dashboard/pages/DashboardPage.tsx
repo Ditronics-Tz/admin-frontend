@@ -72,7 +72,7 @@ export const DashboardPage: React.FC = () => {
           }}
         />
         <MetricCard
-          label="Total Customers"
+          label="Total Passengers"
           value={
             isLoading
               ? '...'

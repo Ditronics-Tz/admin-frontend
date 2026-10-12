@@ -104,8 +104,12 @@ const router = createBrowserRouter([
             element: <DriverDetailsPage />,
           },
           {
-            path: ROUTES.CUSTOMERS,
+            path: ROUTES.PASSENGERS,
             element: <CustomersPage />,
+          },
+          {
+            path: '/customers',
+            element: <Navigate to={ROUTES.PASSENGERS} replace />,
           },
           {
             path: ROUTES.LIVE_OPERATIONS,

@@ -58,7 +58,7 @@ export const Topbar: React.FC = () => {
             type="search"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            placeholder="Search drivers, rides, customers..."
+            placeholder="Search drivers, rides, passengers..."
             className="h-9 w-64 rounded-lg border border-input bg-slate-50 pl-8 pr-3 text-xs text-foreground transition-all placeholder:text-muted-foreground focus:bg-white focus:outline-none focus:ring-1 focus:ring-primary lg:w-72"
           />
         </div>

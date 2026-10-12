@@ -50,8 +50,8 @@ export const NAVIGATION_CONFIG: NavGroup[] = [
         icon: Users,
       },
       {
-        title: 'Customers',
-        path: ROUTES.CUSTOMERS,
+        title: 'Passengers',
+        path: ROUTES.PASSENGERS,
         icon: UserRound,
       },
       {
