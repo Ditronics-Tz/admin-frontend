@@ -1,5 +1,7 @@
 # Backend API Inventory Contract
 
+> Historical snapshot. Driver verification and account controls below are superseded by [the current integration contract](ADMIN_API_INTEGRATION.md) and `RideBackend-Rewrite-/docs/VERIFICATION.md`. Boolean verification is retired.
+
 **Project**: Rida Ride-Hailing Platform  
 **Backend Source Directory**: `RideBackend-Rewrite-/`  
 **Verified Under**: Fiber v2 `/api/v1` route prefix  

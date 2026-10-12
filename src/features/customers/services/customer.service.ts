@@ -12,6 +12,9 @@ export interface CustomerViewModel {
   email: string
   isActive: boolean
   role: string
+  status: string
+  phone: string
+  phoneVerified: boolean
 }
 
 export const customerService = {
@@ -29,6 +32,9 @@ export const customerService = {
       email: u.email,
       isActive: u.is_active,
       role: u.role,
+      status: u.status || (u.is_active ? 'active' : 'suspended'),
+      phone: u.phone || '',
+      phoneVerified: !!u.phone_verified_at,
     }))
   },
 

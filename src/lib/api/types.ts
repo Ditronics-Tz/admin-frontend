@@ -85,6 +85,10 @@ export interface BackendUserResponse {
   email: string
   role: 'driver' | 'passenger'
   is_active: boolean
+  status?: 'active' | 'suspended' | 'banned'
+  suspended_until?: string | null
+  phone?: string
+  phone_verified_at?: string | null
 }
 
 /**
@@ -97,7 +101,10 @@ export interface BackendDriverProfile {
   plate_number: string
   licence_image_url: string
   profile_picture_url: string
-  verified: boolean
+  verification_status: BackendVerificationStatus
+  assigned_to: string | null
+  assigned_at: string | null
+  is_online: boolean
   average_rating: number
   total_ratings: number
   created_at: string
@@ -107,6 +114,58 @@ export interface BackendDriverProfile {
 /**
  * Backend Passenger Profile (models.PassengerProfile)
  */
+export type BackendVerificationStatus =
+  | 'pending_documents'
+  | 'submitted'
+  | 'under_review'
+  | 'approved'
+  | 'rejected'
+  | 'suspended'
+  | 'expired'
+export type BackendDocumentType =
+  'driving_licence' | 'vehicle_card' | 'national_id' | 'insurance' | 'vehicle_photo'
+export interface BackendDriverDocument {
+  id: string
+  driver_id: string
+  type: BackendDocumentType
+  file_url: string
+  status: 'submitted' | 'approved' | 'rejected' | 'expired'
+  is_current: boolean
+  rejection_code: string
+  rejection_note: string
+  expires_at: string | null
+  reviewed_by: string | null
+  reviewed_at: string | null
+  created_at: string
+}
+export interface BackendVerificationReview {
+  id: string
+  driver_id: string
+  document_id: string | null
+  reviewer_id: string | null
+  reviewer_name: string
+  decision: string
+  reason_code: string
+  note: string
+  created_at: string
+}
+export interface BackendVerificationDetail {
+  user?: BackendUserResponse
+  profile: BackendDriverProfile
+  documents: BackendDriverDocument[]
+  reviews: BackendVerificationReview[]
+  duplicate_flags?: {
+    id: string
+    driver_id: string
+    matched_driver_id: string
+    field: string
+    value: string
+    created_at: string
+  }[]
+  required_types: BackendDocumentType[]
+  rejection_codes: string[]
+}
+
 export interface BackendPassengerProfile {
   user_id: string
   full_name: string
@@ -132,6 +191,7 @@ export interface BackendUsersListResponse {
 export interface BackendUserDetailResponse {
   user: BackendUserResponse
   driver_profile?: BackendDriverProfile
+  driver_documents?: BackendDriverDocument[]
   passenger_profile?: BackendPassengerProfile
   average_rating: number
   total_ratings: number

@@ -1,5 +1,7 @@
 # Frontend–Backend Integration Compatibility Matrix
 
+> Historical snapshot. Verification and account support have since been implemented; use [Admin API integration](ADMIN_API_INTEGRATION.md) for the current contract. Boolean verification is retired.
+
 **Project**: Rida Ride-Hailing Platform — Admin Integration  
 **Date**: October 2026  
 **Auditor**: Senior Systems Architect & Integration Specialist  

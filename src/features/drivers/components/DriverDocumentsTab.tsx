@@ -14,10 +14,7 @@ interface DriverDocumentsTabProps {
   driverId: string
 }
 
-export const DriverDocumentsTab: React.FC<DriverDocumentsTabProps> = ({
-  documents,
-  driverId,
-}) => {
+export const DriverDocumentsTab: React.FC<DriverDocumentsTabProps> = ({ documents }) => {
   const [selectedDoc, setSelectedDoc] = useState<DriverDocument | null>(null)
 
   return (
@@ -73,7 +70,7 @@ export const DriverDocumentsTab: React.FC<DriverDocumentsTabProps> = ({
 
                     <div className="space-y-1 border-t border-slate-100 pt-2.5 text-[11px] text-slate-500">
                       <div className="flex justify-between">
-                        <span>Profile created:</span>
+                        <span>Uploaded:</span>
                         <span className="font-medium text-slate-700">
                           {formatDateTime(doc.submissionDate)}
                         </span>
@@ -129,7 +126,7 @@ export const DriverDocumentsTab: React.FC<DriverDocumentsTabProps> = ({
             </p>
           </DialogHeader>
 
-          {selectedDoc && <LicencePreview driverId={driverId} />}
+          {selectedDoc && <LicencePreview documentId={selectedDoc.id} />}
 
           <div className="flex items-center justify-between pt-2 text-xs text-slate-500">
             <span>

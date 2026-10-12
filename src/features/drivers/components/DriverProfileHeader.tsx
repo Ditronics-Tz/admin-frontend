@@ -104,8 +104,6 @@ export const DriverProfileHeader: React.FC<DriverProfileHeaderProps> = ({ driver
                 variant="outline"
                 size="sm"
                 onClick={() => setReactivateOpen(true)}
-                disabled
-                title="Driver reactivation is not supported by the server"
                 className="h-9 gap-1.5 border-emerald-300 text-xs font-medium text-emerald-700 hover:bg-emerald-50"
               >
                 <UserCheck className="h-3.5 w-3.5" />
@@ -116,8 +114,6 @@ export const DriverProfileHeader: React.FC<DriverProfileHeaderProps> = ({ driver
                 variant="outline"
                 size="sm"
                 onClick={() => setSuspendOpen(true)}
-                disabled
-                title="Driver suspension is not supported by the server"
                 className="h-9 gap-1.5 border-rose-300 text-xs font-medium text-rose-600 hover:bg-rose-50"
               >
                 <UserX className="h-3.5 w-3.5" />

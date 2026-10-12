@@ -42,6 +42,8 @@ const { staffService } =
   await import('../src/features/settings/services/staff.service.ts')
 const { driverService, filterDrivers } =
   await import('../src/features/drivers/services/driver.service.ts')
+const { verificationService } =
+  await import('../src/features/drivers/services/verification.service.ts')
 const { customerService } =
   await import('../src/features/customers/services/customer.service.ts')
 const { supportService } =
@@ -68,7 +70,10 @@ const profile = {
   plate_number: 'T 123 ABC',
   licence_image_url: '/api/v1/files/licences/licence-1.png',
   profile_picture_url: '',
-  verified: false,
+  verification_status: 'submitted',
+  assigned_to: null,
+  assigned_at: null,
+  is_online: false,
   average_rating: 4.5,
   total_ratings: 2,
   created_at: '2026-01-01T00:00:00Z',
@@ -81,7 +86,27 @@ const user = {
   role: 'driver',
   is_active: true,
 }
-const detail = { user, driver_profile: profile, average_rating: 4.5, total_ratings: 2 }
+const document = {
+  id: 'document-1',
+  driver_id: user.id,
+  type: 'driving_licence',
+  file_url: '/api/v1/files/documents/document-1',
+  status: 'submitted',
+  is_current: true,
+  rejection_code: '',
+  rejection_note: '',
+  expires_at: '2027-01-01T00:00:00Z',
+  reviewed_by: null,
+  reviewed_at: null,
+  created_at: profile.created_at,
+}
+const detail = {
+  user,
+  driver_profile: profile,
+  driver_documents: [document],
+  average_rating: 4.5,
+  total_ratings: 2,
+}
 const filters = {
   search: '',
   accountStatus: 'all',
@@ -264,6 +289,10 @@ test('driver directory enriches profiles, bounds concurrency, and does not trunc
   let concurrent = 0
   let peak = 0
   handle = async (req, json) => {
+    if (req.path === '/api/v1/admin/verifications')
+      return json(200, {
+        verifications: users.map((u) => ({ ...profile, user_id: u.id })),
+      })
     if (req.path.includes('?role=driver'))
       return json(200, { count: users.length, users })
     concurrent++
@@ -286,7 +315,7 @@ test('driver directory enriches profiles, bounds concurrency, and does not trunc
     filterDrivers([driver], {
       ...filters,
       search: 'T 123 ABC',
-      verificationStatus: 'pending',
+      verificationStatus: 'submitted',
     }).total,
     1
   )
@@ -301,6 +330,7 @@ test('missing backend fields remain unavailable, and unuploaded licences are not
   const driver = mapBackendUserDetailToDriver({
     ...detail,
     driver_profile: { ...profile, licence_image_url: '', created_at: '' },
+    driver_documents: [],
   })
   assert.equal(driver.documents.length, 0)
   assert.equal(driver.totalTrips, null)
@@ -319,14 +349,145 @@ test('driver verification, user role changes, and private files carry staff auth
     }
     json(200, { driver_profile: profile, message: 'updated' })
   }
-  await driverService.verifyDriver(user.id, false)
+  await verificationService.review(
+    user.id,
+    document.id,
+    'rejected',
+    'blurry_image',
+    'Please upload a clearer image.'
+  )
   await driverService.updateUserRole(user.id, 'passenger')
-  const file = await apiClient.get(`/files/licences/${user.id}`, {
+  const file = await apiClient.get(`/files/documents/${document.id}`, {
     responseType: 'arraybuffer',
   })
   assert.equal(file.data.length, 4)
-  assert.deepEqual(requests[0].body, { verified: false })
+  assert.equal(requests[0].method, 'PATCH')
+  assert.equal(requests[0].path, `/api/v1/admin/documents/${document.id}/review`)
+  assert.deepEqual(requests[0].body, {
+    decision: 'rejected',
+    reason_code: 'blurry_image',
+    note: 'Please upload a clearer image.',
+  })
   assert.deepEqual(requests[1].body, { role: 'passenger' })
+})
+
+test('review claims, releases, suspension and detail requests follow the workflow contract', async () => {
+  handle = (req, json) => {
+    assert.equal(req.authorization, 'Bearer access')
+    json(200, {
+      profile,
+      documents: [document],
+      reviews: [],
+      required_types: ['driving_licence'],
+      rejection_codes: ['blurry_image'],
+    })
+  }
+  await verificationService.get(user.id)
+  await verificationService.claim(user.id)
+  await verificationService.approve(user.id)
+  await verificationService.release(user.id)
+  await verificationService.suspend(user.id, true, 'Safety investigation')
+  assert.deepEqual(
+    requests.map(({ method, path, body }) => ({ method, path, body })),
+    [
+      {
+        method: 'GET',
+        path: '/api/v1/admin/drivers/driver-1/verification',
+        body: undefined,
+      },
+      {
+        method: 'POST',
+        path: '/api/v1/admin/verifications/driver-1/claim',
+        body: undefined,
+      },
+      { method: 'POST', path: '/api/v1/admin/drivers/driver-1/approve', body: undefined },
+      {
+        method: 'POST',
+        path: '/api/v1/admin/drivers/driver-1/verification/release',
+        body: undefined,
+      },
+      {
+        method: 'PATCH',
+        path: '/api/v1/admin/drivers/driver-1/suspension',
+        body: { suspended: true, note: 'Safety investigation' },
+      },
+    ]
+  )
+  const rejected = mapBackendUserDetailToDriver({
+    ...detail,
+    driver_profile: { ...profile, verification_status: 'rejected' },
+    driver_documents: [
+      {
+        ...document,
+        status: 'rejected',
+        rejection_code: 'blurry_image',
+        rejection_note: 'Please upload a clearer image.',
+        reviewed_by: staff.id,
+        reviewed_at: profile.updated_at,
+      },
+    ],
+  })
+  assert.equal(rejected.verificationStatus, 'rejected')
+  assert.equal(rejected.documents[0].rejectionReason, 'Please upload a clearer image.')
+  assert.equal(rejected.documents[0].reviewedBy, staff.id)
+  assert.equal(
+    mapBackendUserDetailToDriver({
+      ...detail,
+      driver_profile: { ...profile, verification_status: 'suspended' },
+    }).accountStatus,
+    'suspended'
+  )
+})
+
+test('account status, notes and history use the staff-only step 1 contracts', async () => {
+  const { accountService } =
+    await import('../src/features/customers/services/account.service.ts')
+  handle = (req, json) => {
+    assert.equal(req.authorization, 'Bearer access')
+    if (req.path.endsWith('/notes') && req.method === 'GET')
+      return json(200, { notes: [] })
+    if (req.path.endsWith('/history'))
+      return json(200, { status_events: [], verification_reviews: [] })
+    json(200, detail)
+  }
+  await accountService.status(
+    user.id,
+    'suspend',
+    'Safety investigation',
+    '2026-11-01T00:00:00Z'
+  )
+  await accountService.status(user.id, 'reactivate', 'Appeal approved')
+  await accountService.addNote(user.id, 'Internal staff context')
+  await accountService.notes(user.id)
+  await accountService.history(user.id)
+  await accountService.deleteNote(user.id, 'note-1')
+  assert.deepEqual(
+    requests.map(({ method, path, body }) => ({ method, path, body })),
+    [
+      {
+        method: 'POST',
+        path: '/api/v1/admin/users/driver-1/suspend',
+        body: { reason: 'Safety investigation', until: '2026-11-01T00:00:00Z' },
+      },
+      {
+        method: 'POST',
+        path: '/api/v1/admin/users/driver-1/reactivate',
+        body: { reason: 'Appeal approved', until: null },
+      },
+      {
+        method: 'POST',
+        path: '/api/v1/admin/users/driver-1/notes',
+        body: { body: 'Internal staff context' },
+      },
+      { method: 'GET', path: '/api/v1/admin/users/driver-1/notes', body: undefined },
+      { method: 'GET', path: '/api/v1/admin/users/driver-1/history', body: undefined },
+      {
+        method: 'DELETE',
+        path: '/api/v1/admin/users/driver-1/notes/note-1',
+        body: undefined,
+      },
+    ]
+  )
 })
 
 test('customer, dashboard, support lists and stub acknowledgements follow the backend contract', async () => {
@@ -408,18 +569,18 @@ test('support permissions hide role management and temporary-password users are 
   const { QueryClient, QueryClientProvider } = await import('@tanstack/react-query')
   const { UserRoleAction } =
     await import('../src/features/customers/components/UserRoleAction.tsx')
+  const { AccountSupportPanel } =
+    await import('../src/features/customers/components/AccountSupportPanel.tsx')
   const { ProtectedRoute } = await import('../src/components/layout/ProtectedRoute.tsx')
   const { useAuthStore } = await import('../src/stores/useAuthStore.ts')
-  useAuthStore
-    .getState()
-    .setUser({
-      id: 'support',
-      role: 'support',
-      fullName: 'Support',
-      email: 'support@example.test',
-      isActive: true,
-      createdAt: '',
-    })
+  useAuthStore.getState().setUser({
+    id: 'support',
+    role: 'support',
+    fullName: 'Support',
+    email: 'support@example.test',
+    isActive: true,
+    createdAt: '',
+  })
   const render = (child) =>
     renderToStaticMarkup(
       React.createElement(
@@ -438,17 +599,51 @@ test('support permissions hide role management and temporary-password users are 
     ),
     ''
   )
-  useAuthStore
-    .getState()
-    .setUser({
-      id: staff.id,
-      role: 'admin',
-      fullName: staff.name,
-      email: staff.email,
-      isActive: true,
-      createdAt: '',
-      mustChangePassword: true,
-    })
+  const accountCache = new QueryClient()
+  accountCache.setQueryData(['user', user.id], {
+    ...detail,
+    user: {
+      ...user,
+      status: 'active',
+      phone: '+255712345678',
+      phone_verified_at: '2026-10-12T00:00:00Z',
+    },
+  })
+  accountCache.setQueryData(
+    ['user-notes', user.id],
+    [
+      {
+        id: 'note-1',
+        author_name: 'Support',
+        body: 'Staff context',
+        created_at: '2026-10-12T00:00:00Z',
+      },
+    ]
+  )
+  accountCache.setQueryData(['user-history', user.id], {
+    status_events: [],
+    verification_reviews: [],
+  })
+  const supportPanel = renderToStaticMarkup(
+    React.createElement(
+      QueryClientProvider,
+      { client: accountCache },
+      React.createElement(AccountSupportPanel, { id: user.id })
+    )
+  )
+  assert.ok(supportPanel.includes('OTP verified'))
+  assert.ok(supportPanel.includes('Staff context'))
+  assert.ok(!supportPanel.includes('Permanent ban'))
+  assert.ok(!supportPanel.includes('Delete note'))
+  useAuthStore.getState().setUser({
+    id: staff.id,
+    role: 'admin',
+    fullName: staff.name,
+    email: staff.email,
+    isActive: true,
+    createdAt: '',
+    mustChangePassword: true,
+  })
   assert.ok(
     !render(React.createElement(ProtectedRoute, {}, 'Protected admin content')).includes(
       'Protected admin content'

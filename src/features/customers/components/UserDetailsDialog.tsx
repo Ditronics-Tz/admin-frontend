@@ -9,6 +9,7 @@ import {
 } from '@/components/ui/dialog'
 import { QueryError } from '@/components/feedback/QueryError'
 import { UserRoleAction } from './UserRoleAction'
+import { AccountSupportPanel } from './AccountSupportPanel'
 
 export function UserDetailsDialog({ id, onClose }: { id: string; onClose: () => void }) {
   const query = useQuery({
@@ -22,7 +23,7 @@ export function UserDetailsDialog({ id, onClose }: { id: string; onClose: () => 
         if (!open) onClose()
       }}
     >
-      <DialogContent>
+      <DialogContent className="max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>Account details</DialogTitle>
           <DialogDescription>
@@ -48,7 +49,8 @@ export function UserDetailsDialog({ id, onClose }: { id: string; onClose: () => 
                 <dt className="text-muted-foreground">Role / status</dt>
                 <dd>
                   {query.data.user.role} ·{' '}
-                  {query.data.user.is_active ? 'Active' : 'Inactive'}
+                  {query.data.user.status ||
+                    (query.data.user.is_active ? 'Active' : 'Inactive')}
                 </dd>
               </div>
               <div>
@@ -74,6 +76,7 @@ export function UserDetailsDialog({ id, onClose }: { id: string; onClose: () => 
               role={query.data.user.role}
               onChanged={onClose}
             />
+            <AccountSupportPanel id={id} />
           </div>
         )}
       </DialogContent>

@@ -1,6 +1,7 @@
 import { apiClient } from '@/lib/api/client'
 import { API_ENDPOINTS } from '@/lib/constants'
 import { ApiClientError } from '@/lib/api/errors'
+import { verificationService } from './verification.service'
 import type {
   BackendUsersListResponse,
   BackendUserDetailResponse,
@@ -30,6 +31,7 @@ export function filterDrivers(
         [
           driver.fullName,
           driver.email,
+          driver.phone,
           driver.driverCode,
           driver.vehicle.plateNumber,
         ].some((value) => value.toLowerCase().includes(search))) &&
@@ -103,25 +105,24 @@ export const driverService = {
       throw new ApiClientError('This account is no longer a driver.', { status: 404 })
     return mapBackendUserDetailToDriver(data)
   },
-  async verifyDriver(driverId: string, verified: boolean) {
-    const { data } = await apiClient.patch<{
-      message: string
-      driver_profile: BackendDriverProfile
-    }>(API_ENDPOINTS.ADMIN.VERIFY_DRIVER(driverId), { verified })
-    return data
-  },
-  async approveVerification(driverId: string) {
-    await driverService.verifyDriver(driverId, true)
-    return driverService.getDriver(driverId)
-  },
-  async rejectVerification(driverId: string, _reason: string, _notes?: string) {
-    await driverService.verifyDriver(driverId, false)
-    return driverService.getDriver(driverId)
-  },
   async listVerificationRequests(): Promise<VerificationRequest[]> {
-    return (await driverService.getDirectory())
-      .filter((driver) => driver.verificationStatus === 'pending')
-      .map(mapDriverToVerificationRequest)
+    const { data } = await apiClient.get<{ verifications: BackendDriverProfile[] }>(
+      '/admin/verifications'
+    )
+    const queue = data.verifications || []
+    const results: VerificationRequest[] = new Array(queue.length)
+    let next = 0
+    await Promise.all(
+      Array.from({ length: Math.min(6, queue.length) }, async () => {
+        while (next < queue.length) {
+          const index = next++
+          results[index] = mapDriverToVerificationRequest(
+            await driverService.getDriver(queue[index].user_id)
+          )
+        }
+      })
+    )
+    return results
   },
   async updateUserRole(
     userId: string,
@@ -140,9 +141,15 @@ export const driverService = {
     return unsupported('Staff editing of driver profiles')
   },
   async suspendDriver(_id: string, _reason: string, _notes?: string): Promise<Driver> {
-    return unsupported('Driver suspension')
+    await verificationService.suspend(
+      _id,
+      true,
+      [_reason, _notes].filter(Boolean).join(': ')
+    )
+    return driverService.getDriver(_id)
   },
-  async reactivateDriver(_id: string): Promise<Driver> {
-    return unsupported('Driver reactivation')
+  async reactivateDriver(_id: string, reason: string): Promise<Driver> {
+    await verificationService.suspend(_id, false, reason)
+    return driverService.getDriver(_id)
   },
 }

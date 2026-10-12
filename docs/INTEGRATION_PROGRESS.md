@@ -1,5 +1,7 @@
 # Frontend–Backend Integration Progress Tracker
 
+> Historical snapshot. See [Admin API integration](ADMIN_API_INTEGRATION.md) for current verification, suspension, notes, history and OTP support.
+
 The current implementation and remaining backend limitations are documented in [Admin API integration](ADMIN_API_INTEGRATION.md). This earlier tracker is retained for background; use that document for setup and validation.
 
 **Project**: Rida Admin Dashboard  

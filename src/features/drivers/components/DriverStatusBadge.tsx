@@ -26,7 +26,7 @@ export const DriverAccountStatusBadge: React.FC<DriverAccountStatusBadgeProps> =
       return (
         <Badge
           variant="success"
-          className={cn('bg-emerald-50 text-emerald-700 border-emerald-200', className)}
+          className={cn('border-emerald-200 bg-emerald-50 text-emerald-700', className)}
         >
           <span className="mr-1.5 h-1.5 w-1.5 rounded-full bg-emerald-500" />
           {getAccountStatusLabel(status)}
@@ -36,7 +36,7 @@ export const DriverAccountStatusBadge: React.FC<DriverAccountStatusBadgeProps> =
       return (
         <Badge
           variant="destructive"
-          className={cn('bg-rose-50 text-rose-700 border-rose-200', className)}
+          className={cn('border-rose-200 bg-rose-50 text-rose-700', className)}
         >
           <span className="mr-1.5 h-1.5 w-1.5 rounded-full bg-rose-500" />
           {getAccountStatusLabel(status)}
@@ -68,25 +68,27 @@ export const DriverVerificationBadge: React.FC<DriverVerificationBadgeProps> = (
       return (
         <Badge
           variant="success"
-          className={cn('bg-emerald-50 text-emerald-700 border-emerald-200', className)}
+          className={cn('border-emerald-200 bg-emerald-50 text-emerald-700', className)}
         >
           {getVerificationStatusLabel(status)}
         </Badge>
       )
-    case 'pending':
+    case 'submitted':
+    case 'under_review':
       return (
         <Badge
           variant="warning"
-          className={cn('bg-amber-50 text-amber-700 border-amber-200', className)}
+          className={cn('border-amber-200 bg-amber-50 text-amber-700', className)}
         >
           {getVerificationStatusLabel(status)}
         </Badge>
       )
     case 'rejected':
+    case 'suspended':
       return (
         <Badge
           variant="destructive"
-          className={cn('bg-red-50 text-red-700 border-red-200', className)}
+          className={cn('border-red-200 bg-red-50 text-red-700', className)}
         >
           {getVerificationStatusLabel(status)}
         </Badge>
@@ -95,12 +97,12 @@ export const DriverVerificationBadge: React.FC<DriverVerificationBadgeProps> = (
       return (
         <Badge
           variant="warning"
-          className={cn('bg-orange-50 text-orange-700 border-orange-200', className)}
+          className={cn('border-orange-200 bg-orange-50 text-orange-700', className)}
         >
           {getVerificationStatusLabel(status)}
         </Badge>
       )
-    case 'not_submitted':
+    case 'pending_documents':
       return (
         <Badge variant="muted" className={className}>
           {getVerificationStatusLabel(status)}

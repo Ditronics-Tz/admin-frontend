@@ -3,10 +3,9 @@
  * Tanzania Ride-Hailing Platform
  */
 
-export type DriverAccountStatus = 'active' | 'suspended' | 'deactivated'
+export type DriverAccountStatus = 'active' | 'suspended' | 'banned' | 'deactivated'
 
-export type DriverVerificationStatus =
-  'not_submitted' | 'pending' | 'approved' | 'rejected' | 'expired'
+export type DriverVerificationStatus = import('@/lib/api/types').BackendVerificationStatus
 
 export type DriverAvailabilityStatus =
   'online' | 'offline' | 'on_trip' | 'unavailable' | 'unknown'
@@ -25,23 +24,21 @@ export interface DriverVehicle {
   inspectionExpiry?: string
 }
 
-export type DriverDocumentType =
-  | 'driving_license'
-  | 'national_id'
-  | 'vehicle_registration'
-  | 'latra_permit'
-  | 'insurance_certificate'
+export type DriverDocumentType = import('@/lib/api/types').BackendDocumentType
 
 export interface DriverDocument {
   id: string
   type: DriverDocumentType
   title: string
   documentNumber: string
-  status: 'pending' | 'approved' | 'rejected' | 'expired'
+  status: 'submitted' | 'approved' | 'rejected' | 'expired'
   fileUrl: string
   submissionDate: string
   expiryDate?: string
   rejectionReason?: string
+  rejectionCode?: string
+  reviewedBy?: string
+  reviewedAt?: string
 }
 
 export interface DriverTripSummary {
@@ -123,7 +120,7 @@ export interface VerificationRequest {
   driverPhone: string
   vehicleType: VehicleType
   submissionDate: string
-  status: 'pending' | 'approved' | 'rejected'
+  status: DriverVerificationStatus
   assignedReviewer?: string
   documentsCount: number
   rejectionReason?: string

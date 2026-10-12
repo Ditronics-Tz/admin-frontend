@@ -36,12 +36,11 @@ export const DriversToolbar: React.FC<DriversToolbarProps> = ({
     return () => clearTimeout(timer)
   }, [searchValue, filters.search, onFiltersChange])
 
-
   const hasActiveFilters = Boolean(
     filters.search ||
-      (filters.accountStatus && filters.accountStatus !== 'all') ||
-      (filters.verificationStatus && filters.verificationStatus !== 'all') ||
-      (filters.vehicleType && filters.vehicleType !== 'all')
+    (filters.accountStatus && filters.accountStatus !== 'all') ||
+    (filters.verificationStatus && filters.verificationStatus !== 'all') ||
+    (filters.vehicleType && filters.vehicleType !== 'all')
   )
 
   return (
@@ -77,9 +76,7 @@ export const DriversToolbar: React.FC<DriversToolbarProps> = ({
           {/* Account Status Filter */}
           <select
             value={filters.accountStatus}
-            onChange={(e) =>
-              onFiltersChange({ accountStatus: e.target.value, page: 1 })
-            }
+            onChange={(e) => onFiltersChange({ accountStatus: e.target.value, page: 1 })}
             className="h-10 rounded-md border border-slate-200 bg-white px-3 py-1.5 text-xs font-medium text-[#172B36] outline-none transition-colors hover:border-slate-300 focus:border-brand-primary-teal focus:ring-1 focus:ring-brand-primary-teal"
             aria-label="Filter by account status"
           >
@@ -99,18 +96,19 @@ export const DriversToolbar: React.FC<DriversToolbarProps> = ({
             aria-label="Filter by verification status"
           >
             <option value="all">All Verifications</option>
-            <option value="pending">Pending Review</option>
+            <option value="submitted">Submitted</option>
+            <option value="under_review">Under Review</option>
             <option value="approved">Approved</option>
             <option value="rejected">Rejected</option>
-            <option value="not_submitted">Not Submitted</option>
+            <option value="pending_documents">Pending Documents</option>
+            <option value="expired">Expired</option>
+            <option value="suspended">Suspended</option>
           </select>
 
           {/* Vehicle Type Filter */}
           <select
             value={filters.vehicleType}
-            onChange={(e) =>
-              onFiltersChange({ vehicleType: e.target.value, page: 1 })
-            }
+            onChange={(e) => onFiltersChange({ vehicleType: e.target.value, page: 1 })}
             className="h-10 rounded-md border border-slate-200 bg-white px-3 py-1.5 text-xs font-medium text-[#172B36] outline-none transition-colors hover:border-slate-300 focus:border-brand-primary-teal focus:ring-1 focus:ring-brand-primary-teal"
             aria-label="Filter by vehicle type"
           >
@@ -143,7 +141,7 @@ export const DriversToolbar: React.FC<DriversToolbarProps> = ({
           {totalCount === 1 ? 'driver' : 'drivers'}
         </span>
         {hasActiveFilters && (
-          <span className="text-[11px] text-brand-primary-teal font-medium">
+          <span className="text-[11px] font-medium text-brand-primary-teal">
             Active filters applied
           </span>
         )}

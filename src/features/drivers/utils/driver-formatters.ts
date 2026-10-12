@@ -54,14 +54,18 @@ export function getVerificationStatusLabel(status: DriverVerificationStatus): st
   switch (status) {
     case 'approved':
       return 'Approved'
-    case 'pending':
-      return 'Pending'
+    case 'submitted':
+      return 'Submitted'
+    case 'under_review':
+      return 'Under review'
+    case 'suspended':
+      return 'Suspended'
     case 'rejected':
       return 'Rejected'
     case 'expired':
       return 'Expired'
-    case 'not_submitted':
-      return 'Not Submitted'
+    case 'pending_documents':
+      return 'Pending documents'
     default:
       return status
   }
@@ -110,15 +114,15 @@ export function getVehicleTypeLabel(type: VehicleType): string {
  */
 export function getDocumentTypeLabel(type: DriverDocumentType): string {
   switch (type) {
-    case 'driving_license':
+    case 'driving_licence':
       return 'Tanzania Driving License'
     case 'national_id':
       return 'National ID (NIDA)'
-    case 'vehicle_registration':
+    case 'vehicle_card':
       return 'Vehicle Registration Card'
-    case 'latra_permit':
-      return 'LATRA Road Service Permit'
-    case 'insurance_certificate':
+    case 'vehicle_photo':
+      return 'Vehicle photo'
+    case 'insurance':
       return 'Motor Vehicle Insurance'
     default:
       return type

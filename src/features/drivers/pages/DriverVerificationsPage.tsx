@@ -26,8 +26,8 @@ export const DriverVerificationsPage: React.FC = () => {
   const navigate = useNavigate()
   const { data: requests, isLoading, isError, refetch } = useVerificationRequests()
 
-  const pendingCount = requests?.filter((r) => r.status === 'pending').length ?? 0
-  const missingDocumentCount = requests?.filter((r) => r.documentsCount === 0).length ?? 0
+  const pendingCount = requests?.filter((r) => r.status === 'submitted').length ?? 0
+  const inReviewCount = requests?.filter((r) => r.status === 'under_review').length ?? 0
 
   return (
     <div className="space-y-6 p-4 sm:p-6 lg:p-8">
@@ -60,7 +60,7 @@ export const DriverVerificationsPage: React.FC = () => {
         <Card className="border-slate-200/80 shadow-none">
           <CardContent className="flex items-center justify-between p-4">
             <div>
-              <span className="text-xs text-slate-500">Pending Review</span>
+              <span className="text-xs text-slate-500">Awaiting Claim</span>
               <p className="mt-1 text-2xl font-bold text-amber-600">{pendingCount}</p>
             </div>
             <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-amber-50 text-amber-600">
@@ -86,10 +86,8 @@ export const DriverVerificationsPage: React.FC = () => {
         <Card className="border-slate-200/80 shadow-none">
           <CardContent className="flex items-center justify-between p-4">
             <div>
-              <span className="text-xs text-slate-500">Licence image missing</span>
-              <p className="mt-1 text-2xl font-bold text-rose-600">
-                {missingDocumentCount}
-              </p>
+              <span className="text-xs text-slate-500">Under Review</span>
+              <p className="mt-1 text-2xl font-bold text-rose-600">{inReviewCount}</p>
             </div>
             <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-rose-50 text-rose-600">
               <XCircle className="h-5 w-5" />

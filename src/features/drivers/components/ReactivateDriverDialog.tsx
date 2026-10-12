@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useState } from 'react'
 import {
   Dialog,
   DialogContent,
@@ -24,14 +24,18 @@ export const ReactivateDriverDialog: React.FC<ReactivateDriverDialogProps> = ({
   onOpenChange,
 }) => {
   const { mutate: reactivateDriver, isPending } = useReactivateDriver()
+  const [reason, setReason] = useState('')
 
   const handleConfirm = () => {
     if (!driver) return
-    reactivateDriver(driver.id, {
-      onSuccess: () => {
-        onOpenChange(false)
-      },
-    })
+    reactivateDriver(
+      { driverId: driver.id, reason },
+      {
+        onSuccess: () => {
+          onOpenChange(false)
+        },
+      }
+    )
   }
 
   return (
@@ -42,10 +46,10 @@ export const ReactivateDriverDialog: React.FC<ReactivateDriverDialogProps> = ({
             <div className="flex h-9 w-9 items-center justify-center rounded-full bg-emerald-50">
               <ShieldCheck className="h-5 w-5" />
             </div>
-            <DialogTitle className="text-lg">Reactivate Driver Account?</DialogTitle>
+            <DialogTitle className="text-lg">Lift Driver Suspension?</DialogTitle>
           </div>
-          <DialogDescription className="text-xs text-slate-500 pt-1 leading-relaxed">
-            This action will restore operational access for{' '}
+          <DialogDescription className="pt-1 text-xs leading-relaxed text-slate-500">
+            This action will lift the suspension for{' '}
             <strong className="text-slate-700">{driver?.fullName}</strong> (
             {driver?.driverCode}).
           </DialogDescription>
@@ -54,13 +58,22 @@ export const ReactivateDriverDialog: React.FC<ReactivateDriverDialogProps> = ({
         <div className="rounded-lg border border-emerald-100 bg-emerald-50/50 p-3 text-xs text-emerald-800">
           <p className="font-semibold">Compliance Note:</p>
           <p className="mt-0.5 text-[11px] text-emerald-700">
-            Account reactivation removes the operational hold. If the driver's
-            verification documents are expired or pending, valid compliance approval is
-            still required before accepting passenger dispatches.
+            Document decisions stay in force. The driver must still have valid approval to
+            go online.
           </p>
         </div>
+        <label className="space-y-2 text-sm">
+          Reason (required)
+          <textarea
+            required
+            maxLength={2000}
+            value={reason}
+            onChange={(e) => setReason(e.target.value)}
+            className="block w-full rounded border p-2"
+          />
+        </label>
 
-        <DialogFooter className="gap-2 sm:gap-0 pt-2">
+        <DialogFooter className="gap-2 pt-2 sm:gap-0">
           <Button
             type="button"
             variant="outline"
@@ -74,8 +87,8 @@ export const ReactivateDriverDialog: React.FC<ReactivateDriverDialogProps> = ({
             type="button"
             size="sm"
             onClick={handleConfirm}
-            disabled={isPending}
-            className="gap-1.5 bg-emerald-700 hover:bg-emerald-800 text-white"
+            disabled={isPending || !reason.trim()}
+            className="gap-1.5 bg-emerald-700 text-white hover:bg-emerald-800"
           >
             {isPending && <Loader2 className="h-3.5 w-3.5 animate-spin" />}
             Confirm Reactivation

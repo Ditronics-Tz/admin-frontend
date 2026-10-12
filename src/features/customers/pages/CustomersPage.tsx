@@ -8,6 +8,7 @@ import { Button } from '@/components/ui/button'
 
 export const CustomersPage: React.FC = () => {
   const [selectedId, setSelectedId] = useState<string | null>(null)
+  const [search, setSearch] = useState('')
   const {
     data: customers,
     isLoading,
@@ -41,6 +42,13 @@ export const CustomersPage: React.FC = () => {
           <span>Refresh</span>
         </Button>
       </div>
+      <input
+        aria-label="Search passengers"
+        placeholder="Search phone, email or name"
+        value={search}
+        onChange={(e) => setSearch(e.target.value)}
+        className="w-full rounded-lg border bg-white px-4 py-2 text-sm"
+      />
 
       <Card className="shadow-xs rounded-xl border border-slate-200/80 bg-white">
         <CardHeader className="p-5 pb-3">
@@ -81,40 +89,53 @@ export const CustomersPage: React.FC = () => {
                   <tr>
                     <th className="px-3.5 py-3">Passenger Name</th>
                     <th className="px-3.5 py-3">Work / Contact Email</th>
+                    <th className="px-3.5 py-3">Phone</th>
                     <th className="px-3.5 py-3">System Role</th>
                     <th className="px-3.5 py-3 text-center">Account Status</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-100 text-slate-700">
-                  {customers.map((c) => (
-                    <tr key={c.id} className="transition-colors hover:bg-slate-50/80">
-                      <td className="whitespace-nowrap px-3.5 py-3 font-semibold text-[#172B36]">
-                        <button
-                          className="text-primary underline"
-                          onClick={() => setSelectedId(c.id)}
-                        >
-                          {c.fullName}
-                        </button>
-                      </td>
-                      <td className="whitespace-nowrap px-3.5 py-3 text-slate-600">
-                        {c.email}
-                      </td>
-                      <td className="whitespace-nowrap px-3.5 py-3 font-mono text-[11px] capitalize text-slate-500">
-                        {c.role}
-                      </td>
-                      <td className="whitespace-nowrap px-3.5 py-3 text-center">
-                        <span
-                          className={`inline-flex rounded-full px-2 py-0.5 text-[10px] font-semibold ${
-                            c.isActive
-                              ? 'border border-emerald-200 bg-emerald-50 text-emerald-700'
-                              : 'border border-rose-200 bg-rose-50 text-rose-700'
-                          }`}
-                        >
-                          {c.isActive ? 'Active' : 'Inactive'}
-                        </span>
-                      </td>
-                    </tr>
-                  ))}
+                  {customers
+                    .filter((c) =>
+                      [c.fullName, c.email, c.phone].some((value) =>
+                        value.toLowerCase().includes(search.toLowerCase().trim())
+                      )
+                    )
+                    .map((c) => (
+                      <tr key={c.id} className="transition-colors hover:bg-slate-50/80">
+                        <td className="whitespace-nowrap px-3.5 py-3 font-semibold text-[#172B36]">
+                          <button
+                            className="text-primary underline"
+                            onClick={() => setSelectedId(c.id)}
+                          >
+                            {c.fullName}
+                          </button>
+                        </td>
+                        <td className="whitespace-nowrap px-3.5 py-3 text-slate-600">
+                          {c.email}
+                        </td>
+                        <td className="whitespace-nowrap px-3.5 py-3">
+                          {c.phone || 'Not collected'}
+                          <span className="block text-xs text-muted-foreground">
+                            {c.phoneVerified ? 'OTP verified' : 'Not verified'}
+                          </span>
+                        </td>
+                        <td className="whitespace-nowrap px-3.5 py-3 font-mono text-[11px] capitalize text-slate-500">
+                          {c.role}
+                        </td>
+                        <td className="whitespace-nowrap px-3.5 py-3 text-center">
+                          <span
+                            className={`inline-flex rounded-full px-2 py-0.5 text-[10px] font-semibold ${
+                              c.isActive
+                                ? 'border border-emerald-200 bg-emerald-50 text-emerald-700'
+                                : 'border border-rose-200 bg-rose-50 text-rose-700'
+                            }`}
+                          >
+                            {c.status}
+                          </span>
+                        </td>
+                      </tr>
+                    ))}
                 </tbody>
               </table>
             </div>

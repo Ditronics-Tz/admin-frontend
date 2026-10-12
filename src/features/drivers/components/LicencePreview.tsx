@@ -3,28 +3,43 @@ import { apiClient } from '@/lib/api/client'
 import { API_ENDPOINTS } from '@/lib/constants'
 import { QueryError } from '@/components/feedback/QueryError'
 
-export function LicencePreview({ driverId }: { driverId: string }) {
-  return <LicenceDocument key={driverId} driverId={driverId} />
+export function LicencePreview({
+  driverId,
+  documentId,
+}: {
+  driverId?: string
+  documentId?: string
+}) {
+  const path = documentId
+    ? `/files/documents/${documentId}`
+    : API_ENDPOINTS.FILES.LICENCE_DOC(driverId || '')
+  return <LicenceDocument key={path} path={path} />
 }
 
-function LicenceDocument({ driverId }: { driverId: string }) {
+function LicenceDocument({ path }: { path: string }) {
   const [url, setUrl] = useState<string | null>(null)
+  const [mime, setMime] = useState('')
   const [error, setError] = useState<unknown>(null)
   const [attempt, setAttempt] = useState(0)
   useEffect(() => {
     const controller = new AbortController()
     let objectUrl: string | null = null
     void apiClient
-      .get<Blob>(API_ENDPOINTS.FILES.LICENCE_DOC(driverId), {
+      .get<Blob>(path, {
         responseType: 'blob',
         signal: controller.signal,
       })
       .then(({ data }) => {
         if (controller.signal.aborted) return
-        if (!['image/png', 'image/jpeg', 'image/webp'].includes(data.type))
+        if (
+          !['image/png', 'image/jpeg', 'image/webp', 'application/pdf'].includes(
+            data.type.split(';')[0]
+          )
+        )
           throw new Error('The server returned an unsupported document format.')
         objectUrl = URL.createObjectURL(data)
         setUrl(objectUrl)
+        setMime(data.type)
       })
       .catch((err: unknown) => {
         if (!controller.signal.aborted) setError(err)
@@ -33,7 +48,7 @@ function LicenceDocument({ driverId }: { driverId: string }) {
       controller.abort()
       if (objectUrl) URL.revokeObjectURL(objectUrl)
     }
-  }, [driverId, attempt])
+  }, [path, attempt])
   if (error != null)
     return (
       <QueryError
@@ -53,17 +68,26 @@ function LicenceDocument({ driverId }: { driverId: string }) {
     )
   return (
     <div className="space-y-3">
-      <img
-        src={url}
-        alt="Uploaded driver licence"
-        className="max-h-[60vh] w-full rounded-lg bg-muted object-contain"
-      />
+      {mime === 'application/pdf' ? (
+        <iframe
+          title="Uploaded verification document"
+          src={url}
+          sandbox=""
+          className="h-[60vh] w-full rounded border"
+        />
+      ) : (
+        <img
+          src={url}
+          alt="Uploaded verification document"
+          className="max-h-[60vh] w-full rounded-lg bg-muted object-contain"
+        />
+      )}
       <a
         href={url}
-        download={`licence-${driverId}`}
+        download={`document${mime === 'application/pdf' ? '.pdf' : mime === 'image/png' ? '.png' : mime === 'image/webp' ? '.webp' : '.jpg'}`}
         className="text-sm text-primary underline"
       >
-        Download licence
+        Download document
       </a>
     </div>
   )

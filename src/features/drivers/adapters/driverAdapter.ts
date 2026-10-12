@@ -13,21 +13,7 @@ export function mapBackendUserToDriver(
   user: BackendUserResponse,
   profile?: BackendDriverProfile | null
 ): Driver {
-  const isVerified = Boolean(profile?.verified)
-  const hasLicence = Boolean(profile?.licence_number || profile?.licence_image_url)
-
   const documents: DriverDocument[] = []
-  if (profile?.licence_image_url) {
-    documents.push({
-      id: `doc-lic-${user.id}`,
-      type: 'driving_license',
-      title: 'Tanzania Driving Licence',
-      documentNumber: profile?.licence_number || 'Recorded on file',
-      status: isVerified ? 'approved' : 'pending',
-      fileUrl: `${API_CONFIG.baseURL}/files/licences/${user.id}`,
-      submissionDate: profile?.created_at || '',
-    })
-  }
 
   // Build resolved avatar URL
   let avatarUrl: string | undefined
@@ -42,15 +28,20 @@ export function mapBackendUserToDriver(
     driverCode: `DRV-${user.id.slice(0, 8).toUpperCase()}`,
     fullName: user.name,
     email: user.email,
-    phone: 'Not collected',
+    phone: user.phone || 'Not collected',
     city: 'Not collected',
-    accountStatus: user.is_active ? 'active' : 'deactivated',
-    verificationStatus: isVerified
-      ? 'approved'
-      : hasLicence
-        ? 'pending'
-        : 'not_submitted',
-    availabilityStatus: 'unknown',
+    accountStatus:
+      user.status === 'suspended'
+        ? 'suspended'
+        : user.status === 'banned'
+          ? 'banned'
+          : !user.is_active
+            ? 'deactivated'
+            : profile?.verification_status === 'suspended'
+              ? 'suspended'
+              : 'active',
+    verificationStatus: profile?.verification_status || 'pending_documents',
+    availabilityStatus: profile?.is_online ? 'online' : 'offline',
     vehicle: {
       id: profile?.vehicle_card_number || `veh-${user.id.slice(0, 6)}`,
       type: 'unknown',
@@ -80,6 +71,25 @@ export function mapBackendUserToDriver(
  */
 export function mapBackendUserDetailToDriver(detail: BackendUserDetailResponse): Driver {
   const driver = mapBackendUserToDriver(detail.user, detail.driver_profile)
+  driver.documents = (detail.driver_documents || []).map((document) => ({
+    id: document.id,
+    type: document.type,
+    title: document.type.replaceAll('_', ' '),
+    documentNumber:
+      document.type === 'driving_licence'
+        ? detail.driver_profile?.licence_number || ''
+        : document.type === 'vehicle_card'
+          ? detail.driver_profile?.vehicle_card_number || ''
+          : '',
+    status: document.status,
+    fileUrl: document.file_url,
+    submissionDate: document.created_at,
+    expiryDate: document.expires_at || undefined,
+    rejectionReason: document.rejection_note || undefined,
+    rejectionCode: document.rejection_code || undefined,
+    reviewedBy: document.reviewed_by || undefined,
+    reviewedAt: document.reviewed_at || undefined,
+  }))
   if (detail.average_rating) {
     driver.rating = Number(detail.average_rating.toFixed(2))
   }
@@ -101,7 +111,7 @@ export function mapDriverToVerificationRequest(driver: Driver): VerificationRequ
     driverPhone: driver.phone,
     vehicleType: driver.vehicle.type,
     submissionDate: driver.joinedAt,
-    status: driver.verificationStatus === 'approved' ? 'approved' : 'pending',
+    status: driver.verificationStatus,
     documentsCount: driver.documents.length,
     documents: driver.documents,
   }

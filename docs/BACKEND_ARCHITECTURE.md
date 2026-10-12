@@ -1,5 +1,7 @@
 # Backend Architecture Specification
 
+> Historical snapshot. The current verification tables, account statuses and OTP contract are documented in `RideBackend-Rewrite-/docs/VERIFICATION.md` and [Admin API integration](ADMIN_API_INTEGRATION.md).
+
 **Project**: Rida Ride-Hailing Platform — Admin Backend Analysis  
 **Repository**: `rida/RideBackend-Rewrite-/`  
 **Date of Inspection**: October 2026  
