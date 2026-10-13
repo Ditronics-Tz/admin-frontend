@@ -1,5 +1,15 @@
 # Admin UI ship implementation
 
+## Authentication continuation — B5/F5
+
+Branch: `ship/fe-auth-integration`, implementation `401e89b`. Preserved the memory-only staff access token and isolated refresh-storage exception. Added password proof for initial 2FA setup and password/current-code proof for authenticator replacement. Setup shows its ten-minute pending expiry in EAT; the current factor remains active until separate new-code activation. Setup secret/URI stay in component memory and are hidden after expiry or cleared on cancel/success. Disable, activation and sign-out-all require confirmation. New labels/messages have English/Swahili entries.
+
+Activation/disable apply the backend-returned access token in memory and authoritative staff user immediately, preserve the current refresh session, and invalidate responses made before this security transition. Removed the obsolete post-change `/me` request and the statement that revoked access remains valid until expiry. Password change/logout-all continue to clear tokens and return to login. Recovery codes are not part of the approved B5 scope and are not promised by this UI.
+
+F5 populated fixtures assert device/IP/time data, pagination, explicit unlocked state and zero failed-login count, event filters, one/all revocation and admin unlock requests. Missing collections return an honest unavailable error. Added tests for replacement proof, failed activation preserving credentials, obsolete response rejection, visible enabled/disabled controls, token storage isolation and rejection of stale `/me` responses after activation.
+
+Local sequential acceptance passed: `npm run format:check`, `npm run lint` (the same five pre-existing Fast Refresh warnings), `npm run typecheck`, `npm test` (46/46), and `npm run build`. B5 backend source reconciliation/deployed smoke remains pending. No hosted/browser acceptance is claimed; the previous browser smoke automatic-review rejection remains in effect and has not been retried.
+
 ## F1 — Baseline and CI
 
 Branch: `ship/fe-ci`. Preserved pre-existing task fixes in `ship/fe-baseline` (`d632298`) before beginning the ship work.
