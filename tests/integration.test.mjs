@@ -193,6 +193,23 @@ test('support queues reject old stubs and send persisted workflow filters notes 
   assert.deepEqual(requests.at(-1).body, { status: 'resolved', resolution_note: 'Customer confirmed' })
   assert.match(requests[1].path, /assignee=staff-1/)
 })
+
+test('rides use canonical parties locations timeline filters and required operation reasons', async () => {
+  const { rideService } = await import('../src/features/rides/services/ride.service.ts')
+  const ride = { id: 'ride-1', status: 'accepted', passenger: { id: 'p1', name: 'Passenger' }, driver: { id: 'd1', name: 'Driver' }, pickup: { lat: -6.8, lng: 39.2, address: 'Pickup' }, dropoff: { lat: -6.9, lng: 39.3, address: 'Dropoff' }, estimated_fare: 5000, final_fare: null, events: [{ type: 'accepted', actor_type: 'driver', at: '2026-10-13T00:00:00Z' }] }
+  handle = (req, json) => req.path.includes('/rides/ride-1') ? json(200, { ride }) : json(200, { rides: [ride], total: 1, limit: 20, offset: 0 })
+  await rideService.list({ status: 'accepted', from: '2026-10-01', to: '2026-10-13', passenger: 'p1', driver: 'd1', q: 'Pickup', offset: 20 })
+  assert.equal((await rideService.get('ride-1')).events[0].type, 'accepted')
+  await rideService.cancel('ride-1', 'Passenger request')
+  await rideService.reassign('ride-1', 'd2', 'Vehicle unavailable')
+  assert.deepEqual(requests.at(-1).body, { driver_id: 'd2', reason: 'Vehicle unavailable' })
+  assert.deepEqual(requests.at(-2).body, { reason: 'Passenger request' })
+  const params = new URL(requests[0].path, 'http://fixture.invalid').searchParams
+  assert.equal(params.get('passenger'), 'p1')
+  assert.equal(params.get('offset'), '20')
+  handle = (_req, json) => json(200, { count: 0, rides: [] })
+  await assert.rejects(rideService.list(), /unavailable/)
+})
 const { mapBackendUserDetailToDriver } =
   await import('../src/features/drivers/adapters/driverAdapter.ts')
 const staff = {

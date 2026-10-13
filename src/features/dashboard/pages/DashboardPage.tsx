@@ -52,9 +52,9 @@ export const DashboardPage: React.FC = () => {
           }
           icon={CarFront}
           change={{
-            value: 'Not deployed',
+            value: 'Real count',
             isPositive: true,
-            period: 'dispatch service pending',
+            period: 'active persisted trips',
           }}
         />
         <MetricCard

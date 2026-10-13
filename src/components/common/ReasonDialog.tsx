@@ -22,6 +22,7 @@ export function ReasonDialog({
   onClose,
   onConfirm,
   children,
+  canConfirm = true,
 }: {
   title: string
   pending?: boolean
@@ -29,6 +30,7 @@ export function ReasonDialog({
   onClose: () => void
   onConfirm: (reason: string) => void
   children?: React.ReactNode
+  canConfirm?: boolean
 }) {
   const [reason, setReason] = useState('')
   const id = useId(),
@@ -67,7 +69,7 @@ export function ReasonDialog({
             {t('Cancel')}
           </Button>
           <Button
-            disabled={pending || !reason.trim()}
+            disabled={pending || !canConfirm || !reason.trim()}
             onClick={() => onConfirm(reason.trim())}
           >
             {t('Confirm')}

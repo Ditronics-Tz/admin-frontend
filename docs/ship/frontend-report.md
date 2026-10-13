@@ -73,3 +73,13 @@ Branch: `ship/fe-support`. Replaced the stub-only ticket/complaint display with 
 Old count-only support stubs are explicitly rejected as unavailable, and malformed detail acknowledgements cannot expose write controls. No sample rows or successful server mutations are invented. Development fixtures remain visibly labelled and reject all unimplemented mutations. B8 live field/route reconciliation pending.
 
 Validation: final format check, typecheck, lint (same five warnings), production build and 36/36 integration tests passed. Added stub rejection and support filter/detail/note/resolution contract checks.
+
+## F8 — Rides and real dashboard counts
+
+Branch: `ship/fe-rides`. Added server-paginated rides with status/date/party/search filters and a canonical ride detail route showing parties, pickup/dropoff, whole-TZS fares and server events. Cancel/reassign require reason dialogs; reassign also requires a driver ID. Support/admin permissions and 403 read-only state guard writes. Old count-only ride stubs are explicitly unavailable.
+
+Reused the repository's Web Mercator/SVG raster map approach, with fitting for both points, configurable `VITE_MAP_TILE_URL` and attribution. Public OSM tiles are a development fallback only; production renders the coordinates/markers with an honest missing-background state until a licensed tile provider is configured. No new UI/map library was added.
+
+Dashboard counts continue to use `/admin/stats`; operational cards now show the returned ride/ticket/complaint counts and unavailable states, rather than client hardcoded values. Recent rides request only five real rows and link to supported details. Historical analytics remains unavailable unless the server provides it.
+
+Validation: format check, typecheck, lint (same five warnings), production build and 37/37 integration tests passed. Contract checks cover parties/locations/events, paging/party filters, cancellation/reassignment reason payloads and stub rejection. B7/B8 live nested ride DTO, actions and count acceptance pending.

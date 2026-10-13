@@ -9,9 +9,9 @@ export const OperationsStatus: React.FC = () => {
   const items = [
     {
       title: 'Active Rides',
-      count: null,
-      description: 'Ride tracking is not available yet',
-      badgeText: 'Unavailable',
+      count: stats?.activeRides ?? null,
+      description: 'Active persisted trips',
+      badgeText: 'Rides',
       colorClasses: {
         bg: 'bg-blue-50/70',
         text: 'text-blue-700',
@@ -22,8 +22,8 @@ export const OperationsStatus: React.FC = () => {
     },
     {
       title: 'Open Support Tickets',
-      count: null,
-      description: 'Support ticket storage is not available yet',
+      count: stats?.openTickets ?? null,
+      description: 'Open support tickets',
       badgeText: 'Tickets',
       colorClasses: {
         bg: 'bg-amber-50/70',
@@ -35,7 +35,7 @@ export const OperationsStatus: React.FC = () => {
     },
     {
       title: 'Registered Drivers',
-      count: stats?.totalDrivers ?? 0,
+      count: stats?.totalDrivers ?? null,
       description: 'All registered driver accounts',
       badgeText: 'Fleet Total',
       colorClasses: {
@@ -48,8 +48,8 @@ export const OperationsStatus: React.FC = () => {
     },
     {
       title: 'Open Complaints',
-      count: null,
-      description: 'Complaint storage is not available yet',
+      count: stats?.openComplaints ?? null,
+      description: 'Open complaints',
       badgeText: 'Complaints',
       colorClasses: {
         bg: 'bg-rose-50/70',
@@ -70,7 +70,7 @@ export const OperationsStatus: React.FC = () => {
               Operations Status
             </CardTitle>
             <p className="mt-0.5 text-xs text-[#64748B]">
-              Latest registered account totals. Operational tracking is still pending.
+              Latest account, trip and support counts returned by the service.
             </p>
           </div>
           <span className="inline-flex items-center gap-1.5 rounded-full border border-emerald-200/60 bg-emerald-50 px-2 py-0.5 text-[11px] font-semibold text-emerald-700">

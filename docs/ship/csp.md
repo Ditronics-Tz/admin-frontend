@@ -11,3 +11,5 @@ Development server CSP is intentionally omitted because Vite's refresh tooling i
 The hosting owner must also send `Content-Security-Policy: frame-ancestors 'none'` (not enforceable by meta), `X-Content-Type-Options: nosniff`, an HTTPS-only HSTS policy and an appropriate Referrer-Policy. Use a complete header policy including the meta directives if replacing the meta at the edge; multiple policies intersect. Add only known storage/map origins, never `*` or unsafe-eval.
 
 Validation and remaining browser/hosting checks are recorded in frontend-report.md.
+
+The rides map uses public OSM tiles only in development. Set `VITE_MAP_TILE_URL` to the licensed provider template with `{z}`, `{x}`, `{y}`, and `VITE_MAP_ATTRIBUTION` to that provider's required plain-text attribution before production use. Its HTTPS origin is added to img-src by the production CSP plugin. Without configured production tiles, the ride map retains its points and coordinate text, and labels the background unavailable.
