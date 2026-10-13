@@ -31,11 +31,7 @@ function LicenceDocument({ path }: { path: string }) {
       })
       .then(({ data }) => {
         if (controller.signal.aborted) return
-        if (
-          !['image/png', 'image/jpeg', 'image/webp', 'application/pdf'].includes(
-            data.type.split(';')[0]
-          )
-        )
+        if (!['image/png', 'image/jpeg', 'image/webp'].includes(data.type.split(';')[0]))
           throw new Error('The server returned an unsupported document format.')
         objectUrl = URL.createObjectURL(data)
         setUrl(objectUrl)
@@ -68,23 +64,15 @@ function LicenceDocument({ path }: { path: string }) {
     )
   return (
     <div className="space-y-3">
-      {mime === 'application/pdf' ? (
-        <iframe
-          title="Uploaded verification document"
-          src={url}
-          sandbox=""
-          className="h-[60vh] w-full rounded border"
-        />
-      ) : (
-        <img
-          src={url}
-          alt="Uploaded verification document"
-          className="max-h-[60vh] w-full rounded-lg bg-muted object-contain"
-        />
-      )}
+      <img
+        src={url}
+        alt="Uploaded verification document"
+        className="max-h-[60vh] w-full rounded-lg bg-muted object-contain"
+      />
       <a
         href={url}
-        download={`document${mime === 'application/pdf' ? '.pdf' : mime === 'image/png' ? '.png' : mime === 'image/webp' ? '.webp' : '.jpg'}`}
+        rel="noopener noreferrer"
+        download={`document${mime === 'image/png' ? '.png' : mime === 'image/webp' ? '.webp' : '.jpg'}`}
         className="text-sm text-primary underline"
       >
         Download document

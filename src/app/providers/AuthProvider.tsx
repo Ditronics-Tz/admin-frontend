@@ -35,10 +35,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       if (state.user?.id !== previous.user?.id) queryClient.clear()
     })
     const onStorage = (event: StorageEvent) => {
-      if (event.key === API_CONFIG.tokenKey || event.key === null) {
+      if (event.key === API_CONFIG.refreshTokenKey || event.key === null) {
+        // A different tab has replaced or ended this session. Invalidate this
+        // tab's bearer without deleting the other tab's rotated refresh token.
+        tokenStorage.clearAccessToken()
         queryClient.clear()
         useAuthStore.getState().setUser(null)
-        if (tokenStorage.getAccessToken()) window.location.reload()
       }
     }
     window.addEventListener('storage', onStorage)

@@ -5,6 +5,7 @@ import type { BackendStaffRefreshResponse, BackendStaffUser } from './types'
 import { mockAdapter } from './mock'
 import { toast } from 'sonner'
 import { useApiAccess } from './access'
+import { refreshStorage } from './refresh-storage'
 
 type SessionEvent = { type: 'expired' } | { type: 'updated'; user: BackendStaffUser }
 const listeners = new Set<(event: SessionEvent) => void>()
@@ -18,34 +19,27 @@ export function subscribeSession(listener: (event: SessionEvent) => void) {
 function emit(event: SessionEvent) {
   listeners.forEach((listener) => listener(event))
 }
-function read(key: string) {
-  try {
-    return localStorage.getItem(key)
-  } catch {
-    return null
-  }
-}
+let accessToken: string | null = null
+refreshStorage.removeLegacyAccess()
 export const tokenStorage = {
-  getAccessToken: () => read(API_CONFIG.tokenKey),
-  getRefreshToken: () => read(API_CONFIG.refreshTokenKey),
-  setSession(accessToken: string, refreshToken: string) {
+  getAccessToken: () => accessToken,
+  getRefreshToken: () => refreshStorage.get(),
+  clearAccessToken() {
     revision++
-    try {
-      localStorage.setItem(API_CONFIG.tokenKey, accessToken)
-      localStorage.setItem(API_CONFIG.refreshTokenKey, refreshToken)
-    } catch {
-      /* Storage may be disabled by the browser. */
-    }
+    accessToken = null
+  },
+  setSession(newAccessToken: string, refreshToken: string) {
+    revision++
+    accessToken = newAccessToken
+    refreshStorage.set(refreshToken)
+    refreshStorage.removeLegacyAccess()
   },
   clearTokens() {
     revision++
     useApiAccess.setState({ readOnly: false })
-    try {
-      localStorage.removeItem(API_CONFIG.tokenKey)
-      localStorage.removeItem(API_CONFIG.refreshTokenKey)
-    } catch {
-      /* Storage may be disabled by the browser. */
-    }
+    accessToken = null
+    refreshStorage.clear()
+    refreshStorage.removeLegacyAccess()
     emit({ type: 'expired' })
   },
 }

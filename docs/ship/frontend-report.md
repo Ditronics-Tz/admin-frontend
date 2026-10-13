@@ -31,3 +31,11 @@ Added shared DataTable/server pagination, FilterBar, ReasonDialog and MaskedValu
 `VITE_API_MODE=mock` opts into the fixture adapter only during development. It provides empty typed list fixtures, explicitly labels the workspace, and rejects unimplemented operations with 501. Production always uses the live transport. Existing integration tests continue to use the repository's HTTP fixture server.
 
 Validation: format check, typecheck, 30/30 integration tests, production build passed; lint passed with the same five existing warnings. Added focused checks for request references, HTTP-date Retry-After and generic field mapping.
+
+## F3 — Tokens, CSP and document rendering
+
+Branch: `ship/fe-token-csp`. Access tokens now live in memory, legacy persisted access is removed, and only `refresh-storage.ts` can persist refresh tokens. Backend owner confirmed there will be no HttpOnly staff refresh cookie in this run: the isolated refresh localStorage exception remains, as F3 permits, until the deployment/domain decision and cookie contract are supplied. Disabled storage has a memory fallback. Cross-tab replacement invalidates the old tab without deleting the replacement session or triggering refresh/reload loops.
+
+Production builds prepend a restrictive CSP with same-origin scripts and no inline script/eval permission; allowed public API/storage/map origins are normalized at build time. Radix/Recharts inline style declarations are the documented style exception. Upload previews now reject all non-raster formats, including PDF; no document iframe remains. Hosting header requirements are in csp.md.
+
+Validation: format check, typecheck, 31/31 integration tests, lint (same five warnings) and production build passed. Built index.html contains the CSP before resources, only external module scripts, and no inline scripts. Browser/hosting acceptance remains pending: direct Edge headless returned no DOM, and automatic approval review rejected the hidden Start-Process browser/output-capture smoke check as "blocked by policy" without a detailed reason. No production-cookie or deployment-header claim is made.

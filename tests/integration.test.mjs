@@ -70,6 +70,18 @@ test('API references, HTTP-date rate limits and field errors remain actionable',
   assert.equal(applyFieldErrors(detail, (field, message) => fields[field] = message), true)
   assert.deepEqual(fields, { reason: 'Required' })
 })
+
+test('staff access remains memory-only and logout clears the isolated refresh exception', () => {
+  tokenStorage.setSession('memory-test-access', 'test-refresh')
+  assert.equal(storage.get('rida_staff_access_token'), undefined)
+  assert.equal(tokenStorage.getAccessToken(), 'memory-test-access')
+  assert.equal(storage.get('rida_staff_refresh_token'), 'test-refresh')
+  tokenStorage.clearAccessToken()
+  assert.equal(tokenStorage.getAccessToken(), null)
+  assert.equal(tokenStorage.getRefreshToken(), 'test-refresh')
+  tokenStorage.clearTokens()
+  assert.equal(storage.get('rida_staff_refresh_token'), undefined)
+})
 const { mapBackendUserDetailToDriver } =
   await import('../src/features/drivers/adapters/driverAdapter.ts')
 const staff = {
