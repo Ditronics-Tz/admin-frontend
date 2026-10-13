@@ -9,7 +9,8 @@ import {
 } from './DriverStatusBadge'
 import { SuspendDriverDialog } from './SuspendDriverDialog'
 import { ReactivateDriverDialog } from './ReactivateDriverDialog'
-import { getDriverInitials, formatTzPhone } from '../utils/driver-formatters'
+import { getDriverInitials } from '../utils/driver-formatters'
+import { MaskedValue } from '@/components/common/MaskedValue'
 import type { Driver } from '../types/driver.types'
 import { ROUTES } from '@/lib/constants'
 import { UserRoleAction } from '@/features/customers/components/UserRoleAction'
@@ -61,7 +62,9 @@ export const DriverProfileHeader: React.FC<DriverProfileHeaderProps> = ({ driver
               </div>
 
               <p className="text-xs text-slate-500">
-                {driver.email} • {formatTzPhone(driver.phone)} • {driver.city}
+                {driver.email} •{' '}
+                <MaskedValue key={driver.id} value={driver.phone} userId={driver.id} /> •{' '}
+                {driver.city}
                 {driver.district ? `, ${driver.district}` : ''}
               </p>
 

@@ -9,13 +9,10 @@ import {
   DriverAvailabilityBadge,
 } from './DriverStatusBadge'
 import { DriverRowActions } from './DriverRowActions'
-import {
-  formatTzPhone,
-  getDriverInitials,
-  getVehicleTypeLabel,
-} from '../utils/driver-formatters'
+import { getDriverInitials, getVehicleTypeLabel } from '../utils/driver-formatters'
 import type { Driver, DriverFilters } from '../types/driver.types'
 import { formatDateTime } from '@/lib/utils/formatters'
+import { MaskedValue } from '@/components/common/MaskedValue'
 
 interface DriversTableProps {
   drivers: Driver[]
@@ -193,7 +190,11 @@ export const DriversTable: React.FC<DriversTableProps> = ({
 
                     {/* Phone */}
                     <td className="whitespace-nowrap px-3 py-3.5 font-medium text-slate-700">
-                      {formatTzPhone(driver.phone)}
+                      <MaskedValue
+                        key={driver.id}
+                        value={driver.phone}
+                        userId={driver.id}
+                      />
                     </td>
 
                     {/* Vehicle */}

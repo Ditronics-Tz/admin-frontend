@@ -16,6 +16,7 @@ import { UserReports } from '@/features/operations/ReportsPage'
 import { UserSecurityPanel } from './UserSecurityPanel'
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs'
 import { useShipText } from '@/components/common/ship-text'
+import { MaskedValue } from '@/components/common/MaskedValue'
 
 export function UserDetailsDialog({ id, onClose }: { id: string; onClose: () => void }) {
   const t = useShipText()
@@ -66,7 +67,15 @@ export function UserDetailsDialog({ id, onClose }: { id: string; onClose: () => 
               </div>
               <div>
                 <dt className="text-muted-foreground">Phone</dt>
-                <dd>{query.data.passenger_profile?.phone || 'Not collected'}</dd>
+                <dd>
+                  <MaskedValue
+                    key={id}
+                    value={
+                      query.data.user.phone || query.data.passenger_profile?.phone || ''
+                    }
+                    userId={id}
+                  />
+                </dd>
               </div>
               <div>
                 <dt className="text-muted-foreground">Rating</dt>

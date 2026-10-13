@@ -55,3 +55,13 @@ Branch: `ship/fe-user-security`. Added Security and sessions tabs to the existin
 Contracts are isolated in security.service.ts and tested with the existing HTTP fixture layer. Missing endpoints show the real normalized server error rather than success or placeholder rows.
 
 Validation: format check, typecheck, lint (same five warnings), production build and 34/34 integration tests passed. New tests cover individual/all revocation payloads, event pagination, admin-only unlock and read-only security actions. B5 live contract pending.
+
+## F6 — Verification workspace gaps
+
+Branch: `ship/fe-verification`. Existing claim/release, document decisions, final approval, expiry dates and permanent review timeline were retained. Added status/search/expiring-within-30-days queue filters, server pagination and page-specific count labels. Per-document previews request presigned metadata on open, fetch raster content without staff Authorization or browser cookies, never persist the signed URL, and revoke local blob URLs on close or expiry (maximum five minutes). Reload obtains a fresh link; unsupported local presign falls back to the existing authenticated binary route. Added zoom/rotate and image load failure states.
+
+Reject/re-upload and override decisions now require confirmation; the existing reason code and note remain required. Rejection persists the replacement-upload requirement without claiming a notification was delivered. Server denials also guard admin overrides. Kept claim rather than introducing a second assignment workflow.
+
+Users and drivers have account suspension/reactivation controls with required reasons, optional suspension end dates and confirmation dialogs; driver Account Activity now includes the existing support panel. Added confirmations for internal note deletion and result toasts. Account/driver phones are masked with audited reveal. Replaced the unsupported LATRA standards claim with the actual configured Rida verification-policy description.
+
+Validation: final format check, typecheck, lint (same five warnings), production build and 35/35 integration tests passed, including signed image bearer isolation, expiry rejection and queue filters. Live queue filters/storage acceptance awaits B3/B4, and storage CORS/origin configuration is an owner deployment step.

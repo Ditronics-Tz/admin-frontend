@@ -7,6 +7,7 @@ import type {
   BackendUserResponse,
   BackendUserDetailResponse,
   BackendDriverProfile,
+  ListParams,
 } from '@/lib/api/types'
 import type {
   Driver,
@@ -165,6 +166,26 @@ export const driverService = {
       })
     )
     return results
+  },
+  async listVerificationPage(params: ListParams & { expiring_soon?: boolean } = {}) {
+    const { data } = await apiClient.get<Page<BackendDriverProfile, 'verifications'>>(
+      '/admin/verifications',
+      { params: { limit: 20, offset: 0, ...params } }
+    )
+    const queue = data.verifications || [],
+      items: VerificationRequest[] = new Array(queue.length)
+    let next = 0
+    await Promise.all(
+      Array.from({ length: Math.min(6, queue.length) }, async () => {
+        while (next < queue.length) {
+          const index = next++
+          items[index] = mapDriverToVerificationRequest(
+            await driverService.getDriver(queue[index].user_id)
+          )
+        }
+      })
+    )
+    return { ...data, items }
   },
   async updateUserRole(
     userId: string,

@@ -21,6 +21,7 @@ import {
 } from '../utils/driver-formatters'
 import { formatDateTime } from '@/lib/utils/formatters'
 import { toast } from 'sonner'
+import { ConfirmDialog } from '@/components/common/ReasonDialog'
 
 export function VerificationReviewPanel({ driver }: { driver: Driver }) {
   const { canVerifyDrivers, isAdmin } = usePermission()
@@ -191,7 +192,11 @@ export function VerificationReviewPanel({ driver }: { driver: Driver }) {
             key={document.id}
             document={document}
             canReview={canReview}
-            canOverride={isAdmin && ['approved', 'rejected'].includes(document.status)}
+            canOverride={
+              canVerifyDrivers &&
+              isAdmin &&
+              ['approved', 'rejected'].includes(document.status)
+            }
             busy={mutation.isPending}
             codes={detail.rejection_codes}
             preview={() => setPreview(document.id)}
@@ -337,9 +342,11 @@ function DocumentReview({
   )
   const [code, setCode] = useState('')
   const [note, setNote] = useState('')
+  const [confirm, setConfirm] = useState(false)
   function submit(event: FormEvent) {
     event.preventDefault()
-    onDecision(decision, decision === 'rejected' ? code : '', note.trim())
+    if (decision === 'rejected' || canOverride) setConfirm(true)
+    else onDecision(decision, '', note.trim())
   }
   return (
     <section className="space-y-4 rounded-xl border bg-white p-6">
@@ -382,7 +389,7 @@ function DocumentReview({
                 disabled={busy}
               >
                 <option value="approved">Approve document</option>
-                <option value="rejected">Reject document</option>
+                <option value="rejected">Reject and request re-upload</option>
               </select>
             </label>
             {decision === 'rejected' && (
@@ -435,6 +442,18 @@ function DocumentReview({
             Claim this review to record a decision.
           </p>
         ))}
+      {confirm && (
+        <ConfirmDialog
+          title="Confirm document decision?"
+          description="The required reason is retained in the review history. A rejected document requires a replacement upload; notification delivery is not confirmed by this action."
+          pending={busy}
+          onClose={() => setConfirm(false)}
+          onConfirm={() => {
+            onDecision(decision, decision === 'rejected' ? code : '', note.trim())
+            setConfirm(false)
+          }}
+        />
+      )}
     </section>
   )
 }

@@ -5,9 +5,14 @@ import { Button } from '@/components/ui/button'
 import { QueryError } from '@/components/feedback/QueryError'
 import { usePermission } from '@/features/auth/hooks/usePermission'
 import { formatDateTime } from '@/lib/utils/formatters'
+import { ConfirmDialog } from '@/components/common/ReasonDialog'
+import { MaskedValue } from '@/components/common/MaskedValue'
+import { toast } from 'sonner'
+import { useShipText } from '@/components/common/ship-text'
 
 export function AccountSupportPanel({ id }: { id: string }) {
-  const { isAdmin } = usePermission()
+  const { isAdmin, canWrite } = usePermission()
+  const t = useShipText()
   const cache = useQueryClient()
   const user = useQuery({ queryKey: ['user', id], queryFn: () => accountService.get(id) })
   const notes = useQuery({
@@ -22,11 +27,17 @@ export function AccountSupportPanel({ id }: { id: string }) {
   const [until, setUntil] = useState('')
   const [body, setBody] = useState('')
   const [action, setAction] = useState<'suspend' | 'reactivate' | 'ban'>('suspend')
+  const [confirmation, setConfirmation] = useState<{
+    title: string
+    run: () => Promise<unknown>
+  } | null>(null)
   const mutation = useMutation({
     mutationFn: (run: () => Promise<unknown>) => run(),
     onSuccess: async () => {
       setReason('')
       setBody('')
+      setConfirmation(null)
+      toast.success(t('Account updated.'))
       await Promise.all(
         [
           ['user', id],
@@ -39,6 +50,7 @@ export function AccountSupportPanel({ id }: { id: string }) {
         ].map((queryKey) => cache.invalidateQueries({ queryKey }))
       )
     },
+    onError: (error) => toast.error(error.message),
   })
   if (user.isPending) return <p>Loading account…</p>
   if (user.isError)
@@ -55,64 +67,71 @@ export function AccountSupportPanel({ id }: { id: string }) {
         {account.suspended_until && ` until ${formatDateTime(account.suspended_until)}`}
       </p>
       <p>
-        Phone: {account.phone || 'Not collected'} ·{' '}
+        Phone: <MaskedValue key={id} value={account.phone || ''} userId={id} /> ·{' '}
         {account.phone_verified_at ? 'OTP verified' : 'Not verified'}
       </p>
       <form
         className="space-y-3"
         onSubmit={(event) => {
           event.preventDefault()
-          mutation.mutate(() =>
-            accountService.status(
-              id,
-              action,
-              reason,
-              action === 'suspend' && until ? new Date(until).toISOString() : undefined
-            )
-          )
+          setConfirmation({
+            title: t('Confirm account action?'),
+            run: () =>
+              accountService.status(
+                id,
+                action,
+                reason,
+                action === 'suspend' && until ? new Date(until).toISOString() : undefined
+              ),
+          })
         }}
       >
-        <label className="block">
-          Action
-          <select
-            className="mt-1 block w-full rounded border p-2"
-            value={action}
-            onChange={(e) => setAction(e.target.value as typeof action)}
-          >
-            <option value="suspend">Suspend account</option>
-            <option value="reactivate">Reactivate account</option>
-            {isAdmin && <option value="ban">Permanent ban</option>}
-          </select>
-        </label>
-        <label className="block">
-          Reason (required)
-          <textarea
-            required
-            maxLength={2000}
-            className="mt-1 block w-full rounded border p-2"
-            value={reason}
-            onChange={(e) => setReason(e.target.value)}
-          />
-        </label>
-        {action === 'suspend' && (
+        <fieldset disabled={!canWrite || mutation.isPending} className="space-y-3">
           <label className="block">
-            Until (optional, your local time)
-            <input
-              type="datetime-local"
+            Action
+            <select
               className="mt-1 block w-full rounded border p-2"
-              value={until}
-              onChange={(e) => setUntil(e.target.value)}
+              value={action}
+              onChange={(e) => setAction(e.target.value as typeof action)}
+            >
+              <option value="suspend">Suspend account</option>
+              <option value="reactivate">Reactivate account</option>
+              {isAdmin && <option value="ban">Permanent ban</option>}
+            </select>
+          </label>
+          <label className="block">
+            Reason (required)
+            <textarea
+              required
+              maxLength={2000}
+              className="mt-1 block w-full rounded border p-2"
+              value={reason}
+              onChange={(e) => setReason(e.target.value)}
             />
           </label>
-        )}
-        {action === 'ban' && (
-          <p className="text-rose-700">
-            This permanently blocks the account. Only an admin can lift the ban.
-          </p>
-        )}
-        <Button disabled={mutation.isPending || !reason.trim()} type="submit">
-          Confirm account action
-        </Button>
+          {action === 'suspend' && (
+            <label className="block">
+              Until (optional, your local time)
+              <input
+                type="datetime-local"
+                className="mt-1 block w-full rounded border p-2"
+                value={until}
+                onChange={(e) => setUntil(e.target.value)}
+              />
+            </label>
+          )}
+          {action === 'ban' && (
+            <p className="text-rose-700">
+              This permanently blocks the account. Only an admin can lift the ban.
+            </p>
+          )}
+          <Button
+            disabled={!canWrite || mutation.isPending || !reason.trim()}
+            type="submit"
+          >
+            Confirm account action
+          </Button>
+        </fieldset>
       </form>
       {mutation.isError && <QueryError error={mutation.error} />}
       <div className="space-y-3 border-t pt-4">
@@ -121,7 +140,7 @@ export function AccountSupportPanel({ id }: { id: string }) {
           className="space-y-2"
           onSubmit={(e) => {
             e.preventDefault()
-            mutation.mutate(() => accountService.addNote(id, body))
+            if (canWrite) mutation.mutate(() => accountService.addNote(id, body))
           }}
         >
           <textarea
@@ -135,7 +154,7 @@ export function AccountSupportPanel({ id }: { id: string }) {
           <Button
             type="submit"
             variant="outline"
-            disabled={mutation.isPending || !body.trim()}
+            disabled={!canWrite || mutation.isPending || !body.trim()}
           >
             Add note
           </Button>
@@ -151,9 +170,12 @@ export function AccountSupportPanel({ id }: { id: string }) {
               <Button
                 size="sm"
                 variant="outline"
-                disabled={mutation.isPending}
+                disabled={!canWrite || mutation.isPending}
                 onClick={() =>
-                  mutation.mutate(() => accountService.deleteNote(id, note.id))
+                  setConfirmation({
+                    title: t('Delete internal note?'),
+                    run: () => accountService.deleteNote(id, note.id),
+                  })
                 }
               >
                 Delete note
@@ -180,6 +202,18 @@ export function AccountSupportPanel({ id }: { id: string }) {
         ))}
         {history.data?.status_events.length === 0 && <p>No status changes yet.</p>}
       </div>
+      {confirmation && (
+        <ConfirmDialog
+          title={confirmation.title}
+          description={t('This action is recorded in the staff audit history.')}
+          pending={mutation.isPending}
+          error={mutation.error}
+          onClose={() => setConfirmation(null)}
+          onConfirm={() => {
+            if (canWrite) mutation.mutate(confirmation.run)
+          }}
+        />
+      )}
     </section>
   )
 }

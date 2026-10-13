@@ -1,6 +1,19 @@
 import { useUiStore } from '@/stores/useUiStore'
 
 const sw: Record<string, string> = {
+  'Account updated.': 'Akaunti imesasishwa.',
+  'Confirm account action?': 'Thibitisha kitendo cha akaunti?',
+  'Delete internal note?': 'Futa maelezo ya ndani?',
+  'This action is recorded in the staff audit history.':
+    'Kitendo hiki kinarekodiwa katika historia ya ukaguzi wa wafanyakazi.',
+  'Expiring within 30 days': 'Inaisha ndani ya siku 30',
+  'Zoom in': 'Kuza',
+  'Zoom out': 'Punguza',
+  Rotate: 'Zungusha',
+  'Document link expired. Reload to obtain a new link.':
+    'Kiungo cha hati kimeisha. Pakia tena kupata kiungo kipya.',
+  'Unable to display document image. Reload the link.':
+    'Picha ya hati haionekani. Pakia kiungo tena.',
   'Security and sessions': 'Usalama na vipindi',
   'Active sessions': 'Vipindi vinavyotumika',
   'Log out everywhere': 'Ondoka kwenye vifaa vyote',

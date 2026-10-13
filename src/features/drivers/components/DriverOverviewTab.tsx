@@ -33,8 +33,8 @@ export function DriverOverviewTab({ driver }: { driver: Driver }) {
         ))}
       </dl>
       <p className="text-sm text-muted-foreground">
-        Phone, location, trip totals, earnings, and dispatch performance are not collected
-        by the current service.
+        Location, trip totals, earnings, and dispatch performance are not collected by the
+        current service.
       </p>
     </section>
   )

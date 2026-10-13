@@ -82,8 +82,7 @@ export const VerificationDetailsPage: React.FC = () => {
             </span>
           </div>
           <p className="mt-1 text-xs text-slate-500">
-            Inspect driver credentials against Tanzanian road safety and LATRA regulatory
-            standards.
+            Inspect uploaded evidence against Rida's configured verification policy.
           </p>
         </div>
 

@@ -17,6 +17,7 @@ import { UserFraud } from '@/features/operations/FraudPage'
 import { UserReports } from '@/features/operations/ReportsPage'
 import { UserSecurityPanel } from '@/features/customers/components/UserSecurityPanel'
 import { useShipText } from '@/components/common/ship-text'
+import { AccountSupportPanel } from '@/features/customers/components/AccountSupportPanel'
 
 export const DriverDetailsPage: React.FC = () => {
   const { driverId } = useParams<{ driverId: string }>()
@@ -129,6 +130,7 @@ export const DriverDetailsPage: React.FC = () => {
         </TabsContent>
 
         <TabsContent value="activity">
+          <AccountSupportPanel key={driver.id} id={driver.id} />
           <DriverActivityTab driver={driver} />
         </TabsContent>
       </Tabs>

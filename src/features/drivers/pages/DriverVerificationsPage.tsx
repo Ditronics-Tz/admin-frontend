@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import {
   ArrowLeft,
@@ -14,17 +14,25 @@ import { Card, CardContent } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Skeleton } from '@/components/ui/skeleton'
 import { useVerificationRequests } from '../hooks/useDrivers'
-import {
-  formatTzPhone,
-  getVehicleTypeLabel,
-  getDriverInitials,
-} from '../utils/driver-formatters'
+import { getVehicleTypeLabel, getDriverInitials } from '../utils/driver-formatters'
 import { formatDateTime } from '@/lib/utils/formatters'
 import { ROUTES } from '@/lib/constants'
+import { FilterBar } from '@/components/common/DataTable'
+import { Pagination } from '@/features/promotions/components/shared'
+import { Select } from '@/features/operations/shared'
+import { useShipText } from '@/components/common/ship-text'
+import { MaskedValue } from '@/components/common/MaskedValue'
 
 export const DriverVerificationsPage: React.FC = () => {
   const navigate = useNavigate()
-  const { data: requests, isLoading, isError, refetch } = useVerificationRequests()
+  const t = useShipText(),
+    [q, setQ] = useState(''),
+    [status, setStatus] = useState(''),
+    [expiring, setExpiring] = useState(false),
+    [offset, setOffset] = useState(0)
+  const params = { q, status, expiring_soon: expiring, offset, limit: 20 }
+  const { data: page, isLoading, isError, refetch } = useVerificationRequests(params)
+  const requests = page?.items
 
   const pendingCount = requests?.filter((r) => r.status === 'submitted').length ?? 0
   const inReviewCount = requests?.filter((r) => r.status === 'under_review').length ?? 0
@@ -60,7 +68,7 @@ export const DriverVerificationsPage: React.FC = () => {
         <Card className="border-slate-200/80 shadow-none">
           <CardContent className="flex items-center justify-between p-4">
             <div>
-              <span className="text-xs text-slate-500">Awaiting Claim</span>
+              <span className="text-xs text-slate-500">Awaiting Claim (this page)</span>
               <p className="mt-1 text-2xl font-bold text-amber-600">{pendingCount}</p>
             </div>
             <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-amber-50 text-amber-600">
@@ -74,7 +82,7 @@ export const DriverVerificationsPage: React.FC = () => {
             <div>
               <span className="text-xs text-slate-500">Total In Queue</span>
               <p className="mt-1 text-2xl font-bold text-[#172B36]">
-                {requests?.length ?? 0}
+                {page?.total ?? '—'}
               </p>
             </div>
             <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-teal-50 text-brand-primary-teal">
@@ -86,7 +94,7 @@ export const DriverVerificationsPage: React.FC = () => {
         <Card className="border-slate-200/80 shadow-none">
           <CardContent className="flex items-center justify-between p-4">
             <div>
-              <span className="text-xs text-slate-500">Under Review</span>
+              <span className="text-xs text-slate-500">Under Review (this page)</span>
               <p className="mt-1 text-2xl font-bold text-rose-600">{inReviewCount}</p>
             </div>
             <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-rose-50 text-rose-600">
@@ -97,6 +105,43 @@ export const DriverVerificationsPage: React.FC = () => {
       </div>
 
       {/* Verification Queue Table */}
+      <FilterBar
+        q={q}
+        onSearch={(value) => {
+          setQ(value)
+          setOffset(0)
+        }}
+      >
+        <Select
+          label={t('Status')}
+          value={status}
+          options={[
+            '',
+            'submitted',
+            'under_review',
+            'approved',
+            'rejected',
+            'expired',
+            'pending_documents',
+            'suspended',
+          ]}
+          onChange={(value) => {
+            setStatus(value)
+            setOffset(0)
+          }}
+        />
+        <label className="flex items-center gap-2 text-sm">
+          <input
+            type="checkbox"
+            checked={expiring}
+            onChange={(event) => {
+              setExpiring(event.target.checked)
+              setOffset(0)
+            }}
+          />
+          {t('Expiring within 30 days')}
+        </label>
+      </FilterBar>
       <div className="overflow-hidden rounded-xl border border-slate-200/80 bg-white shadow-sm">
         <div className="overflow-x-auto">
           <table className="w-full min-w-[800px] text-left text-xs">
@@ -188,7 +233,11 @@ export const DriverVerificationsPage: React.FC = () => {
                     </td>
 
                     <td className="px-3 py-3.5 font-medium text-slate-700">
-                      {formatTzPhone(item.driverPhone)}
+                      <MaskedValue
+                        key={item.driverId}
+                        value={item.driverPhone}
+                        userId={item.driverId}
+                      />
                     </td>
 
                     <td className="px-3 py-3.5">
@@ -241,6 +290,9 @@ export const DriverVerificationsPage: React.FC = () => {
           </table>
         </div>
       </div>
+      {page && (
+        <Pagination total={page.total} offset={offset} limit={20} onChange={setOffset} />
+      )}
     </div>
   )
 }

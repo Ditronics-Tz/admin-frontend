@@ -6,6 +6,7 @@ import type {
   UpdateDriverInput,
 } from '../types/driver.types'
 import { toast } from 'sonner'
+import type { ListParams } from '@/lib/api/types'
 
 export function useDrivers(filters: DriverFilters) {
   return useQuery({
@@ -34,10 +35,12 @@ export function useDriver(driverId: string | undefined) {
   })
 }
 
-export function useVerificationRequests() {
+export function useVerificationRequests(
+  params: ListParams & { expiring_soon?: boolean } = {}
+) {
   return useQuery({
-    queryKey: ['drivers', 'verifications'],
-    queryFn: () => driverService.listVerificationRequests(),
+    queryKey: ['drivers', 'verifications', params],
+    queryFn: () => driverService.listVerificationPage(params),
     staleTime: 30000,
   })
 }

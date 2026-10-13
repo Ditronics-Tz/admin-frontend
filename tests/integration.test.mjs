@@ -152,6 +152,29 @@ test('only admins see unlock and a server denial removes security write controls
     assert.match(render(), /<button[^>]*disabled[^>]*>Log out everywhere<\/button>/)
   } finally { client.clear(); useAuthStore.getState().setUser(previous); useApiAccess.setState({ readOnly: false }) }
 })
+
+test('verification pages forward expiry filters and signed images never carry staff tokens', async () => {
+  const { loadDocumentImage } = await import('../src/features/drivers/services/document-image.ts')
+  handle = (req, json, res) => {
+    const url = new URL(req.path, process.env.VITE_API_BASE_URL)
+    if (url.pathname === '/api/v1/admin/verifications') return json(200, { verifications: [{ ...profile, user_id: 'driver-1' }], total: 105, limit: 20, offset: 20 })
+    if (url.pathname === '/api/v1/admin/users/driver-1') return json(200, detail)
+    if (url.pathname === '/api/v1/files/documents/doc-signed') return json(200, { url: `${process.env.VITE_API_BASE_URL}/signed-image`, content_type: 'image/png', expires_at: new Date(Date.now() + 60000).toISOString() })
+    assert.equal(req.authorization, undefined)
+    res.writeHead(200, { 'Content-Type': 'image/png' }); res.end(Buffer.from([137, 80, 78, 71]))
+  }
+  const page = await driverService.listVerificationPage({ status: 'approved', expiring_soon: true, offset: 20, limit: 20 })
+  assert.equal(page.total, 105)
+  assert.equal(page.items.length, 1)
+  assert.match(requests[0].path, /expiring_soon=true/)
+  assert.match(requests[0].path, /offset=20/)
+  const image = await loadDocumentImage('/files/documents/doc-signed', new AbortController().signal, 'doc-signed')
+  assert.equal(image.blob.size, 4)
+  assert.equal(image.blob.type, 'image/png')
+  assert.equal(requests.at(-1).authorization, undefined)
+  handle = (_req, json) => json(200, { url: `${process.env.VITE_API_BASE_URL}/signed-image`, expires_at: '2000-01-01T00:00:00Z' })
+  await assert.rejects(loadDocumentImage('/files/documents/doc-expired', new AbortController().signal, 'doc-expired'), /link expired/)
+})
 const { mapBackendUserDetailToDriver } =
   await import('../src/features/drivers/adapters/driverAdapter.ts')
 const staff = {

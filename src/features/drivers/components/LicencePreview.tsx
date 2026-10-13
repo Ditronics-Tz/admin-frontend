@@ -1,7 +1,9 @@
 import { useEffect, useState } from 'react'
-import { apiClient } from '@/lib/api/client'
+import { loadDocumentImage } from '../services/document-image'
 import { API_ENDPOINTS } from '@/lib/constants'
 import { QueryError } from '@/components/feedback/QueryError'
+import { Button } from '@/components/ui/button'
+import { useShipText } from '@/components/common/ship-text'
 
 export function LicencePreview({
   driverId,
@@ -11,40 +13,47 @@ export function LicencePreview({
   documentId?: string
 }) {
   const path = documentId
-    ? `/files/documents/${documentId}`
+    ? `/files/documents/${encodeURIComponent(documentId)}`
     : API_ENDPOINTS.FILES.LICENCE_DOC(driverId || '')
-  return <LicenceDocument key={path} path={path} />
+  return <LicenceDocument key={path} path={path} documentId={documentId} />
 }
 
-function LicenceDocument({ path }: { path: string }) {
+function LicenceDocument({ path, documentId }: { path: string; documentId?: string }) {
   const [url, setUrl] = useState<string | null>(null)
   const [mime, setMime] = useState('')
   const [error, setError] = useState<unknown>(null)
   const [attempt, setAttempt] = useState(0)
+  const [zoom, setZoom] = useState(1),
+    [rotation, setRotation] = useState(0)
+  const t = useShipText()
   useEffect(() => {
     const controller = new AbortController()
     let objectUrl: string | null = null
-    void apiClient
-      .get<Blob>(path, {
-        responseType: 'blob',
-        signal: controller.signal,
-      })
-      .then(({ data }) => {
+    let expiryTimer: ReturnType<typeof setTimeout> | undefined
+    void loadDocumentImage(path, controller.signal, documentId)
+      .then(({ blob, expiresAt }) => {
         if (controller.signal.aborted) return
-        if (!['image/png', 'image/jpeg', 'image/webp'].includes(data.type.split(';')[0]))
-          throw new Error('The server returned an unsupported document format.')
-        objectUrl = URL.createObjectURL(data)
+        objectUrl = URL.createObjectURL(blob)
         setUrl(objectUrl)
-        setMime(data.type)
+        setMime(blob.type)
+        expiryTimer = setTimeout(
+          () => {
+            if (objectUrl) URL.revokeObjectURL(objectUrl)
+            setUrl(null)
+            setError(new Error('Document link expired. Reload to obtain a new link.'))
+          },
+          Math.max(1, expiresAt - Date.now())
+        )
       })
       .catch((err: unknown) => {
         if (!controller.signal.aborted) setError(err)
       })
     return () => {
       controller.abort()
+      if (expiryTimer) clearTimeout(expiryTimer)
       if (objectUrl) URL.revokeObjectURL(objectUrl)
     }
-  }, [path, attempt])
+  }, [path, attempt, documentId])
   if (error != null)
     return (
       <QueryError
@@ -64,11 +73,42 @@ function LicenceDocument({ path }: { path: string }) {
     )
   return (
     <div className="space-y-3">
-      <img
-        src={url}
-        alt="Uploaded verification document"
-        className="max-h-[60vh] w-full rounded-lg bg-muted object-contain"
-      />
+      <div className="flex flex-wrap gap-2">
+        <Button
+          size="sm"
+          variant="outline"
+          aria-label={t('Zoom in')}
+          onClick={() => setZoom((value) => Math.min(3, value + 0.25))}
+        >
+          {t('Zoom in')}
+        </Button>
+        <Button
+          size="sm"
+          variant="outline"
+          aria-label={t('Zoom out')}
+          onClick={() => setZoom((value) => Math.max(0.5, value - 0.25))}
+        >
+          {t('Zoom out')}
+        </Button>
+        <Button
+          size="sm"
+          variant="outline"
+          onClick={() => setRotation((value) => (value + 90) % 360)}
+        >
+          {t('Rotate')}
+        </Button>
+      </div>
+      <div className="max-h-[60vh] overflow-auto rounded-lg bg-muted p-4">
+        <img
+          src={url}
+          alt="Uploaded verification document"
+          className="max-h-[60vh] w-full rounded-lg bg-muted object-contain"
+          style={{ transform: `rotate(${rotation}deg) scale(${zoom})` }}
+          onError={() =>
+            setError(new Error(t('Unable to display document image. Reload the link.')))
+          }
+        />
+      </div>
       <a
         href={url}
         rel="noopener noreferrer"
