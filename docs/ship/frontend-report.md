@@ -18,7 +18,7 @@ The current checkout had 12 source formatting failures, rather than the eight in
 | postcss-selector-parser | Moderate | Defer | GHSA-rj75-hqrm-r3gf; npm offers a Tailwind major migration, not a compatible patch. |
 | postcss-nested | Moderate | Defer | Inherits selector parser exposure through Tailwind's build chain. |
 
-No safe patch upgrade was offered by the installed lockfile audit. These are deferred advisories, not resolved security findings. CI publishes the current result without forcing a major upgrade. Build inputs should remain repository controlled pending the migration.
+No safe patch upgrade was offered by the installed lockfile audit. Registry metadata also reports braces latest as 3.0.3 and selector-parser fixed/latest as 7.1.6 (a major change to the affected Tailwind dependency chain). These are deferred advisories, not resolved security findings. CI publishes the current result without forcing a major upgrade. Build inputs should remain repository controlled pending the migration.
 
 Validation: format check, typecheck, tests (29/29), and production build passed. Lint passed with five existing Fast Refresh warnings. npm audit reported the seven deferred advisories above. The CI uses npm ci to exercise a clean checkout; a hosted CI run is pending push/PR by the owner.
 
@@ -91,6 +91,8 @@ Branch: `ship/fe-ratings`. Added a paginated ratings moderation screen, low-scor
 Validation: final format check, typecheck, lint (same five warnings), production build and 38/38 integration tests passed. New tests cover user/low-score filters and reason-bearing hide/restore calls. Added placeholder-only build flags to .env.example. B8 live acceptance remains pending.
 
 ## Owner and live acceptance dependencies
+
+Final auth review also closes a session-isolation race on `ship/fe-session-isolation`: a delayed success/401/403 from an earlier login is rejected instead of being displayed, refreshed/replayed or changing permissions under a replacement staff account. Access rotation within the same session still shares the existing refresh promise. Final local validation: format check, typecheck, lint (five pre-existing warnings), production build and 39/39 integration tests passed, including controlled late-200/401 scenarios. Verification errors preserve their backend references and ratings visibility filters show clear labels.
 
 - No production launch/readiness claim is made. B4/B5/B7/B8 implementations and final OpenAPI reconciliation remain backend tasks; frontend requests list the contracts explicitly. Stubs and missing endpoints show errors/unavailable states. Hosted CI and staged browser/end-to-end acceptance remain pending owner execution.
 - Refresh persistence is the F3 documented localStorage exception until a deployment/domain decision enables an HttpOnly cookie contract.

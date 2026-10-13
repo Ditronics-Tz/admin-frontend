@@ -31,7 +31,13 @@ export const DriverVerificationsPage: React.FC = () => {
     [expiring, setExpiring] = useState(false),
     [offset, setOffset] = useState(0)
   const params = { q, status, expiring_soon: expiring, offset, limit: 20 }
-  const { data: page, isLoading, isError, refetch } = useVerificationRequests(params)
+  const {
+    data: page,
+    isLoading,
+    isError,
+    error,
+    refetch,
+  } = useVerificationRequests(params)
   const requests = page?.items
 
   const pendingCount = requests?.filter((r) => r.status === 'submitted').length ?? 0
@@ -191,7 +197,7 @@ export const DriverVerificationsPage: React.FC = () => {
                 <tr>
                   <td colSpan={8} className="py-12 text-center text-xs text-rose-600">
                     <AlertCircle className="mx-auto mb-2 h-6 w-6" />
-                    Failed to load verification queue.
+                    {error?.message || 'Failed to load verification queue.'}
                     <Button
                       variant="outline"
                       size="sm"

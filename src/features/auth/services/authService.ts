@@ -56,7 +56,7 @@ export const authService: IAuthService = {
     const data = response.data
 
     // Persist tokens
-    tokenStorage.setSession(data.access_token, data.refresh_token)
+    tokenStorage.setSession(data.access_token, data.refresh_token, true)
     useApiAccess.setState({ readOnly: false })
 
     const mappedUser = mapBackendStaffUser(data.user)

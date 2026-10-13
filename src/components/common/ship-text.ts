@@ -1,8 +1,8 @@
 import { useUiStore } from '@/stores/useUiStore'
 
 const sw: Record<string, string> = {
-  false: 'Inaonekana',
-  true: 'Imefichwa',
+  Visible: 'Inaonekana',
+  Hidden: 'Imefichwa',
   Ratings: 'Ukadiriaji',
   'Low scores (1–2)': 'Alama za chini (1–2)',
   Visibility: 'Mwonekano',

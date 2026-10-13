@@ -1,6 +1,6 @@
 import axios, { type AxiosError, type InternalAxiosRequestConfig } from 'axios'
 import { API_CONFIG } from './config'
-import { formatApiError } from './errors'
+import { formatApiError, ApiClientError } from './errors'
 import type { BackendStaffRefreshResponse, BackendStaffUser } from './types'
 import { mockAdapter } from './mock'
 import { toast } from 'sonner'
@@ -10,6 +10,11 @@ import { refreshStorage } from './refresh-storage'
 type SessionEvent = { type: 'expired' } | { type: 'updated'; user: BackendStaffUser }
 const listeners = new Set<(event: SessionEvent) => void>()
 let revision = 0
+let sessionEpoch = 0
+type SessionRequest = InternalAxiosRequestConfig & {
+  _retry?: boolean
+  _sessionEpoch?: number
+}
 export function subscribeSession(listener: (event: SessionEvent) => void) {
   listeners.add(listener)
   return () => {
@@ -26,16 +31,19 @@ export const tokenStorage = {
   getRefreshToken: () => refreshStorage.get(),
   clearAccessToken() {
     revision++
+    sessionEpoch++
     accessToken = null
   },
-  setSession(newAccessToken: string, refreshToken: string) {
+  setSession(newAccessToken: string, refreshToken: string, newSession = false) {
     revision++
+    if (newSession) sessionEpoch++
     accessToken = newAccessToken
     refreshStorage.set(refreshToken)
     refreshStorage.removeLegacyAccess()
   },
   clearTokens() {
     revision++
+    sessionEpoch++
     useApiAccess.setState({ readOnly: false })
     accessToken = null
     refreshStorage.clear()
@@ -84,16 +92,29 @@ export function refreshStaffSession(): Promise<BackendStaffRefreshResponse> {
 }
 
 apiClient.interceptors.request.use((config) => {
+  const request = config as SessionRequest
+  request._sessionEpoch ??= sessionEpoch
   const token = tokenStorage.getAccessToken()
   if (token) config.headers.Authorization = `Bearer ${token}`
   return config
 })
 
 apiClient.interceptors.response.use(
-  (response) => response,
+  (response) => {
+    if ((response.config as SessionRequest)._sessionEpoch !== sessionEpoch)
+      throw new ApiClientError('The staff session changed. Retry this request.', {
+        status: 401,
+      })
+    return response
+  },
   async (error: AxiosError) => {
-    const request = error.config as
-      (InternalAxiosRequestConfig & { _retry?: boolean }) | undefined
+    const request = error.config as SessionRequest | undefined
+    // Requests created under an earlier login must not refresh or replay using
+    // a replacement staff account, or mark that new account read-only.
+    if (request && request._sessionEpoch !== sessionEpoch)
+      throw new ApiClientError('The staff session changed. Retry this request.', {
+        status: 401,
+      })
     const isPublicAuth = /\/staff\/auth\/(login|refresh)$/.test(request?.url || '')
     if (error.response?.status === 401 && request && !isPublicAuth) {
       if (request._retry || !tokenStorage.getRefreshToken()) {

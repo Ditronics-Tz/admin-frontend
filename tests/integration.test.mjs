@@ -224,6 +224,25 @@ test('ratings moderation sends user low-score pages and audited hide restore rea
   assert.equal(requests[2].path, '/api/v1/admin/ratings/rating%2F1/restore')
   assert.deepEqual(requests[2].body, { reason: 'Review completed' })
 })
+
+test('late success and expired requests cannot cross into a replacement staff session', async () => {
+  for (const status of [200, 401]) {
+    tokenStorage.setSession('old-access', 'old-refresh', true)
+    let release, started
+    const gate = new Promise((resolve) => release = resolve)
+    const begin = new Promise((resolve) => started = resolve)
+    const count = requests.length
+    handle = async (_req, json) => { started(); await gate; json(status, { error: 'Expired', secret: 'old-staff-data' }) }
+    const pending = apiClient.get('/admin/session-isolation')
+    const rejected = assert.rejects(pending, /staff session changed/)
+    await begin
+    tokenStorage.setSession('replacement-access', 'replacement-refresh', true)
+    release(); await rejected
+    assert.equal(requests.length, count + 1)
+    assert.equal(tokenStorage.getAccessToken(), 'replacement-access')
+    assert.equal(tokenStorage.getRefreshToken(), 'replacement-refresh')
+  }
+})
 const { mapBackendUserDetailToDriver } =
   await import('../src/features/drivers/adapters/driverAdapter.ts')
 const staff = {

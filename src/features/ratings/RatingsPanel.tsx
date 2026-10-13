@@ -6,7 +6,6 @@ import { ratingService, type RatingRecord } from './rating.service'
 import { DataTable, FilterBar } from '@/components/common/DataTable'
 import { ReasonDialog, StatusBadge } from '@/components/common/ReasonDialog'
 import { Button } from '@/components/ui/button'
-import { Select } from '@/features/operations/shared'
 import { usePermission } from '@/features/auth/hooks/usePermission'
 import { useShipText } from '@/components/common/ship-text'
 import { formatDateTime } from '@/lib/utils/formatters'
@@ -65,15 +64,21 @@ export function RatingsPanel({ userId }: { userId?: string }) {
         >
           {t('Low scores (1–2)')}
         </Button>
-        <Select
-          label={t('Visibility')}
-          value={hidden}
-          options={['', 'false', 'true']}
-          onChange={(value) => {
-            setHidden(value)
-            setOffset(0)
-          }}
-        />
+        <label className="grid gap-1 text-sm">
+          {t('Visibility')}
+          <select
+            className="promo-select"
+            value={hidden}
+            onChange={(event) => {
+              setHidden(event.target.value)
+              setOffset(0)
+            }}
+          >
+            <option value="">{t('All')}</option>
+            <option value="false">{t('Visible')}</option>
+            <option value="true">{t('Hidden')}</option>
+          </select>
+        </label>
       </FilterBar>
       {unavailable && (
         <aside role="status" className="rounded-lg border bg-amber-50 p-3 text-sm">
