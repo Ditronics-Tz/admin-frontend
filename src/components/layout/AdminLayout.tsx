@@ -4,6 +4,7 @@ import { Sidebar } from './Sidebar'
 import { Topbar } from './Topbar'
 import { MobileNavDrawer } from './MobileNavDrawer'
 import { SafetyMonitor } from '@/features/operations/safety.live'
+import { ApiNotice } from '@/components/common/ApiNotice'
 
 export const AdminLayout: React.FC = () => {
   return (
@@ -19,6 +20,7 @@ export const AdminLayout: React.FC = () => {
 
         {/* Page Content Viewport */}
         <main className="flex-1 overflow-y-auto">
+          <ApiNotice />
           <Outlet />
         </main>
       </div>

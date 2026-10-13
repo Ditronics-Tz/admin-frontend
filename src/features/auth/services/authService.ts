@@ -2,6 +2,7 @@ import { apiClient, tokenStorage, refreshStaffSession } from '@/lib/api/client'
 import { API_ENDPOINTS } from '@/lib/constants'
 import type { BackendStaffLoginResponse, BackendStaffUser } from '@/lib/api/types'
 import type { AdminUser, AuthSession, LoginCredentials } from '@/types/auth'
+import { useApiAccess } from '@/lib/api/access'
 
 /**
  * Adapter: Transforms backend StaffUserResponse into frontend AdminUser model.
@@ -56,6 +57,7 @@ export const authService: IAuthService = {
 
     // Persist tokens
     tokenStorage.setSession(data.access_token, data.refresh_token)
+    useApiAccess.setState({ readOnly: false })
 
     const mappedUser = mapBackendStaffUser(data.user)
 

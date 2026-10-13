@@ -21,3 +21,13 @@ The current checkout had 12 source formatting failures, rather than the eight in
 No safe patch upgrade was offered by the installed lockfile audit. These are deferred advisories, not resolved security findings. CI publishes the current result without forcing a major upgrade. Build inputs should remain repository controlled pending the migration.
 
 Validation: format check, typecheck, tests (29/29), and production build passed. Lint passed with five existing Fast Refresh warnings. npm audit reported the seven deferred advisories above. The CI uses npm ci to exercise a clean checkout; a hosted CI run is pending push/PR by the owner.
+
+## F2 — API foundation
+
+Branch: `ship/fe-api`. Kept the existing Axios client, concurrent token refresh and typed services. Existing 429 numeric handling and field mapping were extended with HTTP-date Retry-After support, request IDs in error messages/toasts, a global rate-limit toast, generic 422 field mapping and an adapter for form field errors. A server 403 makes shared write permissions read-only with an explanatory banner. Existing operational and promotion request wrappers retain their narrower permission gates.
+
+Added shared DataTable/server pagination, FilterBar, ReasonDialog and MaskedValue components; reused the existing ConfirmDialog/StatusBadge/table/empty/skeleton primitives. Phone reveal calls POST `/admin/users/:id/reveal-phone`; missing routes leave the value masked and explicitly unavailable. No local reveal bypass exists.
+
+`VITE_API_MODE=mock` opts into the fixture adapter only during development. It provides empty typed list fixtures, explicitly labels the workspace, and rejects unimplemented operations with 501. Production always uses the live transport. Existing integration tests continue to use the repository's HTTP fixture server.
+
+Validation: format check, typecheck, 30/30 integration tests, production build passed; lint passed with the same five existing warnings. Added focused checks for request references, HTTP-date Retry-After and generic field mapping.

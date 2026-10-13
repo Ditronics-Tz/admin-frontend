@@ -5,6 +5,7 @@ interface ImportMetaEnv {
   readonly VITE_APP_ENV?: string
   readonly VITE_DEFAULT_LOCALE?: string
   readonly VITE_ENABLE_DEMO_MODE?: string
+  readonly VITE_API_MODE?: 'mock' | 'live'
 }
 
 interface ImportMeta {

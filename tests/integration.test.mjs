@@ -54,6 +54,22 @@ const { supportService } =
   await import('../src/features/support/services/support.service.ts')
 const { dashboardService } =
   await import('../src/features/dashboard/services/dashboard.service.ts')
+
+test('API references, HTTP-date rate limits and field errors remain actionable', async () => {
+  const { formatApiError, retryAfterSeconds, applyFieldErrors } = await import('../src/lib/api/errors.ts')
+  const { maskPhone } = await import('../src/components/common/mask-phone.ts')
+  assert.equal(maskPhone('+255 754 123 456'), '+255 7** *** 456')
+  const now = Date.UTC(2026, 9, 13, 10, 0)
+  assert.equal(retryAfterSeconds(new Date(now + 30000).toUTCString(), now), 30)
+  assert.equal(retryAfterSeconds('7'), 7)
+  const detail = formatApiError({ isAxiosError: true, response: {
+    status: 422, data: { error: 'Invalid request', request_id: 'test-reference', fields: { reason: 'Required' } }, headers: {},
+  } })
+  assert.match(detail.message, /Reference: test-reference/)
+  const fields = {}
+  assert.equal(applyFieldErrors(detail, (field, message) => fields[field] = message), true)
+  assert.deepEqual(fields, { reason: 'Required' })
+})
 const { mapBackendUserDetailToDriver } =
   await import('../src/features/drivers/adapters/driverAdapter.ts')
 const staff = {

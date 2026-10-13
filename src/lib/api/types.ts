@@ -3,6 +3,24 @@
  */
 
 // Legacy frontend wrapper compatibility
+export type Page<T, K extends string> = {
+  total: number
+  limit: number
+  offset: number
+} & Record<K, T[]>
+
+export interface ListParams {
+  limit?: number
+  offset?: number
+  q?: string
+  role?: string
+  status?: string
+  action?: string
+  actor?: string
+  from?: string
+  to?: string
+}
+
 export interface ApiResponse<T = unknown> {
   data: T
   message?: string

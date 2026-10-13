@@ -1,4 +1,5 @@
 import { useAuthStore } from '@/stores/useAuthStore'
+import { useApiAccess } from '@/lib/api/access'
 
 /**
  * Hook for checking administrative permissions aligned with Go backend RBAC:
@@ -7,6 +8,7 @@ import { useAuthStore } from '@/stores/useAuthStore'
  */
 export function usePermission() {
   const { user, isAuthenticated } = useAuthStore()
+  const readOnly = useApiAccess((state) => state.readOnly)
 
   const role = user?.role
 
@@ -20,11 +22,13 @@ export function usePermission() {
     isAuthenticated,
     isAdmin,
     isSupport,
-    canManageStaff: isAdmin,
+    readOnly,
+    canWrite: isSupport && !readOnly,
+    canManageStaff: isAdmin && !readOnly,
     canViewAuditLogs: isAdmin,
-    canChangeUserRoles: isAdmin,
-    canVerifyDrivers: isSupport,
-    canManageComplaints: isSupport,
-    canManageTickets: isSupport,
+    canChangeUserRoles: isAdmin && !readOnly,
+    canVerifyDrivers: isSupport && !readOnly,
+    canManageComplaints: isSupport && !readOnly,
+    canManageTickets: isSupport && !readOnly,
   }
 }

@@ -8,4 +8,5 @@ export const API_CONFIG = {
   tokenKey: 'rida_staff_access_token',
   refreshTokenKey: 'rida_staff_refresh_token',
   demoMode: import.meta.env.DEV && import.meta.env.VITE_ENABLE_DEMO_MODE === 'true',
+  mockMode: import.meta.env.DEV && import.meta.env.VITE_API_MODE === 'mock',
 } as const

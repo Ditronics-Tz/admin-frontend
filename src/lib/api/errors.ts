@@ -8,6 +8,7 @@ export interface BackendErrorPayload {
   code?: string
   errors?: Record<string, string[]>
   fields?: Record<string, string>
+  request_id?: string
 }
 
 export class ApiClientError extends Error {
@@ -17,6 +18,8 @@ export class ApiClientError extends Error {
   public require2FA?: boolean
   public validationErrors?: Record<string, string[]>
   public isNetworkError: boolean
+  public requestId?: string
+  public retryAfterSeconds?: number
 
   constructor(
     message: string,
@@ -43,7 +46,7 @@ export class ApiClientError extends Error {
 /**
  * Normalizes an unknown error or AxiosError into a human-readable, strongly-typed ApiClientError.
  */
-export function formatApiError(error: unknown): ApiClientError {
+function normalizeApiError(error: unknown): ApiClientError {
   if (error instanceof ApiClientError) {
     return error
   }
@@ -163,4 +166,44 @@ export function formatApiError(error: unknown): ApiClientError {
         }
       )
   }
+}
+
+export function retryAfterSeconds(value: unknown, now = Date.now()): number {
+  if (typeof value !== 'string' && typeof value !== 'number') return 60
+  const numeric = Number(value)
+  if (Number.isFinite(numeric)) return Math.max(1, Math.ceil(numeric))
+  const date = Date.parse(String(value))
+  return Number.isFinite(date) ? Math.max(1, Math.ceil((date - now) / 1000)) : 60
+}
+
+export function formatApiError(error: unknown): ApiClientError {
+  const detail = normalizeApiError(error)
+  if (error instanceof ApiClientError) return detail
+  const response = (error as AxiosError<BackendErrorPayload> | undefined)?.response
+  const requestId = response?.data?.request_id || response?.headers?.['x-request-id']
+  if (typeof requestId === 'string' && requestId) {
+    detail.requestId = requestId
+    detail.message += ` Reference: ${requestId}`
+  }
+  if (!detail.validationErrors && response?.data?.fields) {
+    detail.validationErrors = Object.fromEntries(
+      Object.entries(response.data.fields).map(([field, message]) => [field, [message]])
+    )
+  }
+  if (detail.status === 429) {
+    detail.retryAfterSeconds = retryAfterSeconds(response?.headers?.['retry-after'])
+    detail.message = `Too many requests. Try again in ${detail.retryAfterSeconds} seconds.${detail.requestId ? ` Reference: ${detail.requestId}` : ''}`
+  }
+  return detail
+}
+
+export function applyFieldErrors(
+  error: unknown,
+  setError: (field: string, message: string) => void
+) {
+  const fields = formatApiError(error).validationErrors || {}
+  Object.entries(fields).forEach(([field, messages]) =>
+    setError(field, messages.join(' '))
+  )
+  return Object.keys(fields).length > 0
 }

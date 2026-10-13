@@ -2,6 +2,9 @@ import axios, { type AxiosError, type InternalAxiosRequestConfig } from 'axios'
 import { API_CONFIG } from './config'
 import { formatApiError } from './errors'
 import type { BackendStaffRefreshResponse, BackendStaffUser } from './types'
+import { mockAdapter } from './mock'
+import { toast } from 'sonner'
+import { useApiAccess } from './access'
 
 type SessionEvent = { type: 'expired' } | { type: 'updated'; user: BackendStaffUser }
 const listeners = new Set<(event: SessionEvent) => void>()
@@ -36,6 +39,7 @@ export const tokenStorage = {
   },
   clearTokens() {
     revision++
+    useApiAccess.setState({ readOnly: false })
     try {
       localStorage.removeItem(API_CONFIG.tokenKey)
       localStorage.removeItem(API_CONFIG.refreshTokenKey)
@@ -50,6 +54,7 @@ export const apiClient = axios.create({
   baseURL: API_CONFIG.baseURL,
   timeout: API_CONFIG.timeout,
   headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
+  ...(API_CONFIG.mockMode ? { adapter: mockAdapter } : {}),
 })
 
 // All refresh callers share one rotation, including session restoration in StrictMode.
@@ -121,6 +126,9 @@ apiClient.interceptors.response.use(
         /* Keep the HTTP status fallback. */
       }
     }
-    throw formatApiError(error)
+    const detail = formatApiError(error)
+    if (detail.status === 403) useApiAccess.setState({ readOnly: true })
+    if (detail.status === 429) toast.error(detail.message, { id: 'api-rate-limit' })
+    throw detail
   }
 )
