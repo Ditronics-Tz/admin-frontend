@@ -25,13 +25,16 @@ export function ReportsPage() {
     [category, setCategory] = useState(''),
     [mine, setMine] = useState(false),
     [offset, setOffset] = useState(0),
-    [age, setAge] = useState('')
+    [age, setAge] = useState(''),
+    [priority, setPriority] = useState(''),
+    [assignee, setAssignee] = useState('')
   const [now] = useState(() => Date.now())
   const [search] = useSearchParams()
   const params = {
     status,
     category,
-    assignee: mine ? user?.id || '' : '',
+    assignee: mine ? user?.id || '' : assignee,
+    priority,
     offset,
     limit: 20,
     ...(search.get('user') ? { user: search.get('user')! } : {}),
@@ -63,6 +66,27 @@ export function ReportsPage() {
         ))}
       </div>
       <div className="grid gap-3 sm:grid-cols-3">
+        <Select
+          label="Priority"
+          value={priority}
+          options={['', 'low', 'normal', 'high', 'urgent']}
+          onChange={(value) => {
+            setPriority(value)
+            setOffset(0)
+          }}
+        />
+        <label className="grid gap-1 text-sm">
+          {t('Assignee')}
+          <input
+            className="promo-input"
+            disabled={mine}
+            value={assignee}
+            onChange={(event) => {
+              setAssignee(event.target.value)
+              setOffset(0)
+            }}
+          />
+        </label>
         <Select
           label="Category"
           value={category}

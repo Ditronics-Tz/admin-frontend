@@ -65,3 +65,11 @@ Reject/re-upload and override decisions now require confirmation; the existing r
 Users and drivers have account suspension/reactivation controls with required reasons, optional suspension end dates and confirmation dialogs; driver Account Activity now includes the existing support panel. Added confirmations for internal note deletion and result toasts. Account/driver phones are masked with audited reveal. Replaced the unsupported LATRA standards claim with the actual configured Rida verification-policy description.
 
 Validation: final format check, typecheck, lint (same five warnings), production build and 35/35 integration tests passed, including signed image bearer isolation, expiry rejection and queue filters. Live queue filters/storage acceptance awaits B3/B4, and storage CORS/origin configuration is an owner deployment step.
+
+## F7 — Support queues
+
+Branch: `ship/fe-support`. Replaced the stub-only ticket/complaint display with shared server-paginated queues for tickets, complaints and reports. Each has status tabs, q/priority/category/assignee/assigned-to-me filters and a real detail route with notes, assignment, status/priority changes and required resolution notes. Confirmation/reason dialogs, role/403 guards, loading/empty/error states and en/sw-ready strings reuse existing primitives. The existing dedicated reports workflow is retained; added its missing priority and assignee filters.
+
+Old count-only support stubs are explicitly rejected as unavailable, and malformed detail acknowledgements cannot expose write controls. No sample rows or successful server mutations are invented. Development fixtures remain visibly labelled and reject all unimplemented mutations. B8 live field/route reconciliation pending.
+
+Validation: final format check, typecheck, lint (same five warnings), production build and 36/36 integration tests passed. Added stub rejection and support filter/detail/note/resolution contract checks.

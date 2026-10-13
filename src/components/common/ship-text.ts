@@ -1,6 +1,33 @@
 import { useUiStore } from '@/stores/useUiStore'
 
 const sw: Record<string, string> = {
+  tickets: 'Tiketi',
+  complaints: 'Malalamiko',
+  reports: 'Taarifa',
+  Priority: 'Kipaumbele',
+  Category: 'Aina',
+  Assignee: 'Aliyekabidhiwa',
+  'Assigned to me': 'Nilizokabidhiwa',
+  Subject: 'Mada',
+  Unassigned: 'Haijakabidhiwa',
+  'Support persistence is unavailable on this server.':
+    'Uhifadhi wa msaada haupatikani kwenye seva hii.',
+  'Back to support': 'Rudi kwenye msaada',
+  Assign: 'Kabidhi',
+  'Change status or priority': 'Badilisha hali au kipaumbele',
+  Resolve: 'Tatua',
+  Notes: 'Maelezo',
+  'No notes yet': 'Hakuna maelezo bado',
+  'Add note': 'Ongeza maelezo',
+  'Staff ID (empty to unassign)':
+    'Kitambulisho cha mfanyakazi (acha wazi kuondoa kabidhi)',
+  'Support record updated': 'Rekodi ya msaada imesasishwa',
+  open: 'wazi',
+  'in progress': 'inaendelea',
+  'in review': 'inachunguzwa',
+  resolved: 'imetatuliwa',
+  closed: 'imefungwa',
+  dismissed: 'imeondolewa',
   'Account updated.': 'Akaunti imesasishwa.',
   'Confirm account action?': 'Thibitisha kitendo cha akaunti?',
   'Delete internal note?': 'Futa maelezo ya ndani?',

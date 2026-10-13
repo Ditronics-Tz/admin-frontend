@@ -175,6 +175,24 @@ test('verification pages forward expiry filters and signed images never carry st
   handle = (_req, json) => json(200, { url: `${process.env.VITE_API_BASE_URL}/signed-image`, expires_at: '2000-01-01T00:00:00Z' })
   await assert.rejects(loadDocumentImage('/files/documents/doc-expired', new AbortController().signal, 'doc-expired'), /link expired/)
 })
+
+test('support queues reject old stubs and send persisted workflow filters notes and resolution', async () => {
+  handle = (_req, json) => json(200, { count: 0, tickets: [] })
+  await assert.rejects(supportService.page('tickets'), /persistence is unavailable/)
+  handle = (req, json) => {
+    if (req.path.includes('/tickets/ticket-1')) return json(200, { ticket: { id: 'ticket-1', subject: 'Support', status: 'open' }, notes: [] })
+    return json(200, { tickets: [], total: 0, limit: 20, offset: 20 })
+  }
+  await supportService.page('tickets', { status: 'open', priority: 'high', assignee: 'staff-1', category: 'fare', offset: 20 })
+  assert.equal((await supportService.detail('tickets', 'ticket-1')).item.id, 'ticket-1')
+  await supportService.note('tickets', 'ticket-1', 'Reviewed')
+  await supportService.patch('tickets', 'ticket-1', { status: 'resolved', resolution_note: 'Customer confirmed' })
+  assert.equal(requests.at(-2).method, 'POST')
+  assert.deepEqual(requests.at(-2).body, { body: 'Reviewed' })
+  assert.equal(requests.at(-1).method, 'PATCH')
+  assert.deepEqual(requests.at(-1).body, { status: 'resolved', resolution_note: 'Customer confirmed' })
+  assert.match(requests[1].path, /assignee=staff-1/)
+})
 const { mapBackendUserDetailToDriver } =
   await import('../src/features/drivers/adapters/driverAdapter.ts')
 const staff = {
