@@ -258,6 +258,20 @@ test('dashboard operational counts stay unavailable until the server enables per
   assert.equal(available.openTickets, 2)
   assert.equal(available.openComplaints, 0)
 })
+
+test('production CSP permits configured private and public image origins without enabling inline scripts', async () => {
+  const { productionCsp } = await import('../csp.ts')
+  const plugin = productionCsp()
+  plugin.configResolved({ env: { VITE_API_BASE_URL: 'https://api.example.invalid/api/v1', VITE_DOCUMENT_ORIGIN: 'https://private.example.invalid', VITE_PUBLIC_IMAGE_ORIGIN: 'https://photos.example.invalid', VITE_MAP_TILE_URL: 'https://tiles.example.invalid/{z}/{x}/{y}.png' } })
+  const policy = plugin.transformIndexHtml()[0].attrs.content
+  assert.match(policy, /script-src 'self';/)
+  assert.ok(!policy.includes('unsafe-eval'))
+  const images = policy.match(/img-src ([^;]+)/)[1], connections = policy.match(/connect-src ([^;]+)/)[1]
+  assert.ok(images.includes('https://photos.example.invalid'))
+  assert.ok(images.includes('https://tiles.example.invalid'))
+  assert.ok(connections.includes('https://private.example.invalid'))
+  assert.ok(!connections.includes('https://photos.example.invalid'))
+})
 const { mapBackendUserDetailToDriver } =
   await import('../src/features/drivers/adapters/driverAdapter.ts')
 const staff = {

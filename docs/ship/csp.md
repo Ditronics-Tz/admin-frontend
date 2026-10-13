@@ -13,3 +13,5 @@ The hosting owner must also send `Content-Security-Policy: frame-ancestors 'none
 Validation and remaining browser/hosting checks are recorded in frontend-report.md.
 
 The rides map uses public OSM tiles only in development. Set `VITE_MAP_TILE_URL` to the licensed provider template with `{z}`, `{x}`, `{y}`, and `VITE_MAP_ATTRIBUTION` to that provider's required plain-text attribution before production use. Its HTTPS origin is added to img-src by the production CSP plugin. Without configured production tiles, the ride map retains its points and coordinate text, and labels the background unavailable.
+
+For B3 public profile-photo redirects, configure `VITE_PUBLIC_IMAGE_ORIGIN` to the HTTPS public R2/CDN domain. This is distinct from the private signed-document origin and is allowed only in img-src. Private retrieval retains its separately configured connect-src permission.

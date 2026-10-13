@@ -18,6 +18,7 @@ function origin(value?: string) {
 export function productionCsp(): Plugin {
   let api = '',
     documents = '',
+    publicImages = '',
     tiles = 'https://tile.openstreetmap.org'
   return {
     name: 'rida-production-csp',
@@ -25,6 +26,7 @@ export function productionCsp(): Plugin {
     configResolved(config) {
       api = origin(config.env.VITE_API_BASE_URL)
       documents = origin(config.env.VITE_DOCUMENT_ORIGIN)
+      publicImages = origin(config.env.VITE_PUBLIC_IMAGE_ORIGIN)
       tiles = origin(config.env.VITE_MAP_TILE_URL) || tiles
     },
     transformIndexHtml() {
@@ -32,7 +34,7 @@ export function productionCsp(): Plugin {
         new Set(["'self'", api, documents].filter(Boolean))
       ).join(' ')
       const images = Array.from(
-        new Set(["'self'", 'blob:', api, documents, tiles].filter(Boolean))
+        new Set(["'self'", 'blob:', api, documents, publicImages, tiles].filter(Boolean))
       ).join(' ')
       return [
         {
