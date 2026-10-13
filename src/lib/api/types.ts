@@ -219,6 +219,7 @@ export interface BackendUserDetailResponse {
  * Backend Admin Stats Response (GET /api/v1/admin/stats)
  */
 export interface BackendAdminStatsResponse {
+  operational_counts_available?: boolean
   total_drivers: number
   total_passengers: number
   active_rides: number

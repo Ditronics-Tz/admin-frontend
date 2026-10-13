@@ -14,5 +14,6 @@ Contracts will be reconciled against backend `docs/api/openapi.yaml` and `docs/s
 
 - B3 presign metadata/local501 fallback matches the implemented viewer. R2/provider deployment smoke remains pending.
 - B4 readiness, user/staff/audit/verification collection keys and filter parameters match. Sorting is not a supported B4 contract; removed unused sort request parameters (the UI exposes no sorting control). Vehicle type stays disabled.
-- Requested B4 user status correction: banned is persisted by existing account controls but was excluded from the new filter validator; inactive/deactivated aggregate is needed by count cards (IsActive=false). Backend owner notified before final acceptance.
+- B4 user status correction implemented: banned exact status and inactive/deactivated aggregate (IsActive=false) are accepted. Count cards retain the server's aggregate contract.
 - Existing complaints aliases return the `reports` key, so the new complaints queue explicitly reports unavailable until B8 returns its own contract. Existing dedicated report actions are retained; new generic report patch/notes await B8 field reconciliation.
+- B4 stats now returns `operational_counts_available=false`; frontend requires true before displaying operational counts. B8 will enable this only with real persisted ride/support totals. B8-pending ride/ticket endpoints now return501, preventing false empty queues or unsaved mutation success.

@@ -243,6 +243,21 @@ test('late success and expired requests cannot cross into a replacement staff se
     assert.equal(tokenStorage.getRefreshToken(), 'replacement-refresh')
   }
 })
+
+test('dashboard operational counts stay unavailable until the server enables persisted totals', async () => {
+  const payload = { total_drivers: 5, total_passengers: 7, active_rides: 0, open_tickets: 0, open_complaints: 0 }
+  handle = (_req, json) => json(200, payload)
+  const unavailable = await dashboardService.getStats()
+  assert.equal(unavailable.totalDrivers, 5)
+  assert.equal(unavailable.activeRides, null)
+  assert.equal(unavailable.openTickets, null)
+  assert.equal(unavailable.openComplaints, null)
+  handle = (_req, json) => json(200, { ...payload, operational_counts_available: true, active_rides: 3, open_tickets: 2 })
+  const available = await dashboardService.getStats()
+  assert.equal(available.activeRides, 3)
+  assert.equal(available.openTickets, 2)
+  assert.equal(available.openComplaints, 0)
+})
 const { mapBackendUserDetailToDriver } =
   await import('../src/features/drivers/adapters/driverAdapter.ts')
 const staff = {

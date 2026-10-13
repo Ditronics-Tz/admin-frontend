@@ -5,9 +5,9 @@ import type { BackendAdminStatsResponse } from '@/lib/api/types'
 export interface DashboardStats {
   totalDrivers: number
   totalPassengers: number
-  activeRides: number
-  openTickets: number
-  openComplaints: number
+  activeRides: number | null
+  openTickets: number | null
+  openComplaints: number | null
 }
 
 export interface BackendRidesListResponse {
@@ -24,13 +24,15 @@ export const dashboardService = {
       API_ENDPOINTS.ADMIN.STATS
     )
     const data = response.data
+    const operationalCount = (value: number) =>
+      data.operational_counts_available === true && Number.isFinite(value) ? value : null
 
     return {
       totalDrivers: data.total_drivers,
       totalPassengers: data.total_passengers,
-      activeRides: data.active_rides,
-      openTickets: data.open_tickets,
-      openComplaints: data.open_complaints,
+      activeRides: operationalCount(data.active_rides),
+      openTickets: operationalCount(data.open_tickets),
+      openComplaints: operationalCount(data.open_complaints),
     }
   },
 

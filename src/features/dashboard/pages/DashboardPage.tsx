@@ -48,14 +48,22 @@ export const DashboardPage: React.FC = () => {
         <MetricCard
           label="Active Rides"
           value={
-            isLoading ? '...' : stats ? stats.activeRides.toLocaleString() : 'Unavailable'
+            isLoading
+              ? '...'
+              : stats?.activeRides != null
+                ? stats.activeRides.toLocaleString()
+                : 'Unavailable'
           }
           icon={CarFront}
-          change={{
-            value: 'Real count',
-            isPositive: true,
-            period: 'active persisted trips',
-          }}
+          change={
+            stats?.activeRides != null
+              ? {
+                  value: 'Real count',
+                  isPositive: true,
+                  period: 'active persisted trips',
+                }
+              : undefined
+          }
         />
         <MetricCard
           label="Registered Drivers"

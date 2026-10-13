@@ -82,7 +82,7 @@ Branch: `ship/fe-rides`. Added server-paginated rides with status/date/party/sea
 
 Reused the repository's Web Mercator/SVG raster map approach, with fitting for both points, configurable `VITE_MAP_TILE_URL` and attribution. Public OSM tiles are a development fallback only; production renders the coordinates/markers with an honest missing-background state until a licensed tile provider is configured. No new UI/map library was added.
 
-Dashboard counts continue to use `/admin/stats`; operational cards now show the returned ride/ticket/complaint counts and unavailable states, rather than client hardcoded values. Recent rides request only five real rows and link to supported details. Historical analytics remains unavailable unless the server provides it.
+Dashboard counts continue to use `/admin/stats`; operational cards show ride/ticket/complaint counts only when the server explicitly returns `operational_counts_available=true`. Missing/false capability keeps these cards unavailable, including the current B8-pending backend. Account totals remain real server counts. Recent rides request only five real rows and link to supported details. Historical analytics remains unavailable unless the server provides it.
 
 Validation: format check, typecheck, lint (same five warnings), production build and 37/37 integration tests passed. Contract checks cover parties/locations/events, paging/party filters, cancellation/reassignment reason payloads and stub rejection. B7/B8 live nested ride DTO, actions and count acceptance pending.
 
