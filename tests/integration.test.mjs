@@ -1166,6 +1166,96 @@ test('safety, finance and fraud API clients send staff contracts and stable idem
   assert.equal(moneyHeaders('stable-key').headers['Idempotency-Key'], 'stable-key')
 })
 
+test('support lands on safety and login preserves report filters and password gates', async () => {
+  const { staffLandingPath } = await import('../src/features/auth/landing.ts')
+  assert.equal(staffLandingPath({ role: 'support' }), '/safety')
+  assert.equal(staffLandingPath({ role: 'support' }, { pathname: '/' }), '/safety')
+  assert.equal(staffLandingPath({ role: 'admin' }), '/dashboard')
+  assert.equal(
+    staffLandingPath(
+      { role: 'support' },
+      {
+        pathname: '/reports',
+        search: '?user=flagged-user',
+        hash: '#notes',
+      }
+    ),
+    '/reports?user=flagged-user#notes'
+  )
+  assert.equal(
+    staffLandingPath(
+      { role: 'support', mustChangePassword: true },
+      {
+        pathname: '/reports',
+      }
+    ),
+    '/change-password'
+  )
+})
+
+test('reports opened from a flagged account send the user filter to the API', async () => {
+  const React = await import('react')
+  const { renderToStaticMarkup } = await import('react-dom/server')
+  const { MemoryRouter } = await import('react-router-dom')
+  const { QueryClient, QueryClientProvider } = await import('@tanstack/react-query')
+  const { ReportsPage } = await import('../src/features/operations/ReportsPage.tsx')
+  const client = new QueryClient({ defaultOptions: { queries: { retry: false } } })
+  handle = (_req, json) => json(200, { reports: [], total: 0, limit: 20, offset: 0 })
+  try {
+    renderToStaticMarkup(
+      React.createElement(
+        MemoryRouter,
+        { initialEntries: ['/reports?user=flagged-user'] },
+        React.createElement(
+          QueryClientProvider,
+          { client },
+          React.createElement(ReportsPage)
+        )
+      )
+    )
+    const query = client
+      .getQueryCache()
+      .find({ queryKey: ['operations', 'reports'], exact: false })
+    assert.ok(query)
+    await query.fetch()
+    const url = new URL(requests.at(-1).path, 'http://test.invalid')
+    assert.equal(url.searchParams.get('user'), 'flagged-user')
+  } finally {
+    client.clear()
+  }
+})
+
+test('SOS console exposes pagination when more than 100 alerts are open', async () => {
+  const React = await import('react')
+  const { renderToStaticMarkup } = await import('react-dom/server')
+  const { MemoryRouter } = await import('react-router-dom')
+  const { QueryClient, QueryClientProvider } = await import('@tanstack/react-query')
+  const { SafetyPage } = await import('../src/features/operations/SafetyPage.tsx')
+  const client = new QueryClient({ defaultOptions: { queries: { staleTime: Infinity } } })
+  const data = { alerts: [], total: 101, limit: 100, offset: 0, sla_seconds: 60 }
+  client.setQueryData(['operations', 'sos', 'open', 0], data)
+  try {
+    const html = renderToStaticMarkup(
+      React.createElement(
+        MemoryRouter,
+        {},
+        React.createElement(
+          QueryClientProvider,
+          { client },
+          React.createElement(SafetyPage)
+        )
+      )
+    )
+    assert.match(html, /aria-label="Pagination"/)
+    assert.match(html, />Next<\/button>/)
+    const next = html.match(/<button[^>]*>Next<\/button>/)?.[0]
+    assert.ok(next)
+    assert.ok(!/\sdisabled(?:=|\s|>)/.test(next))
+  } finally {
+    client.clear()
+  }
+})
+
 test('support fraud rules stay read-only while the admin can edit them', async () => {
   const React = await import('react')
   const { renderToStaticMarkup } = await import('react-dom/server')
@@ -1216,30 +1306,26 @@ test('support fraud rules stay read-only while the admin can edit them', async (
   }
   try {
     useOperationsAccess.setState({ deniedFor: null })
-    useAuthStore
-      .getState()
-      .setUser({
-        id: 'support-fraud',
-        role: 'support',
-        fullName: 'Support',
-        email: 'support@example.test',
-        isActive: true,
-        createdAt: '',
-      })
+    useAuthStore.getState().setUser({
+      id: 'support-fraud',
+      role: 'support',
+      fullName: 'Support',
+      email: 'support@example.test',
+      isActive: true,
+      createdAt: '',
+    })
     const support = render()
     assert.match(support, /<input[^>]*type="checkbox"[^>]*disabled/)
     assert.ok(!support.includes('Save rule'))
     assert.ok(!support.includes('Dry run (30 days)'))
-    useAuthStore
-      .getState()
-      .setUser({
-        id: 'admin-fraud',
-        role: 'admin',
-        fullName: 'Admin',
-        email: 'admin@example.test',
-        isActive: true,
-        createdAt: '',
-      })
+    useAuthStore.getState().setUser({
+      id: 'admin-fraud',
+      role: 'admin',
+      fullName: 'Admin',
+      email: 'admin@example.test',
+      isActive: true,
+      createdAt: '',
+    })
     const admin = render()
     assert.ok(!admin.includes('Save rule'))
   } finally {

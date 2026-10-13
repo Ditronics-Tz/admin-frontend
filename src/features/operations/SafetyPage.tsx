@@ -22,7 +22,8 @@ import {
 } from './shared'
 export function SafetyPage() {
   const t = useOpsText(),
-    q = useOpenSOS(),
+    [offset, setOffset] = useState(0),
+    q = useOpenSOS(offset),
     live = useSafetyLive()
   return (
     <main className="space-y-5 p-4 sm:p-8">
@@ -85,6 +86,14 @@ export function SafetyPage() {
         />
       ) : (
         <Empty message={t('No open emergencies')} />
+      )}
+      {q.data && (
+        <Pagination
+          total={q.data.total}
+          offset={offset}
+          limit={100}
+          onChange={setOffset}
+        />
       )}
     </main>
   )

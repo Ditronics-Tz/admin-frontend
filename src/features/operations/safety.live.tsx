@@ -82,11 +82,11 @@ export function SafetyMonitor() {
   }, [user, cache])
   return null
 }
-export function useOpenSOS() {
+export function useOpenSOS(offset = 0) {
   const connection = useSafetyLive((s) => s.connection)
   return useQuery({
-    queryKey: ['operations', 'sos', 'open'],
-    queryFn: () => safetyApi.alerts({ status: 'open', limit: 100, offset: 0 }),
+    queryKey: ['operations', 'sos', 'open', offset],
+    queryFn: () => safetyApi.alerts({ status: 'open', limit: 100, offset }),
     refetchInterval: connection === 'live' ? 30000 : 5000,
   })
 }

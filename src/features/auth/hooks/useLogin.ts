@@ -3,10 +3,10 @@ import { useQueryClient } from '@tanstack/react-query'
 import { useNavigate, useLocation } from 'react-router-dom'
 import { authService } from '../services/authService'
 import { useAuthStore } from '@/stores/useAuthStore'
-import { ROUTES } from '@/lib/constants'
 import { formatApiError, ApiClientError } from '@/lib/api/errors'
 import type { LoginFormValues } from '../schemas/authSchema'
 import type { LoginTranslations } from '@/lib/constants/translations'
+import { staffLandingPath } from '../landing'
 
 export const useLogin = (t: LoginTranslations) => {
   const [isLoading, setIsLoading] = useState(false)
@@ -35,10 +35,10 @@ export const useLogin = (t: LoginTranslations) => {
       setUser(session.user)
 
       // Respect intended destination if redirected from a protected route
-      const from =
-        (location.state as { from?: { pathname: string } })?.from?.pathname ||
-        ROUTES.DASHBOARD
-      navigate(session.user.mustChangePassword ? ROUTES.CHANGE_PASSWORD : from, {
+      const from = (
+        location.state as { from?: { pathname: string; search?: string; hash?: string } }
+      )?.from
+      navigate(staffLandingPath(session.user, from), {
         replace: true,
       })
     } catch (err: unknown) {

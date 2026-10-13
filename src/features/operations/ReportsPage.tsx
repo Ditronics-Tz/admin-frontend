@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Link, useParams } from 'react-router-dom'
+import { Link, useParams, useSearchParams } from 'react-router-dom'
 import { useQuery } from '@tanstack/react-query'
 import { Button } from '@/components/ui/button'
 import { QueryError } from '@/components/feedback/QueryError'
@@ -27,12 +27,14 @@ export function ReportsPage() {
     [offset, setOffset] = useState(0),
     [age, setAge] = useState('')
   const [now] = useState(() => Date.now())
+  const [search] = useSearchParams()
   const params = {
     status,
     category,
     assignee: mine ? user?.id || '' : '',
     offset,
     limit: 20,
+    ...(search.get('user') ? { user: search.get('user')! } : {}),
     ...(age ? { before: new Date(now - Number(age) * 86400000).toISOString() } : {}),
   }
   const q = useQuery({

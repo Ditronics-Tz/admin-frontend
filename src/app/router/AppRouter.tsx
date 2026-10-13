@@ -4,6 +4,7 @@ import { ROUTES } from '@/lib/constants'
 import { LoadingFallback } from '@/components/feedback/LoadingFallback'
 import { ProtectedRoute } from '@/components/layout/ProtectedRoute'
 import { NotFoundPage } from '@/components/common/NotFoundPage'
+import { HomeRedirect } from '@/features/auth/components/HomeRedirect'
 
 const LoginPage = lazy(() => import('@/features/auth/pages/LoginPage'))
 const ChangePasswordPage = lazy(() => import('@/features/auth/pages/ChangePasswordPage'))
@@ -120,10 +121,14 @@ const router = createBrowserRouter([
   {
     element: <SuspenseLayout />,
     children: [
-      // Default root redirects to dashboard
+      // Support staff start with the SOS console.
       {
         path: ROUTES.HOME,
-        element: <Navigate to={ROUTES.DASHBOARD} replace />,
+        element: (
+          <ProtectedRoute>
+            <HomeRedirect />
+          </ProtectedRoute>
+        ),
       },
       // Public administrative authentication route
       {

@@ -4,6 +4,10 @@ For the implemented admin API connections, local setup, backend limitations, and
 
 Promotions and referral screens, API assumptions, permissions, and checks are documented in [Promotions integration](docs/PROMOTIONS.md).
 
+Reports, Safety, Finance and Fraud are implemented using the existing UI stack;
+see [Operations integration](docs/OPERATIONS.md) for phase 6-9 behavior and the
+October 2026 task review. Support staff start on the SOS console after login.
+
 > **Tanzania Ride-Hailing Operations Platform**  
 > Operational administration, driver fleet management, rider safety, trips, transactions (TZS), and reporting.
 
