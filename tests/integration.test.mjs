@@ -107,6 +107,51 @@ test('paged users, staff and audit filters go to the server and driver hydration
   assert.equal(audit.searchParams.get('actor'), 'staff-1')
   assert.equal(audit.searchParams.get('to'), '2026-10-13')
 })
+
+test('user security revokes one session or all sessions and sends event pagination', async () => {
+  const { securityService } = await import('../src/features/customers/services/security.service.ts')
+  handle = (_req, json) => json(200, { sessions: [], events: [], total: 0, limit: 20, offset: 20 })
+  await securityService.sessions('user/1', 20)
+  await securityService.events('user/1', 'login_failed', 20)
+  await securityService.revoke('user/1', 'session-1')
+  await securityService.revoke('user/1')
+  await securityService.unlock('user/1')
+  assert.deepEqual(requests.slice(2).map(({ method, path, body }) => ({ method, path, body })), [
+    { method: 'POST', path: '/api/v1/admin/users/user%2F1/revoke-sessions', body: { session_id: 'session-1' } },
+    { method: 'POST', path: '/api/v1/admin/users/user%2F1/revoke-sessions', body: {} },
+    { method: 'POST', path: '/api/v1/admin/users/user%2F1/unlock', body: {} },
+  ])
+  assert.match(requests[1].path, /type=login_failed/)
+  assert.match(requests[1].path, /offset=20/)
+})
+
+test('only admins see unlock and a server denial removes security write controls', async () => {
+  const React = await import('react'), { renderToStaticMarkup } = await import('react-dom/server')
+  const { QueryClient, QueryClientProvider } = await import('@tanstack/react-query')
+  const { MemoryRouter } = await import('react-router-dom')
+  const { UserSecurityPanel } = await import('../src/features/customers/components/UserSecurityPanel.tsx')
+  const { useAuthStore } = await import('../src/stores/useAuthStore.ts')
+  const { useApiAccess } = await import('../src/lib/api/access.ts')
+  const previous = useAuthStore.getState().user
+  const client = new QueryClient({ defaultOptions: { queries: { staleTime: Infinity } } })
+  client.setQueryData(['user-security', 'user-test', 'sessions', 0], { sessions: [{ id: 'session-test', created_at: '2026-10-13T00:00:00Z' }], total: 1, limit: 20, offset: 0, locked_until: '2099-01-01T00:00:00Z', failed_login_count: 5 })
+  client.setQueryData(['user-security', 'user-test', 'events', '', 0], { events: [], total: 0, limit: 20, offset: 0 })
+  const render = () => {
+    const authInitial = useAuthStore.getInitialState(), accessInitial = useApiAccess.getInitialState()
+    const authSnapshot = { ...authInitial }, accessSnapshot = { ...accessInitial }
+    Object.assign(authInitial, useAuthStore.getState()); Object.assign(accessInitial, useApiAccess.getState())
+    try { return renderToStaticMarkup(React.createElement(MemoryRouter, {}, React.createElement(QueryClientProvider, { client }, React.createElement(UserSecurityPanel, { id: 'user-test' })))) }
+    finally { Object.assign(authInitial, authSnapshot); Object.assign(accessInitial, accessSnapshot) }
+  }
+  try {
+    useAuthStore.getState().setUser({ id: 'staff-test', role: 'support' })
+    assert.ok(!render().includes('Unlock account'))
+    useAuthStore.getState().setUser({ id: 'staff-test', role: 'admin' })
+    assert.ok(render().includes('Unlock account'))
+    useApiAccess.setState({ readOnly: true })
+    assert.match(render(), /<button[^>]*disabled[^>]*>Log out everywhere<\/button>/)
+  } finally { client.clear(); useAuthStore.getState().setUser(previous); useApiAccess.setState({ readOnly: false }) }
+})
 const { mapBackendUserDetailToDriver } =
   await import('../src/features/drivers/adapters/driverAdapter.ts')
 const staff = {

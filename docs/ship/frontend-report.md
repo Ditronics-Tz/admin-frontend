@@ -47,3 +47,11 @@ Branch: `ship/fe-pagination`. Audit logs already had offset pagination; added q/
 Added admin-only `/system-status` route/navigation reading `/ready` every 30 seconds with `{status,database,version,uptime_seconds}`, loading and error states. The route and both desktop/mobile navigation enforce the admin display restriction.
 
 Validation: format check, typecheck, 32/32 integration tests, lint (same five warnings), production build passed. New contract test verifies page offsets/filters and exactly one returned driver's hydration even when total is 105. B4 filter/readiness contracts are confirmed by the backend owner and being implemented; live acceptance pending B4.
+
+## F5 — User security and sessions
+
+Branch: `ship/fe-user-security`. Added Security and sessions tabs to the existing user dialog and driver profile. Lists device/IP/created/last-used session data and paginated security events with a type filter. Individual revoke, revoke-all and admin unlock use confirmation dialogs, shared 403 write guards, query invalidation and result toasts. Failed login count is unavailable unless supplied by the server; no fabricated count is shown. Session state refreshes every 30 seconds.
+
+Contracts are isolated in security.service.ts and tested with the existing HTTP fixture layer. Missing endpoints show the real normalized server error rather than success or placeholder rows.
+
+Validation: format check, typecheck, lint (same five warnings), production build and 34/34 integration tests passed. New tests cover individual/all revocation payloads, event pagination, admin-only unlock and read-only security actions. B5 live contract pending.

@@ -1,6 +1,26 @@
 import { useUiStore } from '@/stores/useUiStore'
 
 const sw: Record<string, string> = {
+  'Security and sessions': 'Usalama na vipindi',
+  'Active sessions': 'Vipindi vinavyotumika',
+  'Log out everywhere': 'Ondoka kwenye vifaa vyote',
+  'Revoke session': 'Futa kipindi',
+  Revoke: 'Futa',
+  'Unlock account': 'Fungua akaunti',
+  'Failed login count': 'Idadi ya majaribio yaliyoshindikana',
+  'Security events': 'Matukio ya usalama',
+  'Event type': 'Aina ya tukio',
+  Device: 'Kifaa',
+  Created: 'Imeundwa',
+  'Last used': 'Matumizi ya mwisho',
+  Actions: 'Vitendo',
+  Type: 'Aina',
+  Account: 'Akaunti',
+  'Security action completed': 'Kitendo cha usalama kimekamilika',
+  Unavailable: 'Haipatikani',
+  'Unknown device': 'Kifaa kisichojulikana',
+  'This action changes the account security state.':
+    'Kitendo hiki kinabadilisha hali ya usalama wa akaunti.',
   'User directory': 'Orodha ya watumiaji',
   Name: 'Jina',
   Email: 'Barua pepe',

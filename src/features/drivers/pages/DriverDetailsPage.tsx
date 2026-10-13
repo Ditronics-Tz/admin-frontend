@@ -15,10 +15,13 @@ import { useDriver } from '../hooks/useDrivers'
 import { ROUTES } from '@/lib/constants'
 import { UserFraud } from '@/features/operations/FraudPage'
 import { UserReports } from '@/features/operations/ReportsPage'
+import { UserSecurityPanel } from '@/features/customers/components/UserSecurityPanel'
+import { useShipText } from '@/components/common/ship-text'
 
 export const DriverDetailsPage: React.FC = () => {
   const { driverId } = useParams<{ driverId: string }>()
   const [activeTab, setActiveTab] = useState('overview')
+  const t = useShipText()
 
   const { data: driver, isLoading, isError, error, refetch } = useDriver(driverId)
 
@@ -72,6 +75,7 @@ export const DriverDetailsPage: React.FC = () => {
       <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">
         <div className="overflow-x-auto pb-1">
           <TabsList className="h-11 bg-slate-100/80 p-1">
+            <TabsTrigger value="security">{t('Security and sessions')}</TabsTrigger>
             <TabsTrigger value="fraud">Fraud</TabsTrigger>
             <TabsTrigger value="reports">Reports</TabsTrigger>
             <TabsTrigger value="overview" className="px-4 text-xs">
@@ -97,6 +101,9 @@ export const DriverDetailsPage: React.FC = () => {
 
         <TabsContent value="overview">
           <DriverOverviewTab driver={driver} />
+        </TabsContent>
+        <TabsContent value="security">
+          <UserSecurityPanel key={driver.id} id={driver.id} />
         </TabsContent>
         <TabsContent value="fraud">
           <UserFraud id={driver.id} />

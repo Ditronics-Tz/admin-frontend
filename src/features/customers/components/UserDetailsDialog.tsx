@@ -13,8 +13,12 @@ import { AccountSupportPanel } from './AccountSupportPanel'
 import { PassengerPromos } from '@/features/promotions/components/PassengerPromos'
 import { UserFraud } from '@/features/operations/FraudPage'
 import { UserReports } from '@/features/operations/ReportsPage'
+import { UserSecurityPanel } from './UserSecurityPanel'
+import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs'
+import { useShipText } from '@/components/common/ship-text'
 
 export function UserDetailsDialog({ id, onClose }: { id: string; onClose: () => void }) {
+  const t = useShipText()
   const query = useQuery({
     queryKey: ['user', id],
     queryFn: () => customerService.getCustomer(id),
@@ -79,10 +83,21 @@ export function UserDetailsDialog({ id, onClose }: { id: string; onClose: () => 
               role={query.data.user.role}
               onChanged={onClose}
             />
-            <AccountSupportPanel id={id} />
-            <UserReports id={id} />
-            <UserFraud id={id} />
-            {query.data.user.role === 'passenger' && <PassengerPromos id={id} />}
+            <Tabs defaultValue="account" className="space-y-4">
+              <TabsList>
+                <TabsTrigger value="account">{t('Account')}</TabsTrigger>
+                <TabsTrigger value="security">{t('Security and sessions')}</TabsTrigger>
+              </TabsList>
+              <TabsContent value="security">
+                <UserSecurityPanel key={id} id={id} />
+              </TabsContent>
+              <TabsContent value="account">
+                <AccountSupportPanel id={id} />
+                <UserReports id={id} />
+                <UserFraud id={id} />
+                {query.data.user.role === 'passenger' && <PassengerPromos id={id} />}
+              </TabsContent>
+            </Tabs>
           </div>
         )}
       </DialogContent>
