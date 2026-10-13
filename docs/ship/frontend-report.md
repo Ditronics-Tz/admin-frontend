@@ -8,7 +8,7 @@ Activation/disable apply the backend-returned access token in memory and authori
 
 F5 populated fixtures assert device/IP/time data, pagination, explicit unlocked state and zero failed-login count, event filters, one/all revocation and admin unlock requests. Missing collections return an honest unavailable error. Added tests for replacement proof, failed activation preserving credentials, obsolete response rejection, visible enabled/disabled controls, token storage isolation and rejection of stale `/me` responses after activation.
 
-Local sequential acceptance passed: `npm run format:check`, `npm run lint` (the same five pre-existing Fast Refresh warnings), `npm run typecheck`, `npm test` (46/46), and `npm run build`. B5 backend source reconciliation/deployed smoke remains pending. No hosted/browser acceptance is claimed; the previous browser smoke automatic-review rejection remains in effect and has not been retried.
+Local sequential acceptance passed: `npm run format:check`, `npm run lint` (the same five pre-existing Fast Refresh warnings), `npm run typecheck`, `npm test` (46/46), and `npm run build`. Source reconciliation completed against landed staff/app security controllers, admin routes, models and stores; no payload mismatches found. Backend B5 acceptance and deployed smoke remain pending. No hosted/browser acceptance is claimed; the previous browser smoke automatic-review rejection remains in effect and has not been retried.
 
 ## F1 — Baseline and CI
 
