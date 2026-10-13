@@ -22,7 +22,9 @@ No safe patch upgrade was offered by the installed lockfile audit. Registry meta
 
 Validation: format check, typecheck, tests (29/29), and production build passed. Lint passed with five existing Fast Refresh warnings. npm audit reported the seven deferred advisories above. The CI uses npm ci to exercise a clean checkout; a hosted CI run is pending push/PR by the owner.
 
-Final clean Windows checkout exposed Git autocrlf converting 169 source files to CRLF and failing Prettier, despite the formatted working tree. Added `.gitattributes` with automatic text detection and LF checkout so both Windows and Linux clones share the expected formatting. Clean-checkout rerun is pending below.
+Final clean Windows checkout exposed Git autocrlf converting 169 source files to CRLF and failing Prettier, despite the formatted working tree. Added `.gitattributes` with automatic text detection and LF checkout so both Windows and Linux clones share the expected formatting.
+
+Final clean-checkout proof on Node 24.21.0: npm ci passed against the unchanged package/lock manifests; after checkout recreation with LF attributes, format, lint (five pre-existing warnings), typecheck, 41/41 integration tests and production build passed. The dependency installation was reused when recreating the disposable source checkout; no live environment files were copied. npm audit still reports the same five high and two moderate deferred advisories. The disposable checkout/dependencies are removed after validation. Hosted CI and deployed browser/API/provider acceptance are not claimed.
 
 ## F2 — API foundation
 
@@ -48,7 +50,7 @@ Branch: `ship/fe-pagination`. Audit logs already had offset pagination; added q/
 
 Added admin-only `/system-status` route/navigation reading `/ready` every 30 seconds with `{status,database,version,uptime_seconds}`, loading and error states. The route and both desktop/mobile navigation enforce the admin display restriction.
 
-Validation: format check, typecheck, 32/32 integration tests, lint (same five warnings), production build passed. New contract test verifies page offsets/filters and exactly one returned driver's hydration even when total is 105. B4 filter/readiness contracts are confirmed by the backend owner and being implemented; live acceptance pending B4.
+Validation: format check, typecheck, 32/32 integration tests, lint (same five warnings), production build passed. New contract test verifies page offsets/filters and exactly one returned driver's hydration even when total is 105. Final reconciliation inspected B4 filter/readiness implementations in source; deployed integration smoke remains pending.
 
 ## F5 — User security and sessions
 
@@ -66,7 +68,7 @@ Reject/re-upload and override decisions now require confirmation; the existing r
 
 Users and drivers have account suspension/reactivation controls with required reasons, optional suspension end dates and confirmation dialogs; driver Account Activity now includes the existing support panel. Added confirmations for internal note deletion and result toasts. Account/driver phones are masked with audited reveal. Replaced the unsupported LATRA standards claim with the actual configured Rida verification-policy description.
 
-Validation: final format check, typecheck, lint (same five warnings), production build and 35/35 integration tests passed, including signed image bearer isolation, expiry rejection and queue filters. Live queue filters/storage acceptance awaits B3/B4, and storage CORS/origin configuration is an owner deployment step.
+Validation: final format check, typecheck, lint (same five warnings), production build and 35/35 integration tests passed, including signed image bearer isolation, expiry rejection and queue filters. B3/B4 contracts are now implemented in source and match the viewer/queue requests. Provider/deployed smoke remains pending; storage CORS/origin configuration is an owner deployment step.
 
 ## F7 — Support queues
 
@@ -98,5 +100,5 @@ Final auth review also closes a session-isolation race on `ship/fe-session-isola
 
 - No production launch/readiness claim is made. B3/B4 contracts are implemented in source; deployment/provider smoke acceptance is pending. B5/B7/B8 implementations and final OpenAPI reconciliation remain backend tasks; frontend requests list the contracts explicitly. Wrong collection keys, stubs and missing endpoints show errors/unavailable states. Hosted CI and staged browser/end-to-end acceptance remain pending owner execution.
 - Refresh persistence is the F3 documented localStorage exception until a deployment/domain decision enables an HttpOnly cookie contract.
-- Configure storage CORS/VITE_DOCUMENT_ORIGIN and licensed production map tiles/attribution. Production hosting must supply CSP frame-ancestors/HSTS/nosniff/Referrer-Policy headers. Browser CSP smoke was blocked by automatic approval review as described in F3.
+- Configure storage CORS/VITE_DOCUMENT_ORIGIN, the public photo CDN's VITE_PUBLIC_IMAGE_ORIGIN, and licensed production map tiles/attribution. Private and public image origins have separate CSP permissions verified by a focused test. Production hosting must supply CSP frame-ancestors/HSTS/nosniff/Referrer-Policy headers. Browser CSP smoke was blocked by automatic approval review as described in F3.
 - Seven Tailwind build-chain advisories remain deferred, with individual dispositions in F1. No forced major upgrade, external messages, pushes, live environment-file edits or backend edits were performed.
