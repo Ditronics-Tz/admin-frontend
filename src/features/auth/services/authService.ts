@@ -22,6 +22,27 @@ export function mapBackendStaffUser(staff: BackendStaffUser): AdminUser {
   }
 }
 
+export interface PendingAuthenticator {
+  secret: string
+  qr_code_url: string
+  pending_expires_at: string
+}
+
+interface StaffSecurityResponse {
+  message: string
+  totp_enabled: boolean
+  access_token: string
+  user: BackendStaffUser
+}
+
+function applySecurityResponse(data: StaffSecurityResponse): AdminUser {
+  if (!data.access_token || !data.user?.id || typeof data.totp_enabled !== 'boolean') {
+    throw new Error('The server did not return the updated staff session. Sign in again.')
+  }
+  tokenStorage.replaceAccessToken(data.access_token, data.user)
+  return mapBackendStaffUser(data.user)
+}
+
 /**
  * Authentication Service Interface
  */
@@ -32,9 +53,9 @@ export interface IAuthService {
   refreshSession(): Promise<AuthSession>
   changePassword(currentPassword: string, newPassword: string): Promise<void>
   logoutAll(): Promise<void>
-  setup2FA(): Promise<{ secret: string; qr_code_url: string }>
-  verify2FA(code: string): Promise<void>
-  disable2FA(password: string, code: string): Promise<void>
+  setup2FA(password: string, code?: string): Promise<PendingAuthenticator>
+  verify2FA(code: string): Promise<AdminUser>
+  disable2FA(password: string, code: string): Promise<AdminUser>
 }
 
 /**
@@ -113,16 +134,32 @@ export const authService: IAuthService = {
     await apiClient.post(API_ENDPOINTS.AUTH.LOGOUT_ALL)
     tokenStorage.clearTokens()
   },
-  async setup2FA() {
-    const { data } = await apiClient.post<{ secret: string; qr_code_url: string }>(
-      API_ENDPOINTS.AUTH.SETUP_2FA
+  async setup2FA(password, code = '') {
+    const { data } = await apiClient.post<PendingAuthenticator>(
+      API_ENDPOINTS.AUTH.SETUP_2FA,
+      { password, code: code.trim() }
     )
+    if (
+      !data.secret ||
+      !data.qr_code_url ||
+      !Number.isFinite(Date.parse(data.pending_expires_at))
+    ) {
+      throw new Error('Authenticator setup is unavailable on this server.')
+    }
     return data
   },
   async verify2FA(code) {
-    await apiClient.post(API_ENDPOINTS.AUTH.VERIFY_2FA, { code })
+    const { data } = await apiClient.post<StaffSecurityResponse>(
+      API_ENDPOINTS.AUTH.VERIFY_2FA,
+      { code: code.trim() }
+    )
+    return applySecurityResponse(data)
   },
   async disable2FA(password, code) {
-    await apiClient.post(API_ENDPOINTS.AUTH.DISABLE_2FA, { password, code })
+    const { data } = await apiClient.post<StaffSecurityResponse>(
+      API_ENDPOINTS.AUTH.DISABLE_2FA,
+      { password, code: code.trim() }
+    )
+    return applySecurityResponse(data)
   },
 }

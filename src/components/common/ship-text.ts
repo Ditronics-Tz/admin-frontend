@@ -1,6 +1,39 @@
 import { useUiStore } from '@/stores/useUiStore'
 
 const sw: Record<string, string> = {
+  'Your account': 'Akaunti yako',
+  'Two-factor authentication': 'Uthibitishaji wa hatua mbili',
+  Enabled: 'Umewashwa',
+  Disabled: 'Umezimwa',
+  'An authenticator code is required at sign in when enabled.':
+    'Msimbo wa uthibitishaji unahitajika unapoingia ikiwa umewashwa.',
+  'Set up authenticator': 'Sanidi programu ya uthibitishaji',
+  'Replace authenticator': 'Badilisha programu ya uthibitishaji',
+  'Disable two-factor authentication': 'Zima uthibitishaji wa hatua mbili',
+  'Confirm your current credentials to change account security.':
+    'Thibitisha taarifa zako za sasa ili kubadilisha usalama wa akaunti.',
+  'Current password': 'Nenosiri la sasa',
+  'Current authenticator code': 'Msimbo wa sasa wa uthibitishaji',
+  'New authenticator code': 'Msimbo mpya wa uthibitishaji',
+  'Add this setup key to your authenticator app. Keep the key private.':
+    'Ongeza ufunguo huu katika programu yako ya uthibitishaji. Weka ufunguo kwa siri.',
+  'Your current authenticator stays active until you activate the replacement.':
+    'Programu yako ya sasa itaendelea kufanya kazi hadi uwashe ile mpya.',
+  'Setup expires (EAT)': 'Usanidi unaisha (EAT)',
+  'Authenticator setup URI': 'URI ya usanidi wa uthibitishaji',
+  'Authenticator setup expired. Start setup again.':
+    'Muda wa usanidi umeisha. Anza usanidi tena.',
+  'Verify and enable': 'Thibitisha na uwashe',
+  'Start again': 'Anza tena',
+  'Change password': 'Badilisha nenosiri',
+  Sessions: 'Vipindi',
+  'Sign out on every device, including this one.':
+    'Ondoka kwenye kila kifaa, pamoja na hiki.',
+  'Sign out on all devices': 'Ondoka kwenye vifaa vyote',
+  'This change ends other sessions. Your current session stays signed in.':
+    'Mabadiliko haya yanafunga vipindi vingine. Kipindi chako cha sasa kitaendelea.',
+  'Two-factor authentication updated. Other sessions ended.':
+    'Uthibitishaji wa hatua mbili umesasishwa. Vipindi vingine vimefungwa.',
   Visible: 'Inaonekana',
   Hidden: 'Imefichwa',
   Ratings: 'Ukadiriaji',

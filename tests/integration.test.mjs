@@ -110,9 +110,16 @@ test('paged users, staff and audit filters go to the server and driver hydration
 
 test('user security revokes one session or all sessions and sends event pagination', async () => {
   const { securityService } = await import('../src/features/customers/services/security.service.ts')
-  handle = (_req, json) => json(200, { sessions: [], events: [], total: 0, limit: 20, offset: 20 })
-  await securityService.sessions('user/1', 20)
-  await securityService.events('user/1', 'login_failed', 20)
+  const session = { id: 'session-1', device_id: 'device-1', platform: 'android', ip: '127.0.0.1', created_at: '2026-10-13T00:00:00Z', last_used_at: '2026-10-13T01:00:00Z' }
+  const event = { id: 'event-1', type: 'login_failed', ip: '127.0.0.1', created_at: '2026-10-13T01:00:00Z' }
+  handle = (req, json) => json(200, req.path.includes('/security-events')
+    ? { events: [event], total: 21, limit: 20, offset: 20 }
+    : { sessions: [session], total: 21, limit: 20, offset: 20, locked_until: null, failed_login_count: 0 })
+  const sessions = await securityService.sessions('user/1', 20)
+  assert.deepEqual(sessions.sessions, [session])
+  assert.equal(sessions.locked_until, null)
+  assert.equal(sessions.failed_login_count, 0)
+  assert.deepEqual((await securityService.events('user/1', 'login_failed', 20)).events, [event])
   await securityService.revoke('user/1', 'session-1')
   await securityService.revoke('user/1')
   await securityService.unlock('user/1')
@@ -123,6 +130,13 @@ test('user security revokes one session or all sessions and sends event paginati
   ])
   assert.match(requests[1].path, /type=login_failed/)
   assert.match(requests[1].path, /offset=20/)
+})
+
+test('missing security collections show unavailable rather than a fabricated empty history', async () => {
+  const { securityService } = await import('../src/features/customers/services/security.service.ts')
+  handle = (_req, json) => json(200, { message: 'not implemented' })
+  await assert.rejects(securityService.sessions('user-1'), /sessions are unavailable/)
+  await assert.rejects(securityService.events('user-1'), /events are unavailable/)
 })
 
 test('only admins see unlock and a server denial removes security write controls', async () => {
@@ -753,11 +767,16 @@ test('customer, dashboard, support lists and stub acknowledgements follow the ba
 test('2FA, password change, and logout-all endpoints use staff contracts', async () => {
   handle = (req, json) =>
     req.path.endsWith('/setup')
-      ? json(200, { secret: 'SECRET', qr_code_url: 'otpauth://totp/test' })
-      : json(200, { message: 'success' })
-  assert.equal((await authService.setup2FA()).secret, 'SECRET')
-  await authService.verify2FA('123456')
-  await authService.disable2FA('password123456', '654321')
+      ? json(200, { secret: 'SECRET', qr_code_url: 'otpauth://totp/test', pending_expires_at: '2026-10-13T12:10:00Z' })
+      : json(200, { message: 'success', access_token: 'security-access', totp_enabled: req.path.endsWith('/verify'), user: { ...staff, totp_enabled: req.path.endsWith('/verify') } })
+  tokenStorage.setSession('access-before-2fa', 'refresh-kept')
+  assert.equal((await authService.setup2FA('password123456')).secret, 'SECRET')
+  assert.equal(tokenStorage.getAccessToken(), 'access-before-2fa')
+  assert.equal((await authService.verify2FA('123456')).totpEnabled, true)
+  assert.equal(tokenStorage.getAccessToken(), 'security-access')
+  assert.equal(tokenStorage.getRefreshToken(), 'refresh-kept')
+  assert.equal((await authService.disable2FA('password123456', '654321')).totpEnabled, false)
+  assert.equal(tokenStorage.getRefreshToken(), 'refresh-kept')
   await authService.changePassword('old-password', 'new-password123456')
   assert.equal(tokenStorage.getAccessToken(), null)
   tokenStorage.setSession('access', 'refresh')
@@ -766,13 +785,86 @@ test('2FA, password change, and logout-all endpoints use staff contracts', async
   assert.deepEqual(
     requests.map((req) => req.body),
     [
-      undefined,
+      { password: 'password123456', code: '' },
       { code: '123456' },
       { password: 'password123456', code: '654321' },
       { current_password: 'old-password', new_password: 'new-password123456' },
       undefined,
     ]
   )
+})
+
+test('authenticator replacement proves existing credentials and failed activation preserves the session', async () => {
+  tokenStorage.setSession('current-access', 'current-refresh')
+  handle = (req, json) => req.path.endsWith('/setup')
+    ? json(200, { secret: 'NEW-SECRET', qr_code_url: 'otpauth://totp/replacement', pending_expires_at: '2026-10-13T12:10:00Z' })
+    : json(400, { error: 'Invalid or expired pending code', request_id: 'activation-test' })
+  const pending = await authService.setup2FA('current-password', ' 123456 ')
+  assert.equal(pending.pending_expires_at, '2026-10-13T12:10:00Z')
+  assert.deepEqual(requests[0].body, { password: 'current-password', code: '123456' })
+  await assert.rejects(authService.verify2FA('654321'), /Invalid or expired pending code/)
+  assert.equal(tokenStorage.getAccessToken(), 'current-access')
+  assert.equal(tokenStorage.getRefreshToken(), 'current-refresh')
+})
+
+test('old two-factor response shapes never overwrite staff tokens or claim supported pending setup', async () => {
+  tokenStorage.setSession('current-access', 'current-refresh')
+  handle = (_req, json) => json(200, { secret: 'OLD-SECRET', qr_code_url: 'otpauth://totp/old', message: 'enabled', totp_enabled: true })
+  await assert.rejects(authService.setup2FA('password'), /setup is unavailable/)
+  await assert.rejects(authService.verify2FA('123456'), /updated staff session/)
+  assert.equal(tokenStorage.getAccessToken(), 'current-access')
+  assert.equal(tokenStorage.getRefreshToken(), 'current-refresh')
+})
+
+test('account security offers authenticator replacement only for enabled accounts without recovery-code promises', async () => {
+  const React = await import('react'), { renderToStaticMarkup } = await import('react-dom/server')
+  const { QueryClient, QueryClientProvider } = await import('@tanstack/react-query')
+  const { MemoryRouter } = await import('react-router-dom')
+  const { SecuritySettings } = await import('../src/features/settings/components/SecuritySettings.tsx')
+  const { useAuthStore } = await import('../src/stores/useAuthStore.ts')
+  const client = new QueryClient()
+  const initial = useAuthStore.getInitialState(), snapshot = { ...initial }
+  const render = (totpEnabled) => {
+    Object.assign(initial, { user: { id: 'staff-test', role: 'support', totpEnabled } })
+    return renderToStaticMarkup(React.createElement(MemoryRouter, {}, React.createElement(QueryClientProvider, { client }, React.createElement(SecuritySettings))))
+  }
+  try {
+    const enabled = render(true), disabled = render(false)
+    assert.match(enabled, /Replace authenticator/)
+    assert.match(enabled, /Disable two-factor authentication/)
+    assert.ok(!disabled.includes('Replace authenticator'))
+    assert.match(disabled, /Set up authenticator/)
+    assert.ok(!enabled.includes('recovery code'))
+    assert.ok(!enabled.includes('Issued access tokens expire'))
+  } finally { Object.assign(initial, snapshot); client.clear() }
+})
+
+test('two-factor activation replaces only memory access and rejects stale responses from its earlier authorization', async () => {
+  tokenStorage.setSession('previous-access', 'same-refresh')
+  let release, entered
+  const started = new Promise((resolve) => { entered = resolve })
+  const delayed = new Promise((resolve) => { release = resolve })
+  const updates = []
+  const unsubscribe = subscribeSession((event) => updates.push(event))
+  handle = async (req, json) => {
+    if (req.path.endsWith('/me')) { entered(); await delayed; return json(200, { user: staff }) }
+    return json(200, { message: 'enabled', totp_enabled: true, access_token: 'new-security-access', user: { ...staff, totp_enabled: true } })
+  }
+  try {
+    const stale = authService.getCurrentUser()
+    const rejected = assert.rejects(stale, /staff session changed/)
+    await started
+    await authService.verify2FA('123456')
+    release()
+    await rejected
+    assert.equal(tokenStorage.getAccessToken(), 'new-security-access')
+    assert.equal(tokenStorage.getRefreshToken(), 'same-refresh')
+    assert.equal(storage.get('rida_staff_access_token'), undefined)
+    assert.equal(updates.length, 1)
+    assert.equal(updates[0].type, 'updated')
+    assert.equal(updates[0].user.totp_enabled, true)
+    assert.equal(requests.filter((req) => req.path.endsWith('/refresh')).length, 0)
+  } finally { release(); unsubscribe() }
 })
 
 test('backend permission gates remain visible to the UI without a refresh attempt', async () => {

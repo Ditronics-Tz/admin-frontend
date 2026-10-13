@@ -22,18 +22,23 @@ export type UserSessions = Page<UserSession, 'sessions'> & {
 const base = (id: string) => `/admin/users/${encodeURIComponent(id)}`
 export const securityService = {
   async sessions(id: string, offset = 0) {
-    return (
-      await apiClient.get<UserSessions>(`${base(id)}/sessions`, {
-        params: { limit: 20, offset },
-      })
-    ).data
+    const { data } = await apiClient.get<UserSessions>(`${base(id)}/sessions`, {
+      params: { limit: 20, offset },
+    })
+    if (!Array.isArray(data.sessions)) {
+      throw new Error('User sessions are unavailable on this server.')
+    }
+    return data
   },
   async events(id: string, type = '', offset = 0) {
-    return (
-      await apiClient.get<Page<SecurityEvent, 'events'>>(`${base(id)}/security-events`, {
-        params: { type, offset, limit: 20 },
-      })
-    ).data
+    const { data } = await apiClient.get<Page<SecurityEvent, 'events'>>(
+      `${base(id)}/security-events`,
+      { params: { type, offset, limit: 20 } }
+    )
+    if (!Array.isArray(data.events)) {
+      throw new Error('Security events are unavailable on this server.')
+    }
+    return data
   },
   async revoke(id: string, sessionId?: string) {
     await apiClient.post(

@@ -29,6 +29,15 @@ refreshStorage.removeLegacyAccess()
 export const tokenStorage = {
   getAccessToken: () => accessToken,
   getRefreshToken: () => refreshStorage.get(),
+  replaceAccessToken(newAccessToken: string, user: BackendStaffUser) {
+    // Security changes keep the current refresh session but invalidate requests
+    // issued with its previous authorization version.
+    revision++
+    sessionEpoch++
+    accessToken = newAccessToken
+    useApiAccess.setState({ readOnly: false })
+    emit({ type: 'updated', user })
+  },
   clearAccessToken() {
     revision++
     sessionEpoch++
