@@ -12,6 +12,7 @@ import {
   TicketPercent,
   Flag,
   ShieldAlert,
+  Star,
   type LucideIcon,
 } from 'lucide-react'
 import { ROUTES } from '@/lib/constants'
@@ -43,6 +44,7 @@ export const NAVIGATION_CONFIG: NavGroup[] = [
   {
     group: 'Operations',
     items: [
+      { title: 'Ratings', path: '/ratings', icon: Star },
       { title: 'Fraud', path: '/fraud', icon: ShieldAlert },
       { title: 'Reports', path: '/reports', icon: Flag },
       { title: 'Safety', path: '/safety', icon: ShieldAlert },

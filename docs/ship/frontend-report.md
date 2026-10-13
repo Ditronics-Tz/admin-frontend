@@ -83,3 +83,16 @@ Reused the repository's Web Mercator/SVG raster map approach, with fitting for b
 Dashboard counts continue to use `/admin/stats`; operational cards now show the returned ride/ticket/complaint counts and unavailable states, rather than client hardcoded values. Recent rides request only five real rows and link to supported details. Historical analytics remains unavailable unless the server provides it.
 
 Validation: format check, typecheck, lint (same five warnings), production build and 37/37 integration tests passed. Contract checks cover parties/locations/events, paging/party filters, cancellation/reassignment reason payloads and stub rejection. B7/B8 live nested ride DTO, actions and count acceptance pending.
+
+## F9 — Ratings moderation
+
+Branch: `ship/fe-ratings`. Added a paginated ratings moderation screen, low-score shortcut, visibility/search filters, required-reason hide/restore dialogs and Ratings tabs on user/driver details. Support/admin actions use shared write permissions and 403 read-only guards; backend enforcement remains authoritative. A missing endpoint or unimplemented page contract shows the unavailable state. The backend owner approved the proposed B8 paths/fields; B8 implementation is still pending.
+
+Validation: final format check, typecheck, lint (same five warnings), production build and 38/38 integration tests passed. New tests cover user/low-score filters and reason-bearing hide/restore calls. Added placeholder-only build flags to .env.example. B8 live acceptance remains pending.
+
+## Owner and live acceptance dependencies
+
+- No production launch/readiness claim is made. B4/B5/B7/B8 implementations and final OpenAPI reconciliation remain backend tasks; frontend requests list the contracts explicitly. Stubs and missing endpoints show errors/unavailable states. Hosted CI and staged browser/end-to-end acceptance remain pending owner execution.
+- Refresh persistence is the F3 documented localStorage exception until a deployment/domain decision enables an HttpOnly cookie contract.
+- Configure storage CORS/VITE_DOCUMENT_ORIGIN and licensed production map tiles/attribution. Production hosting must supply CSP frame-ancestors/HSTS/nosniff/Referrer-Policy headers. Browser CSP smoke was blocked by automatic approval review as described in F3.
+- Seven Tailwind build-chain advisories remain deferred, with individual dispositions in F1. No forced major upgrade, external messages, pushes, live environment-file edits or backend edits were performed.

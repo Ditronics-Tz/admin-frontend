@@ -1,6 +1,20 @@
 import { useUiStore } from '@/stores/useUiStore'
 
 const sw: Record<string, string> = {
+  false: 'Inaonekana',
+  true: 'Imefichwa',
+  Ratings: 'Ukadiriaji',
+  'Low scores (1–2)': 'Alama za chini (1–2)',
+  Visibility: 'Mwonekano',
+  Score: 'Alama',
+  Comment: 'Maoni',
+  'From user': 'Kutoka kwa mtumiaji',
+  'To user': 'Kwa mtumiaji',
+  'Hide rating': 'Ficha ukadiriaji',
+  'Restore rating': 'Rudisha ukadiriaji',
+  'Rating moderation recorded': 'Usimamizi wa ukadiriaji umerekodiwa',
+  'Ratings moderation is unavailable on this server.':
+    'Usimamizi wa ukadiriaji haupatikani kwenye seva hii.',
   'Recent rides': 'Safari za karibuni',
   'View all rides': 'Tazama safari zote',
   Rides: 'Safari',

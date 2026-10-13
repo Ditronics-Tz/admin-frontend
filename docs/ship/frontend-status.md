@@ -8,4 +8,4 @@
 - F6: local implementation done; `ship/fe-verification`; checks pass; existing review endpoints live, new presign/expiry-filter pagination waiting on B3/B4.
 - F7: local implementation done; `ship/fe-support`; checks pass; waiting on B8 persisted tickets/complaints and unified report patch/notes contract.
 - F8: local implementation done; `ship/fe-rides`; checks pass; waiting on B7/B8 canonical ride detail/actions/counts; production map provider configuration required.
-- F9: pending implementation review.
+- F9: local implementation done; `ship/fe-ratings`; checks pass; waiting on B8 ratings moderation list/hide/restore.

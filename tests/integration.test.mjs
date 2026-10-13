@@ -210,6 +210,20 @@ test('rides use canonical parties locations timeline filters and required operat
   handle = (_req, json) => json(200, { count: 0, rides: [] })
   await assert.rejects(rideService.list(), /unavailable/)
 })
+
+test('ratings moderation sends user low-score pages and audited hide restore reasons', async () => {
+  const { ratingService } = await import('../src/features/ratings/rating.service.ts')
+  handle = (_req, json) => json(200, { ratings: [], total: 0, limit: 20, offset: 20 })
+  await ratingService.list({ user: 'user-1', max_score: 2, hidden: 'false', offset: 20 })
+  await ratingService.moderate('rating/1', true, 'Abusive comment')
+  await ratingService.moderate('rating/1', false, 'Review completed')
+  const params = new URL(requests[0].path, 'http://fixture.invalid').searchParams
+  assert.equal(params.get('max_score'), '2'); assert.equal(params.get('user'), 'user-1')
+  assert.equal(requests[1].path, '/api/v1/admin/ratings/rating%2F1/hide')
+  assert.deepEqual(requests[1].body, { reason: 'Abusive comment' })
+  assert.equal(requests[2].path, '/api/v1/admin/ratings/rating%2F1/restore')
+  assert.deepEqual(requests[2].body, { reason: 'Review completed' })
+})
 const { mapBackendUserDetailToDriver } =
   await import('../src/features/drivers/adapters/driverAdapter.ts')
 const staff = {

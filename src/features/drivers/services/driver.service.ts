@@ -172,6 +172,11 @@ export const driverService = {
       '/admin/verifications',
       { params: { limit: 20, offset: 0, ...params } }
     )
+    if (!Number.isFinite(data.total))
+      throw new ApiClientError(
+        'Paginated verification filters are unavailable on this server.',
+        { status: 501 }
+      )
     const queue = data.verifications || [],
       items: VerificationRequest[] = new Array(queue.length)
     let next = 0

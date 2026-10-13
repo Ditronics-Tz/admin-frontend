@@ -18,6 +18,7 @@ import { UserReports } from '@/features/operations/ReportsPage'
 import { UserSecurityPanel } from '@/features/customers/components/UserSecurityPanel'
 import { useShipText } from '@/components/common/ship-text'
 import { AccountSupportPanel } from '@/features/customers/components/AccountSupportPanel'
+import { RatingsPanel } from '@/features/ratings/RatingsPanel'
 
 export const DriverDetailsPage: React.FC = () => {
   const { driverId } = useParams<{ driverId: string }>()
@@ -76,6 +77,7 @@ export const DriverDetailsPage: React.FC = () => {
       <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">
         <div className="overflow-x-auto pb-1">
           <TabsList className="h-11 bg-slate-100/80 p-1">
+            <TabsTrigger value="ratings">{t('Ratings')}</TabsTrigger>
             <TabsTrigger value="security">{t('Security and sessions')}</TabsTrigger>
             <TabsTrigger value="fraud">Fraud</TabsTrigger>
             <TabsTrigger value="reports">Reports</TabsTrigger>
@@ -102,6 +104,9 @@ export const DriverDetailsPage: React.FC = () => {
 
         <TabsContent value="overview">
           <DriverOverviewTab driver={driver} />
+        </TabsContent>
+        <TabsContent value="ratings">
+          <RatingsPanel key={driver.id} userId={driver.id} />
         </TabsContent>
         <TabsContent value="security">
           <UserSecurityPanel key={driver.id} id={driver.id} />

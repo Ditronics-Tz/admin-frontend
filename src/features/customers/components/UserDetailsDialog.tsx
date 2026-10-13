@@ -17,6 +17,7 @@ import { UserSecurityPanel } from './UserSecurityPanel'
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs'
 import { useShipText } from '@/components/common/ship-text'
 import { MaskedValue } from '@/components/common/MaskedValue'
+import { RatingsPanel } from '@/features/ratings/RatingsPanel'
 
 export function UserDetailsDialog({ id, onClose }: { id: string; onClose: () => void }) {
   const t = useShipText()
@@ -96,9 +97,13 @@ export function UserDetailsDialog({ id, onClose }: { id: string; onClose: () => 
               <TabsList>
                 <TabsTrigger value="account">{t('Account')}</TabsTrigger>
                 <TabsTrigger value="security">{t('Security and sessions')}</TabsTrigger>
+                <TabsTrigger value="ratings">{t('Ratings')}</TabsTrigger>
               </TabsList>
               <TabsContent value="security">
                 <UserSecurityPanel key={id} id={id} />
+              </TabsContent>
+              <TabsContent value="ratings">
+                <RatingsPanel key={id} userId={id} />
               </TabsContent>
               <TabsContent value="account">
                 <AccountSupportPanel id={id} />
