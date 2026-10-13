@@ -102,3 +102,88 @@ Final auth review also closes a session-isolation race on `ship/fe-session-isola
 - Refresh persistence is the F3 documented localStorage exception until a deployment/domain decision enables an HttpOnly cookie contract.
 - Configure storage CORS/VITE_DOCUMENT_ORIGIN, the public photo CDN's VITE_PUBLIC_IMAGE_ORIGIN, and licensed production map tiles/attribution. Private and public image origins have separate CSP permissions verified by a focused test. Production hosting must supply CSP frame-ancestors/HSTS/nosniff/Referrer-Policy headers. Browser CSP smoke was blocked by automatic approval review as described in F3.
 - Seven Tailwind build-chain advisories remain deferred, with individual dispositions in F1. No forced major upgrade, external messages, pushes, live environment-file edits or backend edits were performed.
+
+## Files changed in this milestone
+
+Compared with the preserved baseline branch; this list excludes the earlier task.txt corrections.
+
+- `.env.example`
+- `.gitattributes`
+- `.github/workflows/admin-ci.yml`
+- `csp.ts`
+- `docs/ship/csp.md`
+- `docs/ship/frontend-report.md`
+- `docs/ship/frontend-requests.md`
+- `docs/ship/frontend-status.md`
+- `src/app/providers/AuthProvider.tsx`
+- `src/app/router/AppRouter.tsx`
+- `src/components/brand/RidaLogo.tsx`
+- `src/components/brand/RidaLogoMark.tsx`
+- `src/components/common/ApiNotice.tsx`
+- `src/components/common/DataTable.tsx`
+- `src/components/common/MaskedValue.tsx`
+- `src/components/common/ReasonDialog.tsx`
+- `src/components/common/mask-phone.ts`
+- `src/components/common/ship-text.ts`
+- `src/components/layout/AdminLayout.tsx`
+- `src/components/layout/MobileNavDrawer.tsx`
+- `src/components/layout/Sidebar.tsx`
+- `src/components/layout/SidebarNavItem.tsx`
+- `src/components/ui/badge.tsx`
+- `src/config/navigation.ts`
+- `src/features/auth/components/BrandLogo.tsx`
+- `src/features/auth/hooks/usePermission.ts`
+- `src/features/auth/services/authService.ts`
+- `src/features/customers/components/AccountSupportPanel.tsx`
+- `src/features/customers/components/UserDetailsDialog.tsx`
+- `src/features/customers/components/UserSecurityPanel.tsx`
+- `src/features/customers/pages/CustomersPage.tsx`
+- `src/features/customers/services/customer.service.ts`
+- `src/features/customers/services/security.service.ts`
+- `src/features/dashboard/components/OperationsStatus.tsx`
+- `src/features/dashboard/components/RecentRidesTable.tsx`
+- `src/features/dashboard/pages/DashboardPage.tsx`
+- `src/features/dashboard/services/dashboard.service.ts`
+- `src/features/drivers/components/DriverOverviewTab.tsx`
+- `src/features/drivers/components/DriverProfileHeader.tsx`
+- `src/features/drivers/components/DriverStatsCards.tsx`
+- `src/features/drivers/components/DriversTable.tsx`
+- `src/features/drivers/components/DriversToolbar.tsx`
+- `src/features/drivers/components/LicencePreview.tsx`
+- `src/features/drivers/components/SuspendDriverDialog.tsx`
+- `src/features/drivers/components/VerificationReviewPanel.tsx`
+- `src/features/drivers/hooks/useDrivers.ts`
+- `src/features/drivers/pages/DriverDetailsPage.tsx`
+- `src/features/drivers/pages/DriverVerificationsPage.tsx`
+- `src/features/drivers/pages/VerificationDetailsPage.tsx`
+- `src/features/drivers/schemas/driver.schema.ts`
+- `src/features/drivers/services/document-image.ts`
+- `src/features/drivers/services/driver.service.ts`
+- `src/features/operations/ReportsPage.tsx`
+- `src/features/payments/pages/PaymentsPage.tsx`
+- `src/features/ratings/RatingsPage.tsx`
+- `src/features/ratings/RatingsPanel.tsx`
+- `src/features/ratings/rating.service.ts`
+- `src/features/rides/components/RideMap.tsx`
+- `src/features/rides/components/RideRows.tsx`
+- `src/features/rides/pages/RideDetailPage.tsx`
+- `src/features/rides/pages/RidesPage.tsx`
+- `src/features/rides/services/ride.service.ts`
+- `src/features/settings/components/AuditLogPanel.tsx`
+- `src/features/settings/components/StaffManagement.tsx`
+- `src/features/settings/pages/SystemStatusPage.tsx`
+- `src/features/settings/services/staff.service.ts`
+- `src/features/support/components/WorkQueue.tsx`
+- `src/features/support/pages/SupportDetailPage.tsx`
+- `src/features/support/pages/SupportPage.tsx`
+- `src/features/support/services/support.service.ts`
+- `src/lib/api/access.ts`
+- `src/lib/api/client.ts`
+- `src/lib/api/config.ts`
+- `src/lib/api/errors.ts`
+- `src/lib/api/mock.ts`
+- `src/lib/api/refresh-storage.ts`
+- `src/lib/api/types.ts`
+- `src/vite-env.d.ts`
+- `tests/integration.test.mjs`
+- `vite.config.ts`
