@@ -39,3 +39,11 @@ Branch: `ship/fe-token-csp`. Access tokens now live in memory, legacy persisted 
 Production builds prepend a restrictive CSP with same-origin scripts and no inline script/eval permission; allowed public API/storage/map origins are normalized at build time. Radix/Recharts inline style declarations are the documented style exception. Upload previews now reject all non-raster formats, including PDF; no document iframe remains. Hosting header requirements are in csp.md.
 
 Validation: format check, typecheck, 31/31 integration tests, lint (same five warnings) and production build passed. Built index.html contains the CSP before resources, only external module scripts, and no inline scripts. Browser/hosting acceptance remains pending: direct Edge headless returned no DOM, and automatic approval review rejected the hidden Start-Process browser/output-capture smoke check as "blocked by policy" without a detailed reason. No production-cookie or deployment-header claim is made.
+
+## F4 — Server pagination and system status
+
+Branch: `ship/fe-pagination`. Audit logs already had offset pagination; added q/action/actor/date filters. Users and staff now request server pages and filters. Driver pages hydrate profiles only within the returned page, with the existing concurrency bound; the full-directory loader was removed. Driver count cards use limit-one total queries rather than loading the entire directory and show unavailable when counts fail. Vehicle type filtering is explicitly disabled because the current backend profile has no authoritative vehicle type.
+
+Added admin-only `/system-status` route/navigation reading `/ready` every 30 seconds with `{status,database,version,uptime_seconds}`, loading and error states. The route and both desktop/mobile navigation enforce the admin display restriction.
+
+Validation: format check, typecheck, 32/32 integration tests, lint (same five warnings), production build passed. New contract test verifies page offsets/filters and exactly one returned driver's hydration even when total is 105. B4 filter/readiness contracts are confirmed by the backend owner and being implemented; live acceptance pending B4.

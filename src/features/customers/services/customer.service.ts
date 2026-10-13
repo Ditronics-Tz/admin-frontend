@@ -4,6 +4,8 @@ import type {
   BackendUsersListResponse,
   BackendUserDetailResponse,
   BackendUserResponse,
+  Page,
+  ListParams,
 } from '@/lib/api/types'
 
 export interface CustomerViewModel {
@@ -18,6 +20,15 @@ export interface CustomerViewModel {
 }
 
 export const customerService = {
+  async listPage(params: ListParams = {}) {
+    const { data } = await apiClient.get<Page<BackendUserResponse, 'users'>>(
+      API_ENDPOINTS.ADMIN.USERS,
+      {
+        params: { role: 'passenger', limit: 20, offset: 0, ...params },
+      }
+    )
+    return data
+  },
   /**
    * Fetches real registered passengers from Go backend GET /api/v1/admin/users?role=passenger
    */

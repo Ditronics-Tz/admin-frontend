@@ -7,10 +7,12 @@ import { SidebarNavItem } from './SidebarNavItem'
 import { SidebarProfile } from './SidebarProfile'
 import { useUiStore } from '@/stores/useUiStore'
 import { ROUTES } from '@/lib/constants'
+import { usePermission } from '@/features/auth/hooks/usePermission'
 
 export const MobileNavDrawer: React.FC = () => {
   const { mobileNavOpen, setMobileNavOpen } = useUiStore()
   const location = useLocation()
+  const { isAdmin } = usePermission()
 
   // Close drawer on route change
   useEffect(() => {
@@ -73,14 +75,16 @@ export const MobileNavDrawer: React.FC = () => {
               <h3 className="px-3 pb-1 text-[10px] font-bold uppercase tracking-wider text-brand-soft-mint/50">
                 {group.group}
               </h3>
-              {group.items.map((item) => (
-                <SidebarNavItem
-                  key={item.path}
-                  item={item}
-                  isCollapsed={false}
-                  onClick={() => setMobileNavOpen(false)}
-                />
-              ))}
+              {group.items
+                .filter((item) => !item.adminOnly || isAdmin)
+                .map((item) => (
+                  <SidebarNavItem
+                    key={item.path}
+                    item={item}
+                    isCollapsed={false}
+                    onClick={() => setMobileNavOpen(false)}
+                  />
+                ))}
             </div>
           ))}
         </div>

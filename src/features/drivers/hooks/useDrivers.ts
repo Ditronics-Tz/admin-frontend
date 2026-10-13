@@ -1,5 +1,5 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { driverService, filterDrivers } from '../services/driver.service'
+import { driverService } from '../services/driver.service'
 import type {
   DriverFilters,
   CreateDriverInput,
@@ -9,28 +9,17 @@ import { toast } from 'sonner'
 
 export function useDrivers(filters: DriverFilters) {
   return useQuery({
-    queryKey: ['drivers', 'directory'],
-    queryFn: () => driverService.getDirectory(),
-    select: (drivers) => filterDrivers(drivers, filters),
+    queryKey: ['drivers', 'directory', filters],
+    queryFn: () => driverService.listDrivers(filters),
     staleTime: 30000,
   })
 }
 
 export function useDriverStats() {
   return useQuery({
-    queryKey: ['drivers', 'directory'],
-    queryFn: () => driverService.getDirectory(),
+    queryKey: ['drivers', 'stats'],
+    queryFn: () => driverService.stats(),
     staleTime: 30000,
-    select: (drivers) => ({
-      totalDrivers: drivers.length,
-      activeDrivers: drivers.filter((driver) => driver.accountStatus === 'active').length,
-      pendingVerification: drivers.filter((driver) =>
-        ['submitted', 'under_review'].includes(driver.verificationStatus)
-      ).length,
-      deactivatedDrivers: drivers.filter(
-        (driver) => driver.accountStatus === 'deactivated'
-      ).length,
-    }),
   })
 }
 

@@ -15,13 +15,23 @@ import {
 import { QueryError } from '@/components/feedback/QueryError'
 import { toast } from 'sonner'
 import { authService } from '@/features/auth/services/authService'
+import { FilterBar } from '@/components/common/DataTable'
+import { Pagination, PromoSkeleton } from '@/features/promotions/components/shared'
+import { Select } from '@/features/operations/shared'
+import { usePermission } from '@/features/auth/hooks/usePermission'
 
 export function StaffManagement() {
   const user = useAuthStore((state) => state.user)
   const queryClient = useQueryClient()
+  const { canManageStaff } = usePermission()
+  const [offset, setOffset] = useState(0),
+    [q, setQ] = useState(''),
+    [filterRole, setFilterRole] = useState(''),
+    [filterStatus, setFilterStatus] = useState('')
+  const params = { limit: 20, offset, q, role: filterRole, status: filterStatus }
   const staff = useQuery({
-    queryKey: ['admin', 'staff'],
-    queryFn: () => staffService.listStaff(),
+    queryKey: ['admin', 'staff', params],
+    queryFn: () => staffService.listPage(params),
   })
   const [dialog, setDialog] = useState<'create' | 'edit' | null>(null)
   const [target, setTarget] = useState<BackendStaffUser | null>(null)
@@ -83,6 +93,7 @@ export function StaffManagement() {
           </Button>
           <Button
             size="sm"
+            disabled={!canManageStaff}
             onClick={() => {
               mutation.reset()
               setTarget(null)
@@ -96,8 +107,34 @@ export function StaffManagement() {
           </Button>
         </div>
       </div>
+      <FilterBar
+        q={q}
+        onSearch={(value) => {
+          setQ(value)
+          setOffset(0)
+        }}
+      >
+        <Select
+          label="Role"
+          value={filterRole}
+          options={['', 'admin', 'support']}
+          onChange={(value) => {
+            setFilterRole(value)
+            setOffset(0)
+          }}
+        />
+        <Select
+          label="Status"
+          value={filterStatus}
+          options={['', 'active', 'inactive']}
+          onChange={(value) => {
+            setFilterStatus(value)
+            setOffset(0)
+          }}
+        />
+      </FilterBar>
       {staff.isPending ? (
-        <p>Loading staff…</p>
+        <PromoSkeleton />
       ) : staff.isError ? (
         <QueryError error={staff.error} retry={() => void staff.refetch()} />
       ) : (
@@ -113,7 +150,7 @@ export function StaffManagement() {
               </tr>
             </thead>
             <tbody>
-              {staff.data.map((member) => (
+              {staff.data.staff.map((member) => (
                 <tr key={member.id} className="border-b">
                   <td className="p-3">
                     <p className="font-semibold">{member.name}</p>
@@ -123,7 +160,9 @@ export function StaffManagement() {
                     <select
                       aria-label={`Role for ${member.name}`}
                       value={member.role}
-                      disabled={member.id === user?.id || mutation.isPending}
+                      disabled={
+                        !canManageStaff || member.id === user?.id || mutation.isPending
+                      }
                       onChange={(e) => {
                         const next = e.target.value as CreateStaffPayload['role']
                         confirm(`Change ${member.name}'s role to ${next}?`, () =>
@@ -146,7 +185,7 @@ export function StaffManagement() {
                       <Button
                         size="sm"
                         variant="outline"
-                        disabled={mutation.isPending}
+                        disabled={!canManageStaff || mutation.isPending}
                         onClick={() => edit(member)}
                       >
                         Edit
@@ -159,7 +198,9 @@ export function StaffManagement() {
                             ? 'Change your own password in My security.'
                             : undefined
                         }
-                        disabled={mutation.isPending || member.id === user?.id}
+                        disabled={
+                          !canManageStaff || mutation.isPending || member.id === user?.id
+                        }
                         onClick={() =>
                           confirm(
                             `Reset ${member.name}'s password and revoke refresh sessions?`,
@@ -178,7 +219,7 @@ export function StaffManagement() {
                       <Button
                         size="sm"
                         variant="outline"
-                        disabled={mutation.isPending}
+                        disabled={!canManageStaff || mutation.isPending}
                         onClick={() =>
                           confirm(
                             `Revoke all refresh sessions for ${member.name}? Existing access tokens remain valid until expiry.`,
@@ -194,7 +235,15 @@ export function StaffManagement() {
               ))}
             </tbody>
           </table>
-          {staff.data.length === 0 && <p className="p-4">No staff accounts found.</p>}
+          {staff.data.staff.length === 0 && (
+            <p className="p-4">No staff accounts found.</p>
+          )}
+          <Pagination
+            total={staff.data.total}
+            offset={offset}
+            limit={20}
+            onChange={setOffset}
+          />
         </div>
       )}
       <Dialog

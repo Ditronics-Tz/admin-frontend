@@ -9,10 +9,12 @@ import { TooltipProvider } from '@/components/ui/tooltip'
 import { useUiStore } from '@/stores/useUiStore'
 import { ROUTES } from '@/lib/constants'
 import { cn } from '@/lib/utils'
+import { usePermission } from '@/features/auth/hooks/usePermission'
 
 export const Sidebar: React.FC = () => {
   const { sidebarOpen, toggleSidebar } = useUiStore()
   const isCollapsed = !sidebarOpen
+  const { isAdmin } = usePermission()
 
   return (
     <TooltipProvider>
@@ -62,9 +64,11 @@ export const Sidebar: React.FC = () => {
                   {group.group}
                 </h3>
               )}
-              {group.items.map((item) => (
-                <SidebarNavItem key={item.path} item={item} isCollapsed={isCollapsed} />
-              ))}
+              {group.items
+                .filter((item) => !item.adminOnly || isAdmin)
+                .map((item) => (
+                  <SidebarNavItem key={item.path} item={item} isCollapsed={isCollapsed} />
+                ))}
             </div>
           ))}
         </div>

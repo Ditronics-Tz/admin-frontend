@@ -108,11 +108,13 @@ export const DriversToolbar: React.FC<DriversToolbarProps> = ({
           {/* Vehicle Type Filter */}
           <select
             value={filters.vehicleType}
+            disabled
+            title="Vehicle type is not provided by the server yet"
             onChange={(e) => onFiltersChange({ vehicleType: e.target.value, page: 1 })}
             className="h-10 rounded-md border border-slate-200 bg-white px-3 py-1.5 text-xs font-medium text-[#172B36] outline-none transition-colors hover:border-slate-300 focus:border-brand-primary-teal focus:ring-1 focus:ring-brand-primary-teal"
             aria-label="Filter by vehicle type"
           >
-            <option value="all">All Vehicles</option>
+            <option value="all">Vehicle type unavailable</option>
             <option value="motorcycle">Motorcycle (Boda)</option>
             <option value="bajaji">Bajaji</option>
             <option value="car">Car</option>

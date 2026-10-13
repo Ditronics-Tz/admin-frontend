@@ -7,6 +7,7 @@ import { NotFoundPage } from '@/components/common/NotFoundPage'
 import { HomeRedirect } from '@/features/auth/components/HomeRedirect'
 
 const LoginPage = lazy(() => import('@/features/auth/pages/LoginPage'))
+const SystemStatusPage = lazy(() => import('@/features/settings/pages/SystemStatusPage'))
 const ChangePasswordPage = lazy(() => import('@/features/auth/pages/ChangePasswordPage'))
 
 // Lazy-loaded layouts & feature modules
@@ -151,6 +152,14 @@ const router = createBrowserRouter([
           </ProtectedRoute>
         ),
         children: [
+          {
+            path: '/system-status',
+            element: (
+              <ProtectedRoute requiredRole="admin">
+                <SystemStatusPage />
+              </ProtectedRoute>
+            ),
+          },
           { path: '/fraud', element: <FraudPage /> },
           { path: '/fraud/rules', element: <FraudRulesPage /> },
           { path: '/fraud/:id', element: <FraudDetailPage /> },

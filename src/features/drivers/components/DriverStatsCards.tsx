@@ -35,28 +35,28 @@ export const DriverStatsCards: React.FC<DriverStatsCardsProps> = ({
   const items = [
     {
       title: 'Total Drivers',
-      value: stats?.totalDrivers ?? 0,
+      value: stats?.totalDrivers ?? '—',
       description: 'Registered fleet drivers in Tanzania',
       icon: UsersRound,
       iconBg: 'bg-teal-50 text-brand-primary-teal',
     },
     {
       title: 'Active Accounts',
-      value: stats?.activeDrivers ?? 0,
+      value: stats?.activeDrivers ?? '—',
       description: 'Accounts marked active',
       icon: UserCheck,
       iconBg: 'bg-emerald-50 text-emerald-700',
     },
     {
       title: 'Pending Verification',
-      value: stats?.pendingVerification ?? 0,
+      value: stats?.pendingVerification ?? '—',
       description: 'Documents awaiting compliance review',
       icon: Clock3,
       iconBg: 'bg-amber-50 text-amber-700',
     },
     {
       title: 'Deactivated Accounts',
-      value: stats?.deactivatedDrivers ?? 0,
+      value: stats?.deactivatedDrivers ?? '—',
       description: 'Accounts marked inactive',
       icon: UserX,
       iconBg: 'bg-rose-50 text-rose-700',

@@ -21,6 +21,7 @@ export interface NavItem {
   path: string
   icon: LucideIcon
   badge?: string
+  adminOnly?: boolean
 }
 
 export interface NavGroup {
@@ -103,6 +104,7 @@ export const NAVIGATION_CONFIG: NavGroup[] = [
         path: ROUTES.SETTINGS,
         icon: Settings,
       },
+      { title: 'System status', path: '/system-status', icon: Settings, adminOnly: true },
     ],
   },
 ]

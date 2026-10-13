@@ -5,6 +5,8 @@ import type {
   BackendStaffUser,
   BackendAuditLogsResponse,
   BackendStaffAuditLog,
+  Page,
+  ListParams,
 } from '@/lib/api/types'
 
 export interface CreateStaffPayload {
@@ -20,6 +22,13 @@ export interface CreateStaffResponse {
 }
 
 export const staffService = {
+  async listPage(params: ListParams = {}) {
+    return (
+      await apiClient.get<Page<BackendStaffUser, 'staff'>>(API_ENDPOINTS.ADMIN.STAFF, {
+        params: { limit: 20, offset: 0, ...params },
+      })
+    ).data
+  },
   /**
    * List all staff accounts (Admin only)
    */
@@ -96,10 +105,11 @@ export const staffService = {
    */
   async listAuditLogs(
     limit: number = 50,
-    offset: number = 0
+    offset: number = 0,
+    filters: Omit<ListParams, 'limit' | 'offset'> = {}
   ): Promise<{ total: number; logs: BackendStaffAuditLog[] }> {
     const response = await apiClient.get<BackendAuditLogsResponse>(
-      `${API_ENDPOINTS.ADMIN.AUDIT_LOGS}?limit=${limit}&offset=${offset}`
+      `${API_ENDPOINTS.ADMIN.AUDIT_LOGS}?${new URLSearchParams({ limit: String(limit), offset: String(offset), ...Object.fromEntries(Object.entries(filters).filter(([, value]) => value !== undefined && value !== '')) }).toString()}`
     )
     return {
       total: response.data.total,

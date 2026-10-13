@@ -82,6 +82,31 @@ test('staff access remains memory-only and logout clears the isolated refresh ex
   tokenStorage.clearTokens()
   assert.equal(storage.get('rida_staff_refresh_token'), undefined)
 })
+
+test('paged users, staff and audit filters go to the server and driver hydration stays within one page', async () => {
+  handle = (req, json) => {
+    const url = new URL(req.path, 'http://fixture.invalid')
+    if (url.pathname === '/api/v1/admin/users') return json(200, { users: [{ ...user, id: 'page-driver' }], total: 105, limit: 10, offset: 20 })
+    if (url.pathname === '/api/v1/admin/staff') return json(200, { staff: [staff], total: 99, limit: 20, offset: 40 })
+    if (url.pathname === '/api/v1/admin/audit-logs') return json(200, { logs: [], total: 0, limit: 25, offset: 25 })
+    return json(200, { ...detail, user: { ...user, id: 'page-driver' } })
+  }
+  const result = await driverService.listDrivers({ ...filters, page: 3, pageSize: 10, search: 'Driver', accountStatus: 'active', verificationStatus: 'approved' })
+  assert.equal(result.total, 105)
+  assert.equal(result.items.length, 1)
+  assert.equal(requests.length, 2)
+  const driverList = new URL(requests[0].path, 'http://fixture.invalid')
+  assert.equal(driverList.searchParams.get('offset'), '20')
+  assert.equal(driverList.searchParams.get('limit'), '10')
+  assert.equal(driverList.searchParams.get('q'), 'Driver')
+  assert.equal(driverList.searchParams.get('verification_status'), 'approved')
+  await customerService.listPage({ offset: 40, limit: 20, q: 'Passenger', status: 'suspended' })
+  await staffService.listPage({ offset: 40, limit: 20, q: 'Support', role: 'support', status: 'active' })
+  await staffService.listAuditLogs(25, 25, { q: 'review', actor: 'staff-1', action: 'document_review', from: '2026-10-01', to: '2026-10-13' })
+  const audit = new URL(requests.at(-1).path, 'http://fixture.invalid')
+  assert.equal(audit.searchParams.get('actor'), 'staff-1')
+  assert.equal(audit.searchParams.get('to'), '2026-10-13')
+})
 const { mapBackendUserDetailToDriver } =
   await import('../src/features/drivers/adapters/driverAdapter.ts')
 const staff = {

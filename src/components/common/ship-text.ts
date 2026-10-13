@@ -1,6 +1,14 @@
 import { useUiStore } from '@/stores/useUiStore'
 
 const sw: Record<string, string> = {
+  'User directory': 'Orodha ya watumiaji',
+  Name: 'Jina',
+  Email: 'Barua pepe',
+  Phone: 'Simu',
+  'Security audit trail': 'Historia ya ukaguzi wa usalama',
+  'Time (EAT)': 'Muda (EAT)',
+  'Action / target': 'Kitendo / lengwa',
+  Details: 'Maelezo',
   Search: 'Tafuta',
   All: 'Zote',
   Status: 'Hali',

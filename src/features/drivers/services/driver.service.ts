@@ -3,7 +3,8 @@ import { API_ENDPOINTS } from '@/lib/constants'
 import { ApiClientError } from '@/lib/api/errors'
 import { verificationService } from './verification.service'
 import type {
-  BackendUsersListResponse,
+  Page,
+  BackendUserResponse,
   BackendUserDetailResponse,
   BackendDriverProfile,
 } from '@/lib/api/types'
@@ -76,14 +77,29 @@ function unsupported(action: string): never {
 }
 
 export const driverService = {
-  async getDirectory(): Promise<Driver[]> {
-    const { data } = await apiClient.get<BackendUsersListResponse>(
-      API_ENDPOINTS.DRIVERS.LIST
+  async listDrivers(filters: DriverFilters): Promise<PaginatedResponse<Driver>> {
+    const pageSize = Math.min(100, Math.max(1, filters.pageSize || 10))
+    const page = Math.max(1, filters.page || 1)
+    const { data } = await apiClient.get<Page<BackendUserResponse, 'users'>>(
+      API_ENDPOINTS.ADMIN.USERS,
+      {
+        params: {
+          role: 'driver',
+          limit: pageSize,
+          offset: (page - 1) * pageSize,
+          q: filters.search.trim(),
+          status: filters.accountStatus === 'all' ? '' : filters.accountStatus,
+          verification_status:
+            filters.verificationStatus === 'all' ? '' : filters.verificationStatus,
+          sort_by: filters.sortBy || '',
+          sort_order: filters.sortOrder || '',
+        },
+      }
     )
     const users = data.users || []
     const drivers: Driver[] = new Array(users.length)
     let next = 0
-    // ListUsers omits profiles. Bound detail requests to avoid flooding the server.
+    // Hydrate only the returned page, with bounded concurrency.
     await Promise.all(
       Array.from({ length: Math.min(6, users.length) }, async () => {
         while (next < users.length) {
@@ -92,10 +108,36 @@ export const driverService = {
         }
       })
     )
-    return drivers
+    return {
+      items: drivers,
+      total: data.total,
+      page,
+      pageSize,
+      totalPages: Math.max(1, Math.ceil(data.total / pageSize)),
+    }
   },
-  async listDrivers(filters: DriverFilters): Promise<PaginatedResponse<Driver>> {
-    return filterDrivers(await driverService.getDirectory(), filters)
+  async stats() {
+    const count = async (params: Record<string, string> = {}) =>
+      (
+        await apiClient.get<Page<BackendUserResponse, 'users'>>(
+          API_ENDPOINTS.ADMIN.USERS,
+          { params: { role: 'driver', limit: 1, offset: 0, ...params } }
+        )
+      ).data.total
+    const [totalDrivers, activeDrivers, submitted, underReview, deactivatedDrivers] =
+      await Promise.all([
+        count(),
+        count({ status: 'active' }),
+        count({ verification_status: 'submitted' }),
+        count({ verification_status: 'under_review' }),
+        count({ status: 'inactive' }),
+      ])
+    return {
+      totalDrivers,
+      activeDrivers,
+      pendingVerification: submitted + underReview,
+      deactivatedDrivers,
+    }
   },
   async getDriver(driverId: string): Promise<Driver> {
     const { data } = await apiClient.get<BackendUserDetailResponse>(
