@@ -1,12 +1,6 @@
 import React from 'react'
 import { Link } from 'react-router-dom'
-import {
-  Star,
-  ChevronLeft,
-  ChevronRight,
-  AlertCircle,
-  Users,
-} from 'lucide-react'
+import { Star, ChevronLeft, ChevronRight, AlertCircle, Users } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Skeleton } from '@/components/ui/skeleton'
 import {
@@ -61,8 +55,8 @@ export const DriversTable: React.FC<DriversTableProps> = ({
           Unable to Load Drivers
         </h3>
         <p className="mt-1 max-w-sm text-xs text-slate-500">
-          An error occurred while communicating with the driver service. Please check
-          your connection and try again.
+          An error occurred while communicating with the driver service. Please check your
+          connection and try again.
         </p>
         <Button
           variant="outline"
@@ -77,7 +71,7 @@ export const DriversTable: React.FC<DriversTableProps> = ({
   }
 
   return (
-    <div className="rounded-xl border border-slate-200/80 bg-white shadow-sm overflow-hidden">
+    <div className="overflow-hidden rounded-xl border border-slate-200/80 bg-white shadow-sm">
       {/* Table Content Container */}
       <div className="overflow-x-auto">
         <table className="w-full min-w-[980px] border-collapse text-left text-xs">
@@ -109,15 +103,33 @@ export const DriversTable: React.FC<DriversTableProps> = ({
                       </div>
                     </div>
                   </td>
-                  <td className="px-3"><Skeleton className="h-4 w-20" /></td>
-                  <td className="px-3"><Skeleton className="h-4 w-24" /></td>
-                  <td className="px-3"><Skeleton className="h-4 w-28" /></td>
-                  <td className="px-3"><Skeleton className="h-5 w-20 rounded-full" /></td>
-                  <td className="px-3"><Skeleton className="h-5 w-16 rounded-full" /></td>
-                  <td className="px-3"><Skeleton className="h-4 w-16" /></td>
-                  <td className="px-3"><Skeleton className="h-4 w-12" /></td>
-                  <td className="px-3"><Skeleton className="h-4 w-20" /></td>
-                  <td className="pr-6 text-right"><Skeleton className="ml-auto h-7 w-7 rounded-md" /></td>
+                  <td className="px-3">
+                    <Skeleton className="h-4 w-20" />
+                  </td>
+                  <td className="px-3">
+                    <Skeleton className="h-4 w-24" />
+                  </td>
+                  <td className="px-3">
+                    <Skeleton className="h-4 w-28" />
+                  </td>
+                  <td className="px-3">
+                    <Skeleton className="h-5 w-20 rounded-full" />
+                  </td>
+                  <td className="px-3">
+                    <Skeleton className="h-5 w-16 rounded-full" />
+                  </td>
+                  <td className="px-3">
+                    <Skeleton className="h-4 w-16" />
+                  </td>
+                  <td className="px-3">
+                    <Skeleton className="h-4 w-12" />
+                  </td>
+                  <td className="px-3">
+                    <Skeleton className="h-4 w-20" />
+                  </td>
+                  <td className="pr-6 text-right">
+                    <Skeleton className="ml-auto h-7 w-7 rounded-md" />
+                  </td>
                 </tr>
               ))
             ) : drivers.length === 0 ? (
@@ -148,15 +160,12 @@ export const DriversTable: React.FC<DriversTableProps> = ({
               drivers.map((driver) => {
                 const initials = getDriverInitials(driver.fullName)
                 return (
-                  <tr
-                    key={driver.id}
-                    className="transition-colors hover:bg-slate-50/60"
-                  >
+                  <tr key={driver.id} className="transition-colors hover:bg-slate-50/60">
                     {/* Driver Avatar & Name */}
                     <td className="py-3.5 pl-6 pr-3">
                       <div className="flex items-center gap-3">
                         <div
-                          className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-brand-soft-mint font-semibold text-brand-deep-teal shadow-xs text-xs"
+                          className="shadow-xs flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-brand-soft-mint text-xs font-semibold text-brand-deep-teal"
                           aria-hidden="true"
                         >
                           {initials}
@@ -177,13 +186,13 @@ export const DriversTable: React.FC<DriversTableProps> = ({
 
                     {/* Driver Code */}
                     <td className="px-3 py-3.5">
-                      <span className="font-mono text-[11px] font-medium text-slate-700 bg-slate-100 px-1.5 py-0.5 rounded">
+                      <span className="rounded bg-slate-100 px-1.5 py-0.5 font-mono text-[11px] font-medium text-slate-700">
                         {driver.driverCode}
                       </span>
                     </td>
 
                     {/* Phone */}
-                    <td className="px-3 py-3.5 font-medium text-slate-700 whitespace-nowrap">
+                    <td className="whitespace-nowrap px-3 py-3.5 font-medium text-slate-700">
                       {formatTzPhone(driver.phone)}
                     </td>
 
@@ -211,7 +220,7 @@ export const DriversTable: React.FC<DriversTableProps> = ({
                     </td>
 
                     {/* Availability */}
-                    <td className="px-3 py-3.5 whitespace-nowrap">
+                    <td className="whitespace-nowrap px-3 py-3.5">
                       <DriverAvailabilityBadge status={driver.availabilityStatus} />
                     </td>
 
@@ -221,7 +230,7 @@ export const DriversTable: React.FC<DriversTableProps> = ({
                         <div className="flex items-center gap-1 font-semibold text-slate-700">
                           <Star className="h-3.5 w-3.5 fill-amber-400 text-amber-400" />
                           <span>{driver.rating.toFixed(2)}</span>
-                          <span className="text-[10px] text-slate-400 font-normal">
+                          <span className="text-[10px] font-normal text-slate-400">
                             ({driver.ratingCount})
                           </span>
                         </div>
@@ -231,7 +240,7 @@ export const DriversTable: React.FC<DriversTableProps> = ({
                     </td>
 
                     {/* Joined Date */}
-                    <td className="px-3 py-3.5 text-slate-500 whitespace-nowrap">
+                    <td className="whitespace-nowrap px-3 py-3.5 text-slate-500">
                       {formatDateTime(driver.joinedAt)}
                     </td>
 
@@ -286,7 +295,7 @@ export const DriversTable: React.FC<DriversTableProps> = ({
             <span className="hidden sm:inline">Prev</span>
           </Button>
 
-          <span className="hidden text-xs text-slate-500 sm:inline px-2">
+          <span className="hidden px-2 text-xs text-slate-500 sm:inline">
             Page <strong>{currentPage}</strong> of <strong>{totalPages}</strong>
           </span>
 

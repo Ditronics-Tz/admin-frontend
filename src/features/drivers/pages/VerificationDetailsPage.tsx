@@ -10,13 +10,7 @@ import { ROUTES } from '@/lib/constants'
 export const VerificationDetailsPage: React.FC = () => {
   const { verificationId } = useParams<{ verificationId: string }>()
 
-  const {
-    data: driver,
-    isLoading,
-    isError,
-    error,
-    refetch,
-  } = useDriver(verificationId)
+  const { data: driver, isLoading, isError, error, refetch } = useDriver(verificationId)
 
   if (isLoading) {
     return (
@@ -24,11 +18,11 @@ export const VerificationDetailsPage: React.FC = () => {
         <Skeleton className="h-4 w-40" />
         <Skeleton className="h-10 w-72" />
         <div className="grid grid-cols-1 gap-6 lg:grid-cols-12">
-          <div className="lg:col-span-5 space-y-4">
+          <div className="space-y-4 lg:col-span-5">
             <Skeleton className="h-48 w-full rounded-xl" />
             <Skeleton className="h-64 w-full rounded-xl" />
           </div>
-          <div className="lg:col-span-7 space-y-4">
+          <div className="space-y-4 lg:col-span-7">
             <Skeleton className="h-96 w-full rounded-xl" />
             <Skeleton className="h-20 w-full rounded-xl" />
           </div>
@@ -45,7 +39,7 @@ export const VerificationDetailsPage: React.FC = () => {
           <h2 className="mt-3 text-lg font-semibold text-[#172B36]">
             Application Not Found
           </h2>
-          <p className="mt-1 text-xs text-slate-500 max-w-sm">
+          <p className="mt-1 max-w-sm text-xs text-slate-500">
             {error?.message ||
               `Unable to locate verification request for reference "${verificationId}".`}
           </p>
@@ -77,18 +71,19 @@ export const VerificationDetailsPage: React.FC = () => {
       </div>
 
       {/* Title */}
-      <div className="border-b border-slate-200/60 pb-5 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+      <div className="flex flex-col gap-3 border-b border-slate-200/60 pb-5 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <div className="flex items-center gap-2">
             <h1 className="text-2xl font-bold tracking-tight text-[#172B36]">
               Compliance Review: {driver.fullName}
             </h1>
-            <span className="font-mono text-xs font-semibold text-slate-600 bg-slate-100 px-2 py-0.5 rounded">
+            <span className="rounded bg-slate-100 px-2 py-0.5 font-mono text-xs font-semibold text-slate-600">
               {driver.driverCode}
             </span>
           </div>
           <p className="mt-1 text-xs text-slate-500">
-            Inspect driver credentials against Tanzanian road safety and LATRA regulatory standards.
+            Inspect driver credentials against Tanzanian road safety and LATRA regulatory
+            standards.
           </p>
         </div>
 

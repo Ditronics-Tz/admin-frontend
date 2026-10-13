@@ -9,7 +9,10 @@ interface RidaLogoMarkProps {
   alt?: string
 }
 
-const SIZE_MAP: Record<'xs' | 'sm' | 'md' | 'lg' | 'xl', { px: number; classStr: string }> = {
+const SIZE_MAP: Record<
+  'xs' | 'sm' | 'md' | 'lg' | 'xl',
+  { px: number; classStr: string }
+> = {
   xs: { px: 24, classStr: 'h-6 w-6' },
   sm: { px: 32, classStr: 'h-8 w-8' },
   md: { px: 36, classStr: 'h-9 w-9' },
@@ -37,7 +40,11 @@ export const RidaLogoMark: React.FC<RidaLogoMarkProps> = ({
         sizeConfig?.classStr,
         className
       )}
-      style={!sizeConfig ? { width: `${numericSize}px`, height: `${numericSize}px` } : undefined}
+      style={
+        !sizeConfig
+          ? { width: `${numericSize}px`, height: `${numericSize}px` }
+          : undefined
+      }
       aria-label={alt}
     >
       <img
@@ -45,7 +52,7 @@ export const RidaLogoMark: React.FC<RidaLogoMarkProps> = ({
         alt={alt}
         width={numericSize}
         height={numericSize}
-        className="h-full w-full object-contain select-none"
+        className="h-full w-full select-none object-contain"
         loading="eager"
         decoding="sync"
       />

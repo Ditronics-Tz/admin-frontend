@@ -12,11 +12,7 @@ export const driverFormSchema = z.object({
     .trim()
     .min(2, 'Full name must be at least 2 characters')
     .max(80, 'Full name cannot exceed 80 characters'),
-  email: z
-    .string()
-    .trim()
-    .email('Please enter a valid email address')
-    .toLowerCase(),
+  email: z.string().trim().email('Please enter a valid email address').toLowerCase(),
   phone: z
     .string()
     .trim()
@@ -70,11 +66,7 @@ export const suspendDriverSchema = z.object({
       message: 'Please choose a suspension reason',
     }
   ),
-  notes: z
-    .string()
-    .trim()
-    .max(500, 'Notes cannot exceed 500 characters')
-    .optional(),
+  notes: z.string().trim().max(500, 'Notes cannot exceed 500 characters').optional(),
 })
 
 export type SuspendDriverFormData = z.infer<typeof suspendDriverSchema>

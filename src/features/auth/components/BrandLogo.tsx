@@ -9,4 +9,3 @@ export type BrandLogoProps = RidaLogoProps
 export const BrandLogo: React.FC<BrandLogoProps> = (props) => {
   return <RidaLogo {...props} />
 }
-

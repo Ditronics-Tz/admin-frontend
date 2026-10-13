@@ -3,12 +3,12 @@ import { Outlet } from 'react-router-dom'
 import { Sidebar } from './Sidebar'
 import { Topbar } from './Topbar'
 import { MobileNavDrawer } from './MobileNavDrawer'
-import {SafetyMonitor} from '@/features/operations/safety.live'
+import { SafetyMonitor } from '@/features/operations/safety.live'
 
 export const AdminLayout: React.FC = () => {
   return (
     <div className="flex h-screen w-full overflow-hidden bg-[#F5F7F8]">
-      <SafetyMonitor/>
+      <SafetyMonitor />
       {/* Persistent Desktop Sidebar */}
       <Sidebar />
 

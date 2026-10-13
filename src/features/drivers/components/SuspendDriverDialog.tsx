@@ -13,10 +13,7 @@ import { Button } from '@/components/ui/button'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
 import { AlertTriangle, Loader2 } from 'lucide-react'
-import {
-  suspendDriverSchema,
-  type SuspendDriverFormData,
-} from '../schemas/driver.schema'
+import { suspendDriverSchema, type SuspendDriverFormData } from '../schemas/driver.schema'
 import type { Driver } from '../types/driver.types'
 import { useSuspendDriver } from '../hooks/useDrivers'
 
@@ -73,7 +70,7 @@ export const SuspendDriverDialog: React.FC<SuspendDriverDialogProps> = ({
             </div>
             <DialogTitle className="text-lg">Suspend Driver Account?</DialogTitle>
           </div>
-          <DialogDescription className="text-xs text-slate-500 pt-1">
+          <DialogDescription className="pt-1 text-xs text-slate-500">
             This action will immediately prevent{' '}
             <strong className="text-slate-700">{driver?.fullName}</strong> (
             {driver?.driverCode}) from receiving and accepting new ride requests.
@@ -116,7 +113,7 @@ export const SuspendDriverDialog: React.FC<SuspendDriverDialogProps> = ({
             )}
           </div>
 
-          <DialogFooter className="gap-2 sm:gap-0 pt-2">
+          <DialogFooter className="gap-2 pt-2 sm:gap-0">
             <Button
               type="button"
               variant="outline"

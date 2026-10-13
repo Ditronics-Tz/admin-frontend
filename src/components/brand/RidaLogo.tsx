@@ -41,7 +41,7 @@ export const RidaLogo: React.FC<RidaLogoProps> = ({
         <img
           src="/brand/rida-logo-transparent.png"
           alt="Rida Operations console"
-          className="h-10 w-auto object-contain select-none"
+          className="h-10 w-auto select-none object-contain"
           loading="eager"
         />
       </div>
@@ -52,7 +52,7 @@ export const RidaLogo: React.FC<RidaLogoProps> = ({
     <div className={cn('inline-flex items-center gap-3', className)}>
       <RidaLogoMark size={markSize} alt="Rida" />
 
-      <div className="flex flex-col text-left justify-center">
+      <div className="flex flex-col justify-center text-left">
         <span
           className={cn(
             'text-[17px] font-bold leading-tight tracking-[-0.02em]',
@@ -64,7 +64,7 @@ export const RidaLogo: React.FC<RidaLogoProps> = ({
         {showSubtitle && subtitle && (
           <span
             className={cn(
-              'text-[11px] font-medium leading-tight tracking-normal mt-0.5',
+              'mt-0.5 text-[11px] font-medium leading-tight tracking-normal',
               isDarkTheme ? 'text-brand-soft-mint/80' : 'text-slate-500'
             )}
           >
