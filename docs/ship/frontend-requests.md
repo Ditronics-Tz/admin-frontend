@@ -9,3 +9,10 @@ Contracts will be reconciled against backend `docs/api/openapi.yaml` and `docs/s
 - F7: List `/admin/tickets|complaints|reports` with total/limit/offset and q/status/priority/assignee/category filters; detail `{ticket|complaint|report,notes}`; PATCH `{status,priority,assigned_to,reason,resolution_note}` (resolution note required); POST `:id/notes` `{body}`. Existing reports note field `note` is read compatibly; existing specialized report workflows remain. Old support stubs explicitly show unavailable.
 - F8: `/admin/rides` canonical nested party/location DTO and total/limit/offset with status/from/to/passenger/driver/q; `/admin/rides/:id` returns canonical ride (direct or `{ride}`) and events; POST cancel `{reason}`, POST reassign `{driver_id,reason}`. `/admin/stats` actual persisted operational counts. Production owner must supply licensed HTTPS VITE_MAP_TILE_URL plus correct VITE_MAP_ATTRIBUTION; missing background remains explicitly unavailable.
 - F9: GET `/admin/ratings` with user/max_score/hidden/q/limit/offset → `{ratings:[{id,ride_id,from_user_id,to_user_id,score,comment,hidden,created_at}],total,limit,offset}`. POST `/admin/ratings/:id/hide|restore` `{reason}`. Backend owner approved these proposed B8 contracts; endpoints not live yet.
+
+## Reconciled with B3/B4 source
+
+- B3 presign metadata/local501 fallback matches the implemented viewer. R2/provider deployment smoke remains pending.
+- B4 readiness, user/staff/audit/verification collection keys and filter parameters match. Sorting is not a supported B4 contract; removed unused sort request parameters (the UI exposes no sorting control). Vehicle type stays disabled.
+- Requested B4 user status correction: banned is persisted by existing account controls but was excluded from the new filter validator; inactive/deactivated aggregate is needed by count cards (IsActive=false). Backend owner notified before final acceptance.
+- Existing complaints aliases return the `reports` key, so the new complaints queue explicitly reports unavailable until B8 returns its own contract. Existing dedicated report actions are retained; new generic report patch/notes await B8 field reconciliation.

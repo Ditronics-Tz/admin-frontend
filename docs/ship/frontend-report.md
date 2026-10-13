@@ -22,6 +22,8 @@ No safe patch upgrade was offered by the installed lockfile audit. Registry meta
 
 Validation: format check, typecheck, tests (29/29), and production build passed. Lint passed with five existing Fast Refresh warnings. npm audit reported the seven deferred advisories above. The CI uses npm ci to exercise a clean checkout; a hosted CI run is pending push/PR by the owner.
 
+Final clean Windows checkout exposed Git autocrlf converting 169 source files to CRLF and failing Prettier, despite the formatted working tree. Added `.gitattributes` with automatic text detection and LF checkout so both Windows and Linux clones share the expected formatting. Clean-checkout rerun is pending below.
+
 ## F2 — API foundation
 
 Branch: `ship/fe-api`. Kept the existing Axios client, concurrent token refresh and typed services. Existing 429 numeric handling and field mapping were extended with HTTP-date Retry-After support, request IDs in error messages/toasts, a global rate-limit toast, generic 422 field mapping and an adapter for form field errors. A server 403 makes shared write permissions read-only with an explanatory banner. Existing operational and promotion request wrappers retain their narrower permission gates.
@@ -94,7 +96,7 @@ Validation: final format check, typecheck, lint (same five warnings), production
 
 Final auth review also closes a session-isolation race on `ship/fe-session-isolation`: a delayed success/401/403 from an earlier login is rejected instead of being displayed, refreshed/replayed or changing permissions under a replacement staff account. Access rotation within the same session still shares the existing refresh promise. Final local validation: format check, typecheck, lint (five pre-existing warnings), production build and 39/39 integration tests passed, including controlled late-200/401 scenarios. Verification errors preserve their backend references and ratings visibility filters show clear labels.
 
-- No production launch/readiness claim is made. B4/B5/B7/B8 implementations and final OpenAPI reconciliation remain backend tasks; frontend requests list the contracts explicitly. Stubs and missing endpoints show errors/unavailable states. Hosted CI and staged browser/end-to-end acceptance remain pending owner execution.
+- No production launch/readiness claim is made. B3/B4 contracts are implemented in source; deployment/provider smoke acceptance is pending. B5/B7/B8 implementations and final OpenAPI reconciliation remain backend tasks; frontend requests list the contracts explicitly. Wrong collection keys, stubs and missing endpoints show errors/unavailable states. Hosted CI and staged browser/end-to-end acceptance remain pending owner execution.
 - Refresh persistence is the F3 documented localStorage exception until a deployment/domain decision enables an HttpOnly cookie contract.
 - Configure storage CORS/VITE_DOCUMENT_ORIGIN and licensed production map tiles/attribution. Production hosting must supply CSP frame-ancestors/HSTS/nosniff/Referrer-Policy headers. Browser CSP smoke was blocked by automatic approval review as described in F3.
 - Seven Tailwind build-chain advisories remain deferred, with individual dispositions in F1. No forced major upgrade, external messages, pushes, live environment-file edits or backend edits were performed.

@@ -63,7 +63,15 @@ export function UserSecurityPanel({ id }: { id: string }) {
       </header>
       {sessions.data && (
         <div className="flex flex-wrap items-center gap-3 text-sm">
-          <StatusBadge status={locked ? 'locked' : 'unlocked'} />
+          <StatusBadge
+            status={
+              sessions.data.locked_until === undefined
+                ? 'unavailable'
+                : locked
+                  ? 'locked'
+                  : 'unlocked'
+            }
+          />
           {locked && <span>{formatDateTime(sessions.data.locked_until!)}</span>}
           <span>
             {t('Failed login count')}:{' '}

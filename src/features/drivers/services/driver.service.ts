@@ -92,8 +92,6 @@ export const driverService = {
           status: filters.accountStatus === 'all' ? '' : filters.accountStatus,
           verification_status:
             filters.verificationStatus === 'all' ? '' : filters.verificationStatus,
-          sort_by: filters.sortBy || '',
-          sort_order: filters.sortOrder || '',
         },
       }
     )

@@ -36,7 +36,7 @@ export const supportService = {
     const { data } = await apiClient.get<Page<WorkItem, WorkKind>>(path(kind), {
       params: { limit: 20, offset: 0, ...params },
     })
-    if (!Number.isFinite(data.total))
+    if (!Number.isFinite(data.total) || !Array.isArray(data[kind]))
       throw new ApiClientError('Support persistence is unavailable on this server.', {
         status: 501,
         code: 'NOT_IMPLEMENTED',
