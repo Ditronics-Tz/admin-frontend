@@ -23,6 +23,7 @@ export function ReasonDialog({
   onConfirm,
   children,
   canConfirm = true,
+  maxLength = 2000,
 }: {
   title: string
   pending?: boolean
@@ -31,6 +32,7 @@ export function ReasonDialog({
   onConfirm: (reason: string) => void
   children?: React.ReactNode
   canConfirm?: boolean
+  maxLength?: number
 }) {
   const [reason, setReason] = useState('')
   const id = useId(),
@@ -59,7 +61,7 @@ export function ReasonDialog({
         <Textarea
           id={id}
           required
-          maxLength={2000}
+          maxLength={maxLength}
           value={reason}
           onChange={(event) => setReason(event.target.value)}
         />

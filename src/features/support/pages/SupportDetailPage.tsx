@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Link, useParams } from 'react-router-dom'
+import { Link, Navigate, useParams } from 'react-router-dom'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { toast } from 'sonner'
 import { supportService, workKind, type WorkKind } from '../services/support.service'
@@ -17,6 +17,8 @@ import { formatDateTime } from '@/lib/utils/formatters'
 export default function SupportDetailPage() {
   const params = useParams(),
     kind = workKind(params.kind)
+  if (kind && kind !== 'tickets' && params.id)
+    return <Navigate to={`/reports/${encodeURIComponent(params.id)}`} replace />
   return kind && params.id ? (
     <SupportDetail key={`${kind}:${params.id}`} kind={kind} id={params.id} />
   ) : (
@@ -62,7 +64,7 @@ function SupportDetail({ kind, id }: { kind: WorkKind; id: string }) {
   const { item, notes } = query.data
   const statuses =
     kind === 'tickets'
-      ? ['open', 'in_progress', 'resolved', 'closed']
+      ? ['open', 'in_review', 'resolved', 'closed']
       : ['open', 'in_review', 'resolved', 'dismissed']
   const open = (mode: 'resolve' | 'update' | 'assign') => {
     mutation.reset()
@@ -96,7 +98,11 @@ function SupportDetail({ kind, id }: { kind: WorkKind; id: string }) {
           {t('Change status or priority')}
         </Button>
         <Button
-          disabled={!canWrite || mutation.isPending || item.status === 'resolved'}
+          disabled={
+            !canWrite ||
+            mutation.isPending ||
+            ['resolved', 'closed'].includes(item.status)
+          }
           onClick={() => open('resolve')}
         >
           {t('Resolve')}
@@ -152,6 +158,7 @@ function SupportDetail({ kind, id }: { kind: WorkKind; id: string }) {
           )}
           pending={mutation.isPending}
           error={mutation.error}
+          maxLength={kind === 'tickets' ? 500 : 2000}
           onClose={() => setDialog(null)}
           onConfirm={(reason) => {
             if (canWrite)
@@ -160,7 +167,7 @@ function SupportDetail({ kind, id }: { kind: WorkKind; id: string }) {
                   kind,
                   id,
                   dialog === 'resolve'
-                    ? { status: 'resolved', resolution_note: reason }
+                    ? { status: 'resolved', resolution_note: reason, reason }
                     : dialog === 'assign'
                       ? { assigned_to: assignee || null, reason }
                       : {
@@ -191,7 +198,7 @@ function SupportDetail({ kind, id }: { kind: WorkKind; id: string }) {
           )}
           {dialog === 'assign' && (
             <label className="grid gap-1 text-sm">
-              {t('Staff ID (empty to unassign)')}
+              {t('Staff ID (leave blank to assign to yourself)')}
               <Input
                 value={assignee}
                 onChange={(event) => setAssignee(event.target.value)}

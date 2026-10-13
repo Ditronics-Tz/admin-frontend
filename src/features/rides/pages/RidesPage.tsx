@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { useQuery } from '@tanstack/react-query'
-import { rideService } from '../services/ride.service'
+import { rideDateBoundary, rideService } from '../services/ride.service'
 import { RideRows } from '../components/RideRows'
 import { FilterBar } from '@/components/common/DataTable'
 import { Pagination, PromoSkeleton, Empty } from '@/features/promotions/components/shared'
@@ -19,7 +19,13 @@ export default function RidesPage() {
     passenger: '',
     driver: '',
   })
-  const params = { ...filters, offset, limit: 20 }
+  const params = {
+    ...filters,
+    from: rideDateBoundary(filters.from),
+    to: rideDateBoundary(filters.to, true),
+    offset,
+    limit: 20,
+  }
   const query = useQuery({
     queryKey: ['rides', params],
     queryFn: () => rideService.list(params),
@@ -39,13 +45,17 @@ export default function RidesPage() {
           options={[
             '',
             'requested',
+            'searching',
             'offered',
-            'accepted',
-            'arrived',
+            'assigned',
+            'driver_arrived',
             'in_progress',
             'completed',
-            'cancelled',
-            'timed_out',
+            'cancelled_by_passenger',
+            'cancelled_by_driver',
+            'cancelled_by_admin',
+            'no_driver_found',
+            'expired',
           ]}
           onChange={(value) => change('status', value)}
         />

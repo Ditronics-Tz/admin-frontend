@@ -14,11 +14,11 @@ import { formatApiError } from '@/lib/api/errors'
 export function RatingsPanel({ userId }: { userId?: string }) {
   const t = useShipText(),
     cache = useQueryClient(),
-    { canWrite } = usePermission()
+    { isAdmin, canManageRatings } = usePermission()
   const [offset, setOffset] = useState(0),
     [q, setQ] = useState(''),
     [low, setLow] = useState(false),
-    [hidden, setHidden] = useState('')
+    [hidden, setHidden] = useState('all')
   const [target, setTarget] = useState<RatingRecord | null>(null)
   const params = {
     q,
@@ -32,6 +32,7 @@ export function RatingsPanel({ userId }: { userId?: string }) {
     queryKey: ['ratings', params],
     queryFn: () => ratingService.list(params),
     retry: false,
+    enabled: isAdmin,
   })
   const mutation = useMutation({
     mutationFn: (reason: string) =>
@@ -45,6 +46,12 @@ export function RatingsPanel({ userId }: { userId?: string }) {
   })
   const unavailable =
     query.isError && [404, 501].includes(formatApiError(query.error).status || 0)
+  if (!isAdmin)
+    return (
+      <aside role="status" className="rounded-lg border bg-muted p-3 text-sm">
+        {t('Administrator access is required to view ratings.')}
+      </aside>
+    )
   return (
     <section className="space-y-4 rounded-xl border bg-white p-4">
       <FilterBar
@@ -74,7 +81,7 @@ export function RatingsPanel({ userId }: { userId?: string }) {
               setOffset(0)
             }}
           >
-            <option value="">{t('All')}</option>
+            <option value="all">{t('All')}</option>
             <option value="false">{t('Visible')}</option>
             <option value="true">{t('Hidden')}</option>
           </select>
@@ -118,7 +125,7 @@ export function RatingsPanel({ userId }: { userId?: string }) {
             <Button
               size="sm"
               variant="outline"
-              disabled={!canWrite || mutation.isPending}
+              disabled={!canManageRatings || mutation.isPending}
               onClick={() => {
                 mutation.reset()
                 setTarget(rating)
@@ -137,10 +144,11 @@ export function RatingsPanel({ userId }: { userId?: string }) {
           title={t(target.hidden ? 'Restore rating' : 'Hide rating')}
           pending={mutation.isPending}
           error={mutation.error}
-          canConfirm={canWrite}
+          maxLength={500}
+          canConfirm={canManageRatings}
           onClose={() => setTarget(null)}
           onConfirm={(reason) => {
-            if (canWrite) mutation.mutate(reason)
+            if (canManageRatings) mutation.mutate(reason)
           }}
         >
           <p className="whitespace-pre-wrap text-sm">

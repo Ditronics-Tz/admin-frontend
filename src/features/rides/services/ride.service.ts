@@ -24,6 +24,16 @@ export interface RideRecord {
   created_at: string
   events: { type: string; actor_type: string; at: string; meta?: unknown }[]
 }
+
+export function rideDateBoundary(date: string, exclusiveEnd = false): string {
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(date)) return ''
+  const [year, month, day] = date.split('-').map(Number)
+  const start = new Date(Date.UTC(year, month - 1, day))
+  if (start.toISOString().slice(0, 10) !== date) return ''
+  const boundary = new Date(Date.UTC(year, month - 1, day + (exclusiveEnd ? 1 : 0)))
+  return `${boundary.toISOString().slice(0, 10)}T00:00:00+03:00`
+}
+
 export const rideService = {
   async list(params: Record<string, string | number> = {}) {
     const { data } = await apiClient.get<Page<RideRecord, 'rides'>>('/admin/rides', {

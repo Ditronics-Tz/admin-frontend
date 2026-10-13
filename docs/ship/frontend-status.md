@@ -6,6 +6,6 @@
 - F4: local implementation done; `ship/fe-pagination`; B4 filters/readiness implemented in source; deployed integration smoke pending.
 - F5: local implementation done; `ship/fe-user-security` and `ship/fe-auth-integration`; sessions/events/revoke/unlock and staff 2FA replacement/pending activation match landed B5 controllers/routes/models; local checks pass; backend B5 acceptance and deployed smoke pending.
 - F6: local implementation done; `ship/fe-verification`; B3/B4 presign/expiry-filter pagination implemented in source; provider configuration/deployed integration smoke pending.
-- F7: local implementation done; `ship/fe-support`; checks pass; waiting on B8 persisted tickets/complaints and unified report patch/notes contract.
-- F8: local implementation done; `ship/fe-rides`; checks pass; waiting on B7/B8 canonical ride detail/actions/counts; production map provider configuration required.
-- F9: local implementation done; `ship/fe-ratings`; checks pass; waiting on B8 ratings moderation list/hide/restore.
+- F7: done; `ship/fe-b8-integration`; support tickets use the persisted ticket workflow; complaint/report detail routes use the existing audited report actions; filters, notes, and resolution match backend contracts; checks pass.
+- F8: done; `ship/fe-b8-integration`; ride filters, Tanzania-local date ranges, canonical detail/actions/counts match B7/B8; checks pass; production map tile provider configuration remains an owner deployment dependency.
+- F9: done; `ship/fe-b8-integration`; moderation filters, visibility state, admin-only controls, and required audited reasons match B8; checks pass.

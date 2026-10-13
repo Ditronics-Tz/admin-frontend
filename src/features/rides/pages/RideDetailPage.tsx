@@ -58,7 +58,15 @@ function RideDetail({ id }: { id: string }) {
       </div>
     )
   const ride = query.data,
-    terminal = ['completed', 'cancelled', 'timed_out'].includes(ride.status)
+    terminal = [
+      'completed',
+      'cancelled',
+      'cancelled_by_admin',
+      'cancelled_by_passenger',
+      'cancelled_by_driver',
+      'no_driver_found',
+      'expired',
+    ].includes(ride.status)
   const fare = (value: number | null | undefined) =>
     typeof value === 'number' && Number.isFinite(value)
       ? `TSh ${value.toLocaleString('en-TZ')}`
@@ -106,10 +114,7 @@ function RideDetail({ id }: { id: string }) {
         <Button
           variant="outline"
           disabled={
-            !canWrite ||
-            terminal ||
-            ['in_progress', 'arrived'].includes(ride.status) ||
-            mutation.isPending
+            !canWrite || terminal || ride.status === 'in_progress' || mutation.isPending
           }
           onClick={() => {
             mutation.reset()
@@ -144,6 +149,7 @@ function RideDetail({ id }: { id: string }) {
           canConfirm={canWrite && (dialog !== 'reassign' || !!driver.trim())}
           pending={mutation.isPending}
           error={mutation.error}
+          maxLength={250}
           onClose={() => setDialog(null)}
           onConfirm={(reason) => {
             if (canWrite) mutation.mutate(reason)

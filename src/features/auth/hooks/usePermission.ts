@@ -30,5 +30,6 @@ export function usePermission() {
     canVerifyDrivers: isSupport && !readOnly,
     canManageComplaints: isSupport && !readOnly,
     canManageTickets: isSupport && !readOnly,
+    canManageRatings: isAdmin && !readOnly,
   }
 }

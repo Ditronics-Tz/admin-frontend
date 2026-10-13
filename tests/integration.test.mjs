@@ -200,26 +200,28 @@ test('support queues reject old stubs and send persisted workflow filters notes 
   await supportService.page('tickets', { status: 'open', priority: 'high', assignee: 'staff-1', category: 'fare', offset: 20 })
   assert.equal((await supportService.detail('tickets', 'ticket-1')).item.id, 'ticket-1')
   await supportService.note('tickets', 'ticket-1', 'Reviewed')
-  await supportService.patch('tickets', 'ticket-1', { status: 'resolved', resolution_note: 'Customer confirmed' })
-  assert.equal(requests.at(-2).method, 'POST')
-  assert.deepEqual(requests.at(-2).body, { body: 'Reviewed' })
+  await supportService.patch('tickets', 'ticket-1', { status: 'resolved', resolution_note: 'Customer confirmed', reason: 'Customer confirmed' })
+  assert.equal(requests.at(-2).method, 'PATCH')
+  assert.deepEqual(requests.at(-2).body, { action: 'note', note: 'Reviewed' })
   assert.equal(requests.at(-1).method, 'PATCH')
-  assert.deepEqual(requests.at(-1).body, { status: 'resolved', resolution_note: 'Customer confirmed' })
+  assert.deepEqual(requests.at(-1).body, { action: 'update', reason: 'Customer confirmed', status: 'resolved', resolution_outcome: 'resolved', resolution_note: 'Customer confirmed' })
   assert.match(requests[1].path, /assignee=staff-1/)
 })
 
 test('rides use canonical parties locations timeline filters and required operation reasons', async () => {
   const { rideService } = await import('../src/features/rides/services/ride.service.ts')
-  const ride = { id: 'ride-1', status: 'accepted', passenger: { id: 'p1', name: 'Passenger' }, driver: { id: 'd1', name: 'Driver' }, pickup: { lat: -6.8, lng: 39.2, address: 'Pickup' }, dropoff: { lat: -6.9, lng: 39.3, address: 'Dropoff' }, estimated_fare: 5000, final_fare: null, events: [{ type: 'accepted', actor_type: 'driver', at: '2026-10-13T00:00:00Z' }] }
+  const ride = { id: 'ride-1', status: 'assigned', passenger: { id: 'p1', name: 'Passenger' }, driver: { id: 'd1', name: 'Driver' }, pickup: { lat: -6.8, lng: 39.2, address: 'Pickup' }, dropoff: { lat: -6.9, lng: 39.3, address: 'Dropoff' }, estimated_fare: 5000, final_fare: null, events: [{ type: 'assigned', actor_type: 'driver', at: '2026-10-13T00:00:00Z' }] }
   handle = (req, json) => req.path.includes('/rides/ride-1') ? json(200, { ride }) : json(200, { rides: [ride], total: 1, limit: 20, offset: 0 })
-  await rideService.list({ status: 'accepted', from: '2026-10-01', to: '2026-10-13', passenger: 'p1', driver: 'd1', q: 'Pickup', offset: 20 })
-  assert.equal((await rideService.get('ride-1')).events[0].type, 'accepted')
+  await rideService.list({ status: 'assigned', from: '2026-10-01T00:00:00+03:00', to: '2026-10-14T00:00:00+03:00', passenger: 'p1', driver: 'd1', q: 'Pickup', offset: 20 })
+  assert.equal((await rideService.get('ride-1')).events[0].type, 'assigned')
   await rideService.cancel('ride-1', 'Passenger request')
   await rideService.reassign('ride-1', 'd2', 'Vehicle unavailable')
   assert.deepEqual(requests.at(-1).body, { driver_id: 'd2', reason: 'Vehicle unavailable' })
   assert.deepEqual(requests.at(-2).body, { reason: 'Passenger request' })
   const params = new URL(requests[0].path, 'http://fixture.invalid').searchParams
   assert.equal(params.get('passenger'), 'p1')
+  assert.equal(params.get('status'), 'assigned')
+  assert.equal(params.get('from'), '2026-10-01T00:00:00+03:00')
   assert.equal(params.get('offset'), '20')
   handle = (_req, json) => json(200, { count: 0, rides: [] })
   await assert.rejects(rideService.list(), /unavailable/)
@@ -237,6 +239,18 @@ test('ratings moderation sends user low-score pages and audited hide restore rea
   assert.deepEqual(requests[1].body, { reason: 'Abusive comment' })
   assert.equal(requests[2].path, '/api/v1/admin/ratings/rating%2F1/restore')
   assert.deepEqual(requests[2].body, { reason: 'Review completed' })
+})
+
+test('ride date bounds use Dar es Salaam days and ratings expose visibility', async () => {
+  const { rideDateBoundary } = await import('../src/features/rides/services/ride.service.ts')
+  const { ratingService } = await import('../src/features/ratings/rating.service.ts')
+  assert.equal(rideDateBoundary('2026-10-13'), '2026-10-13T00:00:00+03:00')
+  assert.equal(rideDateBoundary('2026-10-13', true), '2026-10-14T00:00:00+03:00')
+  assert.equal(rideDateBoundary('2026-02-30'), '')
+  handle = (_req, json) => json(200, { ratings: [{ id: 'rating-1', hidden: true }], total: 1 })
+  const page = await ratingService.list({ hidden: 'all' })
+  assert.equal(page.ratings[0].hidden, true)
+  assert.equal(new URL(requests[0].path, 'http://fixture.invalid').searchParams.get('hidden'), 'all')
 })
 
 test('late success and expired requests cannot cross into a replacement staff session', async () => {

@@ -44,7 +44,7 @@ export const NAVIGATION_CONFIG: NavGroup[] = [
   {
     group: 'Operations',
     items: [
-      { title: 'Ratings', path: '/ratings', icon: Star },
+      { title: 'Ratings', path: '/ratings', icon: Star, adminOnly: true },
       { title: 'Fraud', path: '/fraud', icon: ShieldAlert },
       { title: 'Reports', path: '/reports', icon: Flag },
       { title: 'Safety', path: '/safety', icon: ShieldAlert },

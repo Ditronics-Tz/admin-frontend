@@ -31,6 +31,7 @@ export function workKind(value?: string): WorkKind | null {
 }
 const path = (kind: WorkKind, id?: string) =>
   `/admin/${kind}${id ? `/${encodeURIComponent(id)}` : ''}`
+const reportPath = (id: string) => `/admin/reports/${encodeURIComponent(id)}`
 export const supportService = {
   async page(kind: WorkKind, params: Record<string, string | number> = {}) {
     const { data } = await apiClient.get<Page<WorkItem, WorkKind>>(path(kind), {
@@ -44,8 +45,12 @@ export const supportService = {
     return data
   },
   async detail(kind: WorkKind, id: string) {
-    const { data } = await apiClient.get<Record<string, unknown>>(path(kind, id))
-    const item = (data[kind.slice(0, -1)] || data.item || data) as WorkItem
+    const { data } = await apiClient.get<Record<string, unknown>>(
+      kind === 'complaints' ? reportPath(id) : path(kind, id)
+    )
+    const item = (data[kind === 'complaints' ? 'report' : kind.slice(0, -1)] ||
+      data.item ||
+      data) as WorkItem
     if (!item || typeof item.id !== 'string' || typeof item.status !== 'string')
       throw new ApiClientError('Support details are unavailable on this server.', {
         status: 501,
@@ -63,10 +68,40 @@ export const supportService = {
       reason?: string
     }
   ) {
-    await apiClient.patch(path(kind, id), body)
+    if (kind !== 'tickets')
+      throw new ApiClientError(
+        'Use the report review actions for complaints and reports.',
+        {
+          status: 400,
+        }
+      )
+    const action = body.assigned_to !== undefined ? 'assign' : 'update'
+    await apiClient.patch(path(kind, id), {
+      action,
+      ...(action === 'assign'
+        ? { assigned_to: body.assigned_to || '', reason: body.reason }
+        : {
+            reason: body.reason,
+            status: body.status,
+            priority: body.priority,
+            ...(body.status === 'resolved' || body.status === 'closed'
+              ? {
+                  resolution_outcome: 'resolved',
+                  resolution_note: body.resolution_note || body.reason,
+                }
+              : {}),
+          }),
+    })
   },
   async note(kind: WorkKind, id: string, body: string) {
-    await apiClient.post(`${path(kind, id)}/notes`, { body })
+    if (kind !== 'tickets')
+      throw new ApiClientError(
+        'Use the report review actions for complaints and reports.',
+        {
+          status: 400,
+        }
+      )
+    await apiClient.patch(path(kind, id), { action: 'note', note: body })
   },
   async list(kind: WorkKind): Promise<unknown[]> {
     const { data } = await apiClient.get<{ tickets?: unknown[]; complaints?: unknown[] }>(

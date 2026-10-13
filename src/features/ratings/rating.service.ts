@@ -10,6 +10,7 @@ export interface RatingRecord {
   score: number
   comment: string
   hidden: boolean
+  hidden_at?: string | null
   created_at: string
 }
 export const ratingService = {
@@ -18,7 +19,11 @@ export const ratingService = {
       '/admin/ratings',
       { params: { limit: 20, offset: 0, ...params } }
     )
-    if (!Number.isFinite(data.total) || !Array.isArray(data.ratings))
+    if (
+      !Number.isFinite(data.total) ||
+      !Array.isArray(data.ratings) ||
+      data.ratings.some((rating) => typeof rating.hidden !== 'boolean')
+    )
       throw new ApiClientError('Ratings moderation is unavailable on this server.', {
         status: 501,
       })
