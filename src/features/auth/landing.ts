@@ -8,5 +8,5 @@ export function staffLandingPath(
   if (user.mustChangePassword) return ROUTES.CHANGE_PASSWORD
   if (from && from.pathname !== ROUTES.HOME)
     return from.pathname + (from.search || '') + (from.hash || '')
-  return user.role === 'support' ? '/safety' : ROUTES.DASHBOARD
+  return user.role === 'support' ? ROUTES.SUPPORT : ROUTES.DASHBOARD
 }

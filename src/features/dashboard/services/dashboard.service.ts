@@ -1,6 +1,9 @@
 import { apiClient } from '@/lib/api/client'
 import { API_ENDPOINTS } from '@/lib/constants'
-import type { BackendAdminStatsResponse } from '@/lib/api/types'
+import type {
+  BackendAdminAnalyticsResponse,
+  BackendAdminStatsResponse,
+} from '@/lib/api/types'
 
 export interface DashboardStats {
   totalDrivers: number
@@ -34,6 +37,14 @@ export const dashboardService = {
       openTickets: operationalCount(data.open_tickets),
       openComplaints: operationalCount(data.open_complaints),
     }
+  },
+
+  async getAnalytics(from: string, to: string): Promise<BackendAdminAnalyticsResponse> {
+    const response = await apiClient.get<BackendAdminAnalyticsResponse>(
+      API_ENDPOINTS.ADMIN.ANALYTICS,
+      { params: { from, to } }
+    )
+    return response.data
   },
 
   /**

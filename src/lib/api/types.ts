@@ -19,6 +19,8 @@ export interface ListParams {
   actor?: string
   from?: string
   to?: string
+  created_from?: string
+  created_to?: string
 }
 
 export interface ApiResponse<T = unknown> {
@@ -107,6 +109,7 @@ export interface BackendUserResponse {
   suspended_until?: string | null
   phone?: string
   phone_verified_at?: string | null
+  created_at?: string
 }
 
 /**
@@ -225,6 +228,35 @@ export interface BackendAdminStatsResponse {
   active_rides: number
   open_tickets: number
   open_complaints: number
+}
+
+export interface BackendAdminAnalyticsResponse {
+  from: string
+  to: string
+  registrations: { date: string; passengers: number; drivers: number }[]
+  rides: { date: string; requested: number; completed: number }[]
+  totals: {
+    passengers: number
+    drivers: number
+    ride_requests: number
+    completed_rides: number
+  }
+}
+
+export interface BackendNotificationPage {
+  notifications: {
+    id: string
+    template: string
+    language: string
+    status: 'pending' | 'processing' | 'delivered' | 'failed'
+    attempts: number
+    created_at: string
+  }[]
+  total: number
+  limit: number
+  offset: number
+  by_status: { pending: number; processing: number; delivered: number; failed: number }
+  sender_mode: 'logging_stub' | 'configured' | string
 }
 
 /**

@@ -18,6 +18,7 @@ import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs'
 import { useShipText } from '@/components/common/ship-text'
 import { MaskedValue } from '@/components/common/MaskedValue'
 import { RatingsPanel } from '@/features/ratings/RatingsPanel'
+import { formatDateTime } from '@/lib/utils/formatters'
 
 export function UserDetailsDialog({ id, onClose }: { id: string; onClose: () => void }) {
   const t = useShipText()
@@ -60,6 +61,14 @@ export function UserDetailsDialog({ id, onClose }: { id: string; onClose: () => 
                   {query.data.user.role} ·{' '}
                   {query.data.user.status ||
                     (query.data.user.is_active ? 'Active' : 'Inactive')}
+                </dd>
+              </div>
+              <div>
+                <dt className="text-muted-foreground">Registered (EAT)</dt>
+                <dd>
+                  {query.data.user.created_at
+                    ? formatDateTime(query.data.user.created_at)
+                    : '—'}
                 </dd>
               </div>
               <div>

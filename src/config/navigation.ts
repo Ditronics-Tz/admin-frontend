@@ -59,7 +59,7 @@ export const NAVIGATION_CONFIG: NavGroup[] = [
         icon: Users,
       },
       {
-        title: 'Passengers',
+        title: 'Users',
         path: ROUTES.PASSENGERS,
         icon: UserRound,
       },
@@ -74,7 +74,7 @@ export const NAVIGATION_CONFIG: NavGroup[] = [
   {
     group: 'Finance',
     items: [
-      { title: 'Finance dashboard', path: '/finance', icon: Wallet },
+      { title: 'Finance dashboard', path: '/finance', icon: Wallet, adminOnly: true },
       { title: 'Promotions', path: ROUTES.PROMOTIONS, icon: TicketPercent },
       {
         title: 'Payments',

@@ -5,6 +5,7 @@ import { MetricCard } from '../components/MetricCard'
 import { RideActivityChart } from '../components/RideActivityChart'
 import { OperationsStatus } from '../components/OperationsStatus'
 import { RecentRidesTable } from '../components/RecentRidesTable'
+import { RecentRegistrations } from '../components/RecentRegistrations'
 import { formatDateTime } from '@/lib/utils/formatters'
 import { useDashboardStats } from '../hooks/useDashboard'
 import { QueryError } from '@/components/feedback/QueryError'
@@ -112,6 +113,7 @@ export const DashboardPage: React.FC = () => {
       </div>
 
       {/* Recent Rides Table */}
+      <RecentRegistrations />
       <RecentRidesTable />
     </div>
   )

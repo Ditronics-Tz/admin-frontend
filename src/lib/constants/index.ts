@@ -63,6 +63,8 @@ export const API_ENDPOINTS = {
     UPDATE_USER_ROLE: (id: string) => `/admin/users/${id}/role`,
     VERIFY_DRIVER: (id: string) => `/admin/drivers/${id}/verify`,
     STATS: '/admin/stats',
+    ANALYTICS: '/admin/analytics',
+    NOTIFICATIONS: '/admin/notifications',
     RIDES: '/admin/rides',
     COMPLAINTS: '/admin/complaints',
     UPDATE_COMPLAINT: (id: string) => `/admin/complaints/${id}`,

@@ -166,7 +166,14 @@ const router = createBrowserRouter([
           { path: '/fraud', element: <FraudPage /> },
           { path: '/support/:kind/:id', element: <SupportDetailPage /> },
           { path: '/rides/:id', element: <RideDetailPage /> },
-          { path: '/ratings', element: <RatingsPage /> },
+          {
+            path: '/ratings',
+            element: (
+              <ProtectedRoute requiredRole="admin">
+                <RatingsPage />
+              </ProtectedRoute>
+            ),
+          },
           { path: '/fraud/rules', element: <FraudRulesPage /> },
           { path: '/fraud/:id', element: <FraudDetailPage /> },
           { path: '/reports', element: <ReportsPage /> },
@@ -177,13 +184,48 @@ const router = createBrowserRouter([
           { path: '/safety/sos/:id', element: <SOSDetailPage /> },
           { path: '/safety/incidents', element: <IncidentsPage /> },
           { path: '/safety/incidents/:id', element: <IncidentDetailPage /> },
-          { path: '/finance', element: <FinanceDashboard /> },
+          {
+            path: '/finance',
+            element: (
+              <ProtectedRoute requiredRole="admin">
+                <FinanceDashboard />
+              </ProtectedRoute>
+            ),
+          },
           { path: '/payments/:id', element: <PaymentDetailPage /> },
           { path: '/finance/refunds', element: <RefundsPage /> },
-          { path: '/finance/payouts', element: <PayoutsPage /> },
-          { path: '/finance/wallets', element: <WalletsPage /> },
-          { path: '/finance/settings', element: <PaymentSettingsPage /> },
-          { path: '/finance/reconciliation', element: <ReconciliationPage /> },
+          {
+            path: '/finance/payouts',
+            element: (
+              <ProtectedRoute requiredRole="admin">
+                <PayoutsPage />
+              </ProtectedRoute>
+            ),
+          },
+          {
+            path: '/finance/wallets',
+            element: (
+              <ProtectedRoute requiredRole="admin">
+                <WalletsPage />
+              </ProtectedRoute>
+            ),
+          },
+          {
+            path: '/finance/settings',
+            element: (
+              <ProtectedRoute requiredRole="admin">
+                <PaymentSettingsPage />
+              </ProtectedRoute>
+            ),
+          },
+          {
+            path: '/finance/reconciliation',
+            element: (
+              <ProtectedRoute requiredRole="admin">
+                <ReconciliationPage />
+              </ProtectedRoute>
+            ),
+          },
           { path: ROUTES.PROMOTIONS, element: <PromotionsPage /> },
           { path: ROUTES.PROMOTION_CREATE, element: <PromoEditorPage /> },
           { path: ROUTES.REFERRALS, element: <ReferralsPage /> },
