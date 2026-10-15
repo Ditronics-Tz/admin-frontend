@@ -2,6 +2,11 @@ import { useUiStore } from '@/stores/useUiStore'
 
 const sw: Record<string, string> = {
   'Your account': 'Akaunti yako',
+  'Security & Authentication': 'Usalama na uthibitishaji',
+  'Two-factor authentication is required.': 'Uthibitishaji wa hatua mbili unahitajika.',
+  'Two-factor authentication is enabled.': 'Uthibitishaji wa hatua mbili umewashwa.',
+  'Regenerate recovery codes': 'Tengeneza upya misimbo ya urejeshaji',
+  'Recent security activity': 'Shughuli za hivi karibuni za usalama',
   'Two-factor authentication': 'Uthibitishaji wa hatua mbili',
   Enabled: 'Umewashwa',
   Disabled: 'Umezimwa',

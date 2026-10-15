@@ -39,7 +39,6 @@ export const LoginForm: React.FC<LoginFormProps> = ({ t }) => {
       email: '',
       password: '',
       rememberMe: false,
-      totpCode: '',
     },
     mode: 'onBlur',
   })
@@ -154,29 +153,6 @@ export const LoginForm: React.FC<LoginFormProps> = ({ t }) => {
           )}
         </div>
 
-        <div className="space-y-2">
-          <label htmlFor="totpCode" className="block text-xs font-medium text-slate-700">
-            Authenticator code (if enabled)
-          </label>
-          <input
-            id="totpCode"
-            inputMode="numeric"
-            autoComplete="one-time-code"
-            maxLength={6}
-            disabled={isLoading}
-            {...register('totpCode')}
-            className="h-11 w-full rounded-md border border-input px-3 text-sm"
-            aria-describedby="totp-help"
-          />
-          <p id="totp-help" className="text-xs text-muted-foreground">
-            Use the six-digit code from your authenticator app.
-          </p>
-          {errors.totpCode && (
-            <p role="alert" className="text-xs text-destructive">
-              {errors.totpCode.message}
-            </p>
-          )}
-        </div>
         {/* 8. Sign-In Button */}
         <div className="pt-1">
           <button

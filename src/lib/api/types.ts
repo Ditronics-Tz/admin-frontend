@@ -81,10 +81,15 @@ export interface BackendStaffUser {
  * Backend Staff Login Response
  */
 export interface BackendStaffLoginResponse {
-  access_token: string
-  refresh_token: string
-  must_change_password: boolean
-  user: BackendStaffUser
+  access_token?: string
+  refresh_token?: string
+  must_change_password?: boolean
+  user?: BackendStaffUser
+  mfa_required?: boolean
+  enrollment_required?: boolean
+  challenge_token?: string
+  challenge_expires_in?: number
+  recovery_codes?: string[]
 }
 
 /**

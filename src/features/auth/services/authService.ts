@@ -46,8 +46,37 @@ function applySecurityResponse(data: StaffSecurityResponse): AdminUser {
 /**
  * Authentication Service Interface
  */
+export type StaffLoginResult =
+  | { kind: 'session'; session: AuthSession }
+  | {
+      kind: 'mfa'
+      challengeToken: string
+      expiresIn: number
+      enrollmentRequired: boolean
+    }
+
+export interface MfaEnrollmentMaterial {
+  secret: string
+  qr_code_url: string
+  pending_expires_at: string
+}
+
+export interface MfaStatus {
+  mfa_required: boolean
+  totp_enabled: boolean
+  enrollment_required: boolean
+  recovery_codes_remaining: number
+  totp_verified_at?: string | null
+}
+
+export interface MfaActivityEvent {
+  action: string
+  ip?: string
+  created_at: string
+}
+
 export interface IAuthService {
-  login(credentials: LoginCredentials): Promise<AuthSession>
+  login(credentials: LoginCredentials): Promise<StaffLoginResult>
   logout(): Promise<void>
   getCurrentUser(): Promise<AdminUser>
   refreshSession(): Promise<AuthSession>
@@ -56,37 +85,49 @@ export interface IAuthService {
   setup2FA(password: string, code?: string): Promise<PendingAuthenticator>
   verify2FA(code: string): Promise<AdminUser>
   disable2FA(password: string, code: string): Promise<AdminUser>
+  verifyMfa(challengeToken: string, code: string): Promise<AuthSession>
+  verifyRecoveryCode(challengeToken: string, recoveryCode: string): Promise<AuthSession>
+  beginEnrollment(challengeToken: string): Promise<MfaEnrollmentMaterial>
+  confirmEnrollment(challengeToken: string, code: string): Promise<AuthSession & { recoveryCodes: string[] }>
+  mfaStatus(): Promise<MfaStatus>
+  mfaActivity(): Promise<MfaActivityEvent[]>
+  regenerateRecoveryCodes(code: string): Promise<string[]>
 }
 
 /**
  * Concrete Authentication Service connecting to Go Fiber Staff Realm APIs.
  */
 export const authService: IAuthService = {
-  async login(credentials: LoginCredentials): Promise<AuthSession> {
-    const payload = {
+  async login(credentials: LoginCredentials): Promise<StaffLoginResult> {
+    const response = await apiClient.post<BackendStaffLoginResponse>(API_ENDPOINTS.AUTH.LOGIN, {
       email: credentials.email.trim(),
       password: credentials.password,
-      totp_code: credentials.totpCode?.trim() || '',
-    }
-
-    const response = await apiClient.post<BackendStaffLoginResponse>(
-      API_ENDPOINTS.AUTH.LOGIN,
-      payload
-    )
-
+    })
     const data = response.data
-
-    // Persist tokens
+    if (data.mfa_required) {
+      if (!data.challenge_token || !data.challenge_expires_in) {
+        throw new Error('The sign-in challenge is unavailable. Try again.')
+      }
+      return {
+        kind: 'mfa',
+        challengeToken: data.challenge_token,
+        expiresIn: data.challenge_expires_in,
+        enrollmentRequired: data.enrollment_required === true,
+      }
+    }
+    if (!data.access_token || !data.refresh_token || !data.user) {
+      throw new Error('The server did not return a staff session.')
+    }
     tokenStorage.setSession(data.access_token, data.refresh_token, true)
     useApiAccess.setState({ readOnly: false })
-
-    const mappedUser = mapBackendStaffUser(data.user)
-
     return {
-      user: mappedUser,
-      accessToken: data.access_token,
-      refreshToken: data.refresh_token,
-      mustChangePassword: data.must_change_password,
+      kind: 'session',
+      session: {
+        user: mapBackendStaffUser(data.user),
+        accessToken: data.access_token,
+        refreshToken: data.refresh_token,
+        mustChangePassword: data.must_change_password,
+      },
     }
   },
 
@@ -162,4 +203,75 @@ export const authService: IAuthService = {
     )
     return applySecurityResponse(data)
   },
+  async verifyMfa(challengeToken, code) {
+    const { data } = await apiClient.post<BackendStaffLoginResponse>(API_ENDPOINTS.AUTH.MFA_VERIFY, {
+      challenge_token: challengeToken,
+      code: code.trim(),
+    })
+    return persistStaffSession(data)
+  },
+  async verifyRecoveryCode(challengeToken, recoveryCode) {
+    const { data } = await apiClient.post<BackendStaffLoginResponse>(
+      API_ENDPOINTS.AUTH.MFA_RECOVERY_VERIFY,
+      { challenge_token: challengeToken, recovery_code: recoveryCode.trim() }
+    )
+    return persistStaffSession(data)
+  },
+  async beginEnrollment(challengeToken) {
+    const { data } = await apiClient.post<MfaEnrollmentMaterial>(API_ENDPOINTS.AUTH.MFA_ENROLL, {
+      challenge_token: challengeToken,
+    })
+    if (!data.secret || !data.qr_code_url || !Number.isFinite(Date.parse(data.pending_expires_at))) {
+      throw new Error('Authenticator setup is unavailable on this server.')
+    }
+    return data
+  },
+  async confirmEnrollment(challengeToken, code) {
+    const { data } = await apiClient.post<BackendStaffLoginResponse>(
+      API_ENDPOINTS.AUTH.MFA_ENROLL_CONFIRM,
+      { challenge_token: challengeToken, code: code.trim() }
+    )
+    if (!data.access_token || !data.refresh_token || !data.user) {
+      throw new Error('The server did not return a staff session.')
+    }
+    return {
+      user: mapBackendStaffUser(data.user),
+      accessToken: data.access_token,
+      refreshToken: data.refresh_token,
+      mustChangePassword: data.must_change_password,
+      recoveryCodes: data.recovery_codes ?? [],
+    }
+  },
+  async mfaStatus() {
+    const { data } = await apiClient.get<MfaStatus>(API_ENDPOINTS.AUTH.MFA_STATUS)
+    return data
+  },
+  async mfaActivity() {
+    const { data } = await apiClient.get<{ events: MfaActivityEvent[] }>(API_ENDPOINTS.AUTH.MFA_ACTIVITY)
+    return data.events ?? []
+  },
+  async regenerateRecoveryCodes(code) {
+    const { data } = await apiClient.post<{ recovery_codes: string[] }>(
+      API_ENDPOINTS.AUTH.MFA_RECOVERY_REGENERATE,
+      { code: code.trim() }
+    )
+    if (!data.recovery_codes?.length) {
+      throw new Error('Recovery codes were not returned.')
+    }
+    return data.recovery_codes
+  },
+}
+
+function persistStaffSession(data: BackendStaffLoginResponse): AuthSession {
+  if (!data.access_token || !data.refresh_token || !data.user) {
+    throw new Error('The server did not return a staff session.')
+  }
+  tokenStorage.setSession(data.access_token, data.refresh_token, true)
+  useApiAccess.setState({ readOnly: false })
+  return {
+    user: mapBackendStaffUser(data.user),
+    accessToken: data.access_token,
+    refreshToken: data.refresh_token,
+    mustChangePassword: data.must_change_password,
+  }
 }

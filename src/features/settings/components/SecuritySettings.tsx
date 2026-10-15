@@ -6,6 +6,8 @@ import {
   authService,
   type PendingAuthenticator,
 } from '@/features/auth/services/authService'
+import { AuthenticatorQr } from '@/features/auth/components/AuthenticatorQr'
+import { RecoveryCodesPanel } from '@/features/auth/components/RecoveryCodesPanel'
 import { ChangePasswordForm } from '@/features/auth/components/ChangePasswordForm'
 import { PasswordInput } from '@/features/auth/components/PasswordInput'
 import { useAuthStore } from '@/stores/useAuthStore'
@@ -23,13 +25,15 @@ export function SecuritySettings() {
   const navigate = useNavigate()
   const t = useShipText()
   const [setup, setSetup] = useState<PendingAuthenticator | null>(null)
-  const [operation, setOperation] = useState<'setup' | 'disable' | null>(null)
-  const [confirm, setConfirm] = useState<'activate' | 'disable' | 'logout' | null>(null)
+  const [operation, setOperation] = useState<'setup' | 'recovery' | null>(null)
+  const [confirm, setConfirm] = useState<'activate' | 'logout' | null>(null)
   const [code, setCode] = useState('')
   const [password, setPassword] = useState('')
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState<unknown>(null)
   const [expired, setExpired] = useState(false)
+  const [recoveryCodes, setRecoveryCodes] = useState<string[] | null>(null)
+  const [activity, setActivity] = useState<Array<{ action: string; created_at: string }>>([])
 
   useEffect(() => {
     if (!setup) return
@@ -48,7 +52,22 @@ export function SecuritySettings() {
     setPassword('')
     setError(null)
     setExpired(false)
+    setRecoveryCodes(null)
   }
+  useEffect(() => {
+    let cancelled = false
+    authService
+      .mfaActivity()
+      .then((events) => {
+        if (!cancelled) setActivity(events)
+      })
+      .catch(() => {
+        if (!cancelled) setActivity([])
+      })
+    return () => {
+      cancelled = true
+    }
+  }, [user?.totpEnabled])
   async function run(action: () => Promise<void>) {
     setBusy(true)
     setError(null)
@@ -62,8 +81,12 @@ export function SecuritySettings() {
   }
   async function proveIdentity(event: FormEvent) {
     event.preventDefault()
-    if (operation === 'disable') {
-      setConfirm('disable')
+    if (operation === 'recovery') {
+      await run(async () => {
+        setRecoveryCodes(await authService.regenerateRecoveryCodes(code))
+        setOperation(null)
+        setCode('')
+      })
       return
     }
     await run(async () => {
@@ -86,10 +109,7 @@ export function SecuritySettings() {
         navigate('/login', { replace: true })
         return
       }
-      const updated =
-        confirm === 'disable'
-          ? await authService.disable2FA(password, code)
-          : await authService.verify2FA(code)
+      const updated = await authService.verify2FA(code)
       setUser(updated)
       await queryClient.invalidateQueries({ queryKey: ['admin'] })
       reset()
@@ -100,13 +120,12 @@ export function SecuritySettings() {
   return (
     <div className="space-y-8">
       <section className="space-y-4 rounded-xl border bg-white p-6">
-        <h2 className="text-lg font-semibold">{t('Your account')}</h2>
+        <h2 className="text-lg font-semibold">{t('Security & Authentication')}</h2>
         <p className="text-sm">
           {user?.fullName} · {user?.email} · {user?.role}
         </p>
         <h3 className="font-semibold">
-          {t('Two-factor authentication')}:{' '}
-          {t(user?.totpEnabled ? 'Enabled' : 'Disabled')}
+          {t(user?.totpEnabled ? 'Two-factor authentication is enabled.' : 'Two-factor authentication is required.')}
         </h3>
         <p className="max-w-xl text-sm text-muted-foreground">
           {t('An authenticator code is required at sign in when enabled.')}
@@ -118,12 +137,8 @@ export function SecuritySettings() {
               {t(setupLabel)}
             </Button>
             {user?.totpEnabled && (
-              <Button
-                variant="outline"
-                disabled={busy}
-                onClick={() => setOperation('disable')}
-              >
-                {t('Disable two-factor authentication')}
+              <Button variant="outline" disabled={busy} onClick={() => setOperation('recovery')}>
+                {t('Regenerate recovery codes')}
               </Button>
             )}
           </div>
@@ -133,6 +148,7 @@ export function SecuritySettings() {
             <p className="text-sm text-muted-foreground">
               {t('Confirm your current credentials to change account security.')}
             </p>
+            {operation === 'setup' && (
             <label className="block space-y-2 text-sm">
               {t('Current password')}
               <PasswordInput
@@ -143,7 +159,8 @@ export function SecuritySettings() {
                 disabled={busy}
               />
             </label>
-            {user?.totpEnabled && (
+            )}
+            {(user?.totpEnabled || operation === 'recovery') && (
               <label className="block space-y-2 text-sm">
                 {t('Current authenticator code')}
                 <Input
@@ -160,11 +177,7 @@ export function SecuritySettings() {
             )}
             <div className="flex gap-3">
               <Button disabled={busy} type="submit">
-                {t(
-                  operation === 'disable'
-                    ? 'Disable two-factor authentication'
-                    : setupLabel
-                )}
+                {t(operation === 'recovery' ? 'Regenerate recovery codes' : setupLabel)}
               </Button>
               <Button disabled={busy} type="button" variant="outline" onClick={reset}>
                 {t('Cancel')}
@@ -181,6 +194,7 @@ export function SecuritySettings() {
             className="max-w-xl space-y-4"
           >
             <div className="space-y-3 rounded-lg bg-muted p-4">
+              <AuthenticatorQr value={setup.qr_code_url} />
               <p className="text-sm">
                 {t('Add this setup key to your authenticator app. Keep the key private.')}
               </p>
@@ -237,6 +251,19 @@ export function SecuritySettings() {
             </div>
           </form>
         )}
+        {recoveryCodes && <RecoveryCodesPanel codes={recoveryCodes} />}
+        {activity.length > 0 && (
+          <div className="space-y-2">
+            <h3 className="font-semibold">{t('Recent security activity')}</h3>
+            <ul className="space-y-1 text-sm text-muted-foreground">
+              {activity.map((event) => (
+                <li key={`${event.action}-${event.created_at}`}>
+                  {event.action} · {formatDateTime(event.created_at)}
+                </li>
+              ))}
+            </ul>
+          </div>
+        )}
       </section>
       <section className="space-y-4 rounded-xl border bg-white p-6">
         <h2 className="text-lg font-semibold">{t('Change password')}</h2>
@@ -261,11 +288,7 @@ export function SecuritySettings() {
       {confirm && (
         <ConfirmDialog
           title={t(
-            confirm === 'logout'
-              ? 'Sign out on all devices'
-              : confirm === 'disable'
-                ? 'Disable two-factor authentication'
-                : 'Verify and enable'
+            confirm === 'logout' ? 'Sign out on all devices' : 'Verify and enable'
           )}
           description={t(
             confirm === 'logout'

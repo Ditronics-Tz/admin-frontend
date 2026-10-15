@@ -7,6 +7,8 @@ import { formatApiError, ApiClientError } from '@/lib/api/errors'
 import type { LoginFormValues } from '../schemas/authSchema'
 import type { LoginTranslations } from '@/lib/constants/translations'
 import { staffLandingPath } from '../landing'
+import { mfaFlow } from '../mfaFlow'
+import { ROUTES } from '@/lib/constants'
 
 export const useLogin = (t: LoginTranslations) => {
   const [isLoading, setIsLoading] = useState(false)
@@ -23,12 +25,17 @@ export const useLogin = (t: LoginTranslations) => {
 
     try {
       // Execute real Go backend authentication request against /api/v1/staff/auth/login
-      const session = await authService.login({
+      const result = await authService.login({
         email: values.email,
         password: values.password,
         rememberMe: values.rememberMe,
-        totpCode: values.totpCode,
       })
+      if (result.kind === 'mfa') {
+        mfaFlow.save(result)
+        navigate(result.enrollmentRequired ? ROUTES.MFA_ENROLL : ROUTES.MFA_VERIFY, { replace: true })
+        return
+      }
+      const session = result.session
 
       // Set authenticated staff user in store
       queryClient.clear()

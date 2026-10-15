@@ -99,7 +99,7 @@ function normalizeApiError(error: unknown): ApiClientError {
           'Authentication required or session expired. Please sign in again.',
         {
           status,
-          code: 'UNAUTHORIZED',
+          code: data?.code || 'UNAUTHORIZED',
         }
       )
     case 403:

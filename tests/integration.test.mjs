@@ -373,28 +373,43 @@ beforeEach(() => {
 })
 after(() => new Promise((resolve) => server.close(resolve)))
 
-test('staff login sends the backend TOTP field, maps password gate, and persists rotated tokens', async () => {
+test('staff login stops at an MFA challenge and does not store a session', async () => {
   handle = (req, json) => {
     assert.equal(req.path, '/api/v1/staff/auth/login')
     assert.deepEqual(req.body, {
       email: staff.email,
       password: 'password123456',
-      totp_code: '123456',
     })
+    json(200, {
+      mfa_required: true,
+      enrollment_required: false,
+      challenge_token: 'challenge-token',
+      challenge_expires_in: 300,
+    })
+  }
+  const result = await authService.login({
+    email: ` ${staff.email} `,
+    password: 'password123456',
+  })
+  assert.equal(result.kind, 'mfa')
+  assert.equal(result.challengeToken, 'challenge-token')
+  assert.equal(tokenStorage.getRefreshToken(), 'refresh')
+})
+
+test('staff login maps a completed session when MFA is not required by the response', async () => {
+  handle = (_req, json) =>
     json(200, {
       access_token: 'login-access',
       refresh_token: 'login-refresh',
       must_change_password: true,
       user: { ...staff, must_change_password: true },
     })
-  }
-  const session = await authService.login({
-    email: ` ${staff.email} `,
+  const result = await authService.login({
+    email: staff.email,
     password: 'password123456',
-    totpCode: '123456',
   })
-  assert.equal(session.user.mustChangePassword, true)
-  assert.equal(session.user.totpEnabled, true)
+  assert.equal(result.kind, 'session')
+  assert.equal(result.session.user.mustChangePassword, true)
   assert.equal(tokenStorage.getRefreshToken(), 'login-refresh')
 })
 
@@ -845,10 +860,12 @@ test('account security offers authenticator replacement only for enabled account
   try {
     const enabled = render(true), disabled = render(false)
     assert.match(enabled, /Replace authenticator/)
-    assert.match(enabled, /Disable two-factor authentication/)
+    assert.match(enabled, /Regenerate recovery codes/)
+    assert.match(enabled, /Two-factor authentication is enabled/)
+    assert.ok(!enabled.includes('Disable two-factor authentication'))
     assert.ok(!disabled.includes('Replace authenticator'))
     assert.match(disabled, /Set up authenticator/)
-    assert.ok(!enabled.includes('recovery code'))
+    assert.match(disabled, /Two-factor authentication is required/)
     assert.ok(!enabled.includes('Issued access tokens expire'))
   } finally { Object.assign(initial, snapshot); client.clear() }
 })

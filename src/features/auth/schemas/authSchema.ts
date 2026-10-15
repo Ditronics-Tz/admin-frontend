@@ -23,13 +23,6 @@ export const createLoginSchema = (messages?: {
         messages?.passwordRequired || 'Password is required'
       ),
     rememberMe: z.boolean(),
-    totpCode: z
-      .string()
-      .trim()
-      .refine(
-        (value) => !value || /^\d{6}$/.test(value),
-        'Enter a six-digit authenticator code'
-      ),
   })
 
 export const loginSchema = createLoginSchema()

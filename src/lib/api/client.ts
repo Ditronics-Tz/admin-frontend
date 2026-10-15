@@ -124,7 +124,7 @@ apiClient.interceptors.response.use(
       throw new ApiClientError('The staff session changed. Retry this request.', {
         status: 401,
       })
-    const isPublicAuth = /\/staff\/auth\/(login|refresh)$/.test(request?.url || '')
+    const isPublicAuth = /\/staff\/auth\/(login|refresh|mfa\/)/.test(request?.url || '')
     if (error.response?.status === 401 && request && !isPublicAuth) {
       if (request._retry || !tokenStorage.getRefreshToken()) {
         tokenStorage.clearTokens()

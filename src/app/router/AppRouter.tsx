@@ -7,6 +7,8 @@ import { NotFoundPage } from '@/components/common/NotFoundPage'
 import { HomeRedirect } from '@/features/auth/components/HomeRedirect'
 
 const LoginPage = lazy(() => import('@/features/auth/pages/LoginPage'))
+const MfaVerifyPage = lazy(() => import('@/features/auth/pages/MfaVerifyPage'))
+const MfaEnrollPage = lazy(() => import('@/features/auth/pages/MfaEnrollPage'))
 const SystemStatusPage = lazy(() => import('@/features/settings/pages/SystemStatusPage'))
 const SupportDetailPage = lazy(() => import('@/features/support/pages/SupportDetailPage'))
 const RideDetailPage = lazy(() => import('@/features/rides/pages/RideDetailPage'))
@@ -138,6 +140,14 @@ const router = createBrowserRouter([
       {
         path: ROUTES.LOGIN,
         element: <LoginPage />,
+      },
+      {
+        path: ROUTES.MFA_VERIFY,
+        element: <MfaVerifyPage />,
+      },
+      {
+        path: ROUTES.MFA_ENROLL,
+        element: <MfaEnrollPage />,
       },
       // Protected Administrative Workspace Layout Shell
       {
