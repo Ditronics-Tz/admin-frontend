@@ -34,7 +34,7 @@ export function productionCsp(): Plugin {
         new Set(["'self'", api, documents].filter(Boolean))
       ).join(' ')
       const images = Array.from(
-        new Set(["'self'", 'blob:', api, documents, publicImages, tiles].filter(Boolean))
+        new Set(["'self'", 'blob:', 'data:', api, documents, publicImages, tiles].filter(Boolean))
       ).join(' ')
       return [
         {
