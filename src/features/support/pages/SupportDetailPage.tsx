@@ -13,6 +13,7 @@ import { Select } from '@/features/operations/shared'
 import { usePermission } from '@/features/auth/hooks/usePermission'
 import { useShipText } from '@/components/common/ship-text'
 import { formatDateTime } from '@/lib/utils/formatters'
+import { Paperclip } from 'lucide-react'
 
 export default function SupportDetailPage() {
   const params = useParams(),
@@ -34,6 +35,11 @@ function SupportDetail({ kind, id }: { kind: WorkKind; id: string }) {
     queryFn: () => supportService.detail(kind, id),
     retry: false,
   })
+  const conversation = useQuery({
+    queryKey: ['support', 'conversation', id],
+    queryFn: () => supportService.conversation(id),
+    retry: false,
+  })
   const [dialog, setDialog] = useState<'resolve' | 'update' | 'assign' | null>(null)
   const [status, setStatus] = useState(''),
     [priority, setPriority] = useState(''),
@@ -49,6 +55,17 @@ function SupportDetail({ kind, id }: { kind: WorkKind; id: string }) {
     },
     onError: (error) => toast.error(error.message),
   })
+  const replyMutation = useMutation({
+    mutationFn: (body: string) => supportService.reply(id, body),
+    onSuccess: async () => {
+      setReply('')
+      await cache.invalidateQueries({ queryKey: ['support', 'conversation', id] })
+      await cache.invalidateQueries({ queryKey: ['support', 'tickets'] })
+      toast.success(t('Reply sent'))
+    },
+    onError: (error) => toast.error(error.message),
+  })
+  const [reply, setReply] = useState('')
   if (query.isPending)
     return (
       <div className="p-5">
@@ -86,6 +103,89 @@ function SupportDetail({ kind, id }: { kind: WorkKind; id: string }) {
         </p>
       </header>
       <p className="whitespace-pre-wrap">{item.description}</p>
+      <section className="space-y-4 rounded-xl border bg-white p-4 sm:p-6">
+        <div>
+          <h2 className="font-semibold">{t('Conversation')}</h2>
+          <p className="text-sm text-muted-foreground">{t('Replies are visible to the passenger.')}</p>
+        </div>
+        {conversation.isPending ? (
+          <p className="text-sm text-muted-foreground">{t('Loading conversation…')}</p>
+        ) : conversation.isError ? (
+          <QueryError error={conversation.error} retry={() => void conversation.refetch()} />
+        ) : (
+          <>
+            <div className="space-y-3">
+              {conversation.data.messages.length ? conversation.data.messages.map((message) => (
+                <article key={message.id} className="rounded-lg border p-3">
+                  <div className="mb-1 flex flex-wrap justify-between gap-2 text-xs text-muted-foreground">
+                    <span>{message.actor_type === 'staff' ? t('Support team') : t('Passenger')}</span>
+                    <time>{formatDateTime(message.created_at)}</time>
+                  </div>
+                  <p className="whitespace-pre-wrap text-sm">{message.body}</p>
+                </article>
+              )) : <Empty message={t('No replies yet')} />}
+            </div>
+            {!!conversation.data.attachments.length && (
+              <div className="space-y-2">
+                <h3 className="text-sm font-medium">{t('Attachments')}</h3>
+                {conversation.data.attachments.map((attachment) => (
+                  <button
+                    key={attachment.id}
+                    type="button"
+                    className="flex items-center gap-2 text-sm text-primary underline"
+                    onClick={async () => {
+                      try {
+                        const blob = await supportService.attachment(id, attachment.id)
+                        const url = URL.createObjectURL(blob)
+                        const link = document.createElement('a')
+                        link.href = url
+                        const extension =
+                          attachment.content_type === 'application/pdf'
+                            ? 'pdf'
+                            : attachment.content_type === 'image/png'
+                              ? 'png'
+                              : 'jpg'
+                        link.download = `ticket-${id}-${attachment.id}.${extension}`
+                        document.body.appendChild(link)
+                        link.click()
+                        link.remove()
+                        window.setTimeout(() => URL.revokeObjectURL(url), 60_000)
+                      } catch (error) {
+                        toast.error(error instanceof Error ? error.message : t('Could not download attachment'))
+                      }
+                    }}
+                  >
+                    <Paperclip className="h-4 w-4" />
+                    {attachment.content_type} · {(attachment.size / 1024).toFixed(0)} KB · {formatDateTime(attachment.created_at)}
+                  </button>
+                ))}
+              </div>
+            )}
+            <form
+              className="space-y-2 border-t pt-4"
+              onSubmit={(event) => {
+                event.preventDefault()
+                const body = reply.trim()
+                if (canWrite && body) replyMutation.mutate(body)
+              }}
+            >
+              <label className="grid gap-1 text-sm">
+                {t('Reply to passenger')}
+                <Textarea
+                  required
+                  maxLength={4000}
+                  value={reply}
+                  disabled={!canWrite || replyMutation.isPending}
+                  onChange={(event) => setReply(event.target.value)}
+                />
+              </label>
+              <Button disabled={!canWrite || replyMutation.isPending || !reply.trim()}>
+                {replyMutation.isPending ? t('Sending…') : t('Send reply')}
+              </Button>
+            </form>
+          </>
+        )}
+      </section>
       <div className="flex flex-wrap gap-2">
         <Button disabled={!canWrite || mutation.isPending} onClick={() => open('assign')}>
           {t('Assign')}

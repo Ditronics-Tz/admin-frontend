@@ -37,7 +37,7 @@ export function WorkQueue({ kind }: { kind: WorkKind }) {
   })
   const statuses =
     kind === 'tickets'
-      ? ['open', 'in_progress', 'resolved', 'closed']
+      ? ['open', 'in_review', 'resolved', 'closed']
       : ['open', 'in_review', 'resolved', 'dismissed']
   const change = (set: (value: string) => void, value: string) => {
     set(value)

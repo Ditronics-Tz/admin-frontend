@@ -35,9 +35,9 @@ Driver verification uses persisted statuses, individual document decisions, requ
 
 Account status is separate from document approval. Support can suspend/reactivate with a reason and optional end date; admin-only bans and note deletion are gated by the server. Driver Account Activity and passenger details show staff notes, suspension history and OTP phone status. Phone OTP delivery requires an SMS adapter in the backend; there is no passenger signup document collection. Abuse-triggered passenger ID checks remain a later step.
 
-Rides, tickets, and complaints currently return empty arrays. Support updates only acknowledge a fixed status and write an audit event; they do not persist a ticket or complaint. The UI describes this explicitly. Dashboard driver/passenger counts are real; operational counters are backend placeholders. Simulated charts, fleet locations, revenue, and histories are not presented as real data.
+Support tickets, ticket assignments, status changes, staff-only notes, and passenger-visible conversation replies are persisted by the backend. Private ticket attachments are served through authenticated endpoints. Complaint records use the persisted reports workflow. Ride records and ride analytics are still unavailable, so ride screens show empty or unavailable states. Dashboard driver/passenger counts are real; operational counters depend on the corresponding backend records. Simulated charts, fleet locations, revenue, and histories are not presented as real data.
 
-Admin driver creation/editing, payments, analytics, bulk notifications and live dispatch remain unavailable. Expiry notifications are persistent driver-facing API records. Ride acceptance/assignment is not implemented in the backend, so its future handler must use the new driver approval gate. Tickets, complaints, refunds, exports and abuse-triggered ID checks require further backend work.
+Admin driver creation/editing, payments, analytics, bulk notifications and live dispatch remain unavailable. Expiry notifications are persistent driver-facing API records. Ride acceptance/assignment is not implemented in the backend, so its future handler must use the new driver approval gate. Refunds, exports and abuse-triggered ID checks require further backend work.
 
 ## Local setup
 

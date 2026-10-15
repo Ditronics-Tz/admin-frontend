@@ -24,6 +24,20 @@ export interface WorkNote {
   staff_id?: string
   created_at: string
 }
+export interface TicketMessage {
+  id: string
+  actor_id: string
+  actor_type: 'app' | 'staff'
+  body: string
+  created_at: string
+}
+export interface TicketAttachment {
+  id: string
+  actor_type: 'app' | 'staff'
+  content_type: string
+  size: number
+  created_at: string
+}
 export function workKind(value?: string): WorkKind | null {
   return value && ['tickets', 'complaints', 'reports'].includes(value)
     ? (value as WorkKind)
@@ -33,6 +47,26 @@ const path = (kind: WorkKind, id?: string) =>
   `/admin/${kind}${id ? `/${encodeURIComponent(id)}` : ''}`
 const reportPath = (id: string) => `/admin/reports/${encodeURIComponent(id)}`
 export const supportService = {
+  async conversation(id: string) {
+    const { data } = await apiClient.get<{
+      messages: TicketMessage[]
+      messages_total: number
+      attachments: TicketAttachment[]
+    }>(`${path('tickets', id)}/messages`, { params: { limit: 200, offset: 0 } })
+    return data
+  },
+  async reply(id: string, body: string) {
+    await apiClient.post<TicketMessage>(`${path('tickets', id)}/messages`, { body }, {
+      headers: { 'Idempotency-Key': crypto.randomUUID() },
+    })
+  },
+  async attachment(id: string, attachmentId: string) {
+    const { data } = await apiClient.get<Blob>(
+      `${path('tickets', id)}/attachments/${encodeURIComponent(attachmentId)}`,
+      { responseType: 'blob' }
+    )
+    return data
+  },
   async page(kind: WorkKind, params: Record<string, string | number> = {}) {
     const { data } = await apiClient.get<Page<WorkItem, WorkKind>>(path(kind), {
       params: { limit: 20, offset: 0, ...params },
