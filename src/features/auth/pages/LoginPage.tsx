@@ -1,9 +1,13 @@
 import React from 'react'
+import { Navigate } from 'react-router-dom'
 import { BrandingPanel } from '../components/BrandingPanel'
 import { BrandLogo } from '../components/BrandLogo'
 import { LoginForm } from '../components/LoginForm'
 import { useUiStore } from '@/stores/useUiStore'
 import { LOGIN_TRANSLATIONS } from '@/lib/constants/translations'
+import { useAuthStore } from '@/stores/useAuthStore'
+import { staffLandingPath } from '../landing'
+import { LoadingFallback } from '@/components/feedback/LoadingFallback'
 
 /**
  * Rida Admin Login Page
@@ -15,7 +19,12 @@ import { LOGIN_TRANSLATIONS } from '@/lib/constants/translations'
  */
 export const LoginPage: React.FC = () => {
   const { locale } = useUiStore()
+  const status = useAuthStore((state) => state.status)
+  const user = useAuthStore((state) => state.user)
   const t = LOGIN_TRANSLATIONS[locale] || LOGIN_TRANSLATIONS.en
+
+  if (status === 'loading') return <LoadingFallback message="Restoring your session..." />
+  if (user) return <Navigate to={staffLandingPath(user)} replace />
 
   return (
     <main className="flex min-h-[100dvh] w-full flex-col lg:flex-row">

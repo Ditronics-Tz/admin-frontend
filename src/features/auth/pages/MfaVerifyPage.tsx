@@ -8,11 +8,14 @@ import { mfaFlow } from '../mfaFlow'
 import { staffLandingPath } from '../landing'
 import { useAuthStore } from '@/stores/useAuthStore'
 import { ApiClientError, formatApiError } from '@/lib/api/errors'
+import { LoadingFallback } from '@/components/feedback/LoadingFallback'
 
 export default function MfaVerifyPage() {
   const navigate = useNavigate()
   const queryClient = useQueryClient()
   const setUser = useAuthStore((state) => state.setUser)
+  const user = useAuthStore((state) => state.user)
+  const status = useAuthStore((state) => state.status)
   // Snapshot the challenge for this route visit. It is cleared after a
   // successful verification; reading it on every render would then make the
   // guard below mistake the completed flow for a page opened without a login.
@@ -21,13 +24,28 @@ export default function MfaVerifyPage() {
   const [recovery, setRecovery] = useState(false)
   const [recoveryCode, setRecoveryCode] = useState('')
   const [busy, setBusy] = useState(false)
+  const [finishing, setFinishing] = useState(false)
   const [error, setError] = useState('')
   const [expired, setExpired] = useState(mfaFlow.expired())
   const [secondsLeft, setSecondsLeft] = useState(30)
 
   useEffect(() => {
-    if (!challenge) navigate('/login', { replace: true })
-  }, [challenge, navigate])
+    if (!challenge && status !== 'loading')
+      navigate(user ? staffLandingPath(user) : '/login', { replace: true })
+  }, [challenge, navigate, status, user])
+  useEffect(() => {
+    if (!challenge) return
+    // The destination is lazy-loaded. Fetch it while the user enters the code
+    // so a successful verification does not leave the OTP page on screen.
+    void Promise.all([
+      import('@/components/layout/AdminLayout'),
+      import('@/features/dashboard/pages/DashboardPage'),
+      import('@/features/support/pages/SupportPage'),
+      import('@/features/auth/pages/ChangePasswordPage'),
+    ]).catch(() => {
+      // Navigation handles a failed destination load.
+    })
+  }, [challenge])
   useEffect(() => {
     const timer = window.setInterval(() => {
       setSecondsLeft(30 - (Math.floor(Date.now() / 1000) % 30))
@@ -49,11 +67,13 @@ export default function MfaVerifyPage() {
       const session = recovery
         ? await authService.verifyRecoveryCode(current.challengeToken, recoveryCode)
         : await authService.verifyMfa(current.challengeToken, code)
+      setFinishing(true)
       mfaFlow.clear()
       queryClient.clear()
       setUser(session.user)
       navigate(staffLandingPath(session.user), { replace: true })
     } catch (err) {
+      setFinishing(false)
       const apiErr = formatApiError(err)
       if (apiErr instanceof ApiClientError && apiErr.code === 'mfa_challenge_expired') setExpired(true)
       setError(apiErr.message || 'That code was not accepted.')
@@ -62,7 +82,8 @@ export default function MfaVerifyPage() {
     }
   }
 
-  if (!challenge) return null
+  if (!challenge) return <LoadingFallback message="Restoring your session..." />
+  if (finishing) return <LoadingFallback message="Opening your workspace..." />
   return (
     <main className="flex min-h-[100dvh] items-center justify-center bg-[#F5F7F8] px-6">
       <form onSubmit={(event) => void submit(event)} className="w-full max-w-md space-y-6">

@@ -12,11 +12,14 @@ import { tokenStorage } from '@/lib/api/client'
 import { useAuthStore } from '@/stores/useAuthStore'
 import type { AuthSession } from '@/types/auth'
 import { ApiClientError, formatApiError } from '@/lib/api/errors'
+import { LoadingFallback } from '@/components/feedback/LoadingFallback'
 
 export default function MfaEnrollPage() {
   const navigate = useNavigate()
   const queryClient = useQueryClient()
   const setUser = useAuthStore((state) => state.setUser)
+  const user = useAuthStore((state) => state.user)
+  const status = useAuthStore((state) => state.status)
   // Keep this route's challenge stable after confirmation clears the pending
   // MFA flow. Re-reading it each render redirects the recovery-code step back
   // to login before the user can continue into the app.
@@ -30,10 +33,12 @@ export default function MfaEnrollPage() {
   const [copied, setCopied] = useState(false)
 
   useEffect(() => {
-    if (!challenge) {
-      navigate('/login', { replace: true })
-      return
-    }
+    if (!challenge && status !== 'loading')
+      navigate(user ? staffLandingPath(user) : '/login', { replace: true })
+  }, [challenge, navigate, status, user])
+
+  useEffect(() => {
+    if (!challenge) return
     let cancelled = false
     authService
       .beginEnrollment(challenge.challengeToken)
@@ -46,7 +51,7 @@ export default function MfaEnrollPage() {
     return () => {
       cancelled = true
     }
-  }, [challenge, navigate])
+  }, [challenge])
 
   useEffect(() => {
     const timer = window.setInterval(() => setExpired(mfaFlow.expired()), 1000)
@@ -96,6 +101,8 @@ export default function MfaEnrollPage() {
       </main>
     )
   }
+
+  if (!challenge) return <LoadingFallback message="Restoring your session..." />
 
   return (
     <main className="flex min-h-[100dvh] items-center justify-center bg-[#F5F7F8] px-6 py-10">
