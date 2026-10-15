@@ -13,7 +13,10 @@ export default function MfaVerifyPage() {
   const navigate = useNavigate()
   const queryClient = useQueryClient()
   const setUser = useAuthStore((state) => state.setUser)
-  const challenge = mfaFlow.read()
+  // Snapshot the challenge for this route visit. It is cleared after a
+  // successful verification; reading it on every render would then make the
+  // guard below mistake the completed flow for a page opened without a login.
+  const [challenge] = useState(() => mfaFlow.read())
   const [code, setCode] = useState('')
   const [recovery, setRecovery] = useState(false)
   const [recoveryCode, setRecoveryCode] = useState('')

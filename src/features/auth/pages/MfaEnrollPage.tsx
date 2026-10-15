@@ -17,7 +17,10 @@ export default function MfaEnrollPage() {
   const navigate = useNavigate()
   const queryClient = useQueryClient()
   const setUser = useAuthStore((state) => state.setUser)
-  const challenge = mfaFlow.read()
+  // Keep this route's challenge stable after confirmation clears the pending
+  // MFA flow. Re-reading it each render redirects the recovery-code step back
+  // to login before the user can continue into the app.
+  const [challenge] = useState(() => mfaFlow.read())
   const [material, setMaterial] = useState<MfaEnrollmentMaterial | null>(null)
   const [code, setCode] = useState('')
   const [busy, setBusy] = useState(false)
