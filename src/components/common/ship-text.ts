@@ -177,7 +177,20 @@ const sw: Record<string, string> = {
   'Development fixtures': 'Rekodi za majaribio',
   'This view uses development fixtures. Server actions are unavailable.':
     'Mwonekano huu unatumia rekodi za majaribio. Vitendo vya seva havipatikani.',
-  'Phone not collected': 'Namba ya simu haijakusanywa',
+  'Not added to profile': 'Haijaongezwa kwenye wasifu',
+  'Name not added': 'Jina halijaongezwa',
+  'Phone is optional at signup. It appears after the user adds it in Profile.':
+    'Namba ya simu si lazima wakati wa usajili. Itaonekana mtumiaji akiiongeza kwenye wasifu.',
+  'Back to users': 'Rudi kwa watumiaji',
+  'Account details': 'Maelezo ya akaunti',
+  'Profile information': 'Taarifa za wasifu',
+  'Account information': 'Taarifa za akaunti',
+  'User ID': 'Kitambulisho cha mtumiaji',
+  'Phone verification': 'Uthibitishaji wa simu',
+  'No phone on account': 'Hakuna namba kwenye akaunti',
+  'Pending verification': 'Inasubiri uthibitishaji',
+  'Account and support': 'Akaunti na msaada',
+  'Reports and fraud': 'Ripoti na udanganyifu',
   Cancel: 'Ghairi',
   Confirm: 'Thibitisha',
 }

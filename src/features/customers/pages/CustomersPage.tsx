@@ -1,7 +1,7 @@
-import { useMemo, useState } from 'react'
+import { useState } from 'react'
 import { useQuery } from '@tanstack/react-query'
+import { Link } from 'react-router-dom'
 import { customerService } from '../services/customer.service'
-import { UserDetailsDialog } from '../components/UserDetailsDialog'
 import { DataTable, FilterBar } from '@/components/common/DataTable'
 import { MaskedValue } from '@/components/common/MaskedValue'
 import { StatusBadge } from '@/components/common/ReasonDialog'
@@ -9,28 +9,21 @@ import { useShipText } from '@/components/common/ship-text'
 import { Select } from '@/features/operations/shared'
 import { Button } from '@/components/ui/button'
 import { formatDateTime } from '@/lib/utils/formatters'
+import { ROUTES } from '@/lib/constants'
 
 export default function CustomersPage() {
-  const t = useShipText(),
-    [selectedId, setSelectedId] = useState<string | null>(null)
+  const t = useShipText()
   const [q, setQ] = useState(''),
     [status, setStatus] = useState(''),
     [role, setRole] = useState(''),
     [registrationWindow, setRegistrationWindow] = useState('All time'),
+    [createdFrom, setCreatedFrom] = useState<string | undefined>(),
     [offset, setOffset] = useState(0)
   const windowDays: Record<string, number> = {
     'Last 24 hours': 1,
     'Last 7 days': 7,
     'Last 30 days': 30,
   }
-  const days = windowDays[registrationWindow]
-  const createdFrom = useMemo(
-    () =>
-      days == null
-        ? undefined
-        : new Date(Date.now() - days * 24 * 60 * 60 * 1000).toISOString(),
-    [days]
-  )
   const params = { q, status, role, offset, limit: 20, created_from: createdFrom }
   const query = useQuery({
     queryKey: ['customers', params],
@@ -75,26 +68,37 @@ export default function CustomersPage() {
           options={['All time', 'Last 24 hours', 'Last 7 days', 'Last 30 days']}
           onChange={(value) => {
             setRegistrationWindow(value)
+            const days = windowDays[value]
+            setCreatedFrom(
+              days == null
+                ? undefined
+                : new Date(Date.now() - days * 24 * 60 * 60 * 1000).toISOString()
+            )
             setOffset(0)
           }}
         />
       </FilterBar>
+      <p className="text-sm text-muted-foreground">
+        {t('Phone is optional at signup. It appears after the user adds it in Profile.')}
+      </p>
       <section className="rounded-xl border bg-white p-4">
         <DataTable
           label={t('User directory')}
           loading={query.isPending}
           error={query.error}
           retry={() => void query.refetch()}
-          columns={['Name', 'Email', 'Phone', 'Role', 'Status', 'Registered (EAT)'].map(t)}
+          columns={['Name', 'Email', 'Phone', 'Role', 'Status', 'Registered (EAT)'].map(
+            t
+          )}
           rows={(query.data?.users || []).map((user) => ({
             id: user.id,
             cells: [
-              <button
-                className="text-primary underline"
-                onClick={() => setSelectedId(user.id)}
+              <Link
+                className="font-medium text-primary underline underline-offset-2 focus-visible:rounded focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
+                to={ROUTES.USER_DETAILS.replace(':userId', encodeURIComponent(user.id))}
               >
-                {user.name}
-              </button>,
+                {user.name?.trim() || t('Name not added')}
+              </Link>,
               user.email,
               <MaskedValue key={user.id} value={user.phone || ''} userId={user.id} />,
               user.role,
@@ -109,13 +113,6 @@ export default function CustomersPage() {
           onPage={setOffset}
         />
       </section>
-      {selectedId && (
-        <UserDetailsDialog
-          key={selectedId}
-          id={selectedId}
-          onClose={() => setSelectedId(null)}
-        />
-      )}
     </div>
   )
 }

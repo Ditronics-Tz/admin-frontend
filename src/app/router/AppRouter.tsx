@@ -29,6 +29,7 @@ const VerificationDetailsPage = lazy(
   () => import('@/features/drivers/pages/VerificationDetailsPage')
 )
 const CustomersPage = lazy(() => import('@/features/customers/pages/CustomersPage'))
+const UserDetailsPage = lazy(() => import('@/features/customers/pages/UserDetailsPage'))
 const LiveOperationsPage = lazy(
   () => import('@/features/live-operations/pages/LiveOperationsPage')
 )
@@ -272,6 +273,10 @@ const router = createBrowserRouter([
           {
             path: ROUTES.PASSENGERS,
             element: <CustomersPage />,
+          },
+          {
+            path: ROUTES.USER_DETAILS,
+            element: <UserDetailsPage />,
           },
           {
             path: '/customers',

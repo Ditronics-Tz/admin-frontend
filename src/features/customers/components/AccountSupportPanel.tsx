@@ -68,7 +68,11 @@ export function AccountSupportPanel({ id }: { id: string }) {
       </p>
       <p>
         Phone: <MaskedValue key={id} value={account.phone || ''} userId={id} /> ·{' '}
-        {account.phone_verified_at ? 'OTP verified' : 'Not verified'}
+        {account.phone
+          ? account.phone_verified_at
+            ? 'OTP verified'
+            : 'Not verified'
+          : t('No phone on account')}
       </p>
       <form
         className="space-y-3"

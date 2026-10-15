@@ -21,7 +21,7 @@ export function MaskedValue({ value, userId }: { value: string; userId: string }
   })
   const unavailable =
     reveal.isError && [404, 501].includes(formatApiError(reveal.error).status || 0)
-  if (!value) return <span>{t('Phone not collected')}</span>
+  if (!value) return <span>{t('Not added to profile')}</span>
   return (
     <span>
       {revealed || maskPhone(value)}{' '}

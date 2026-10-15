@@ -28,6 +28,7 @@ export const ROUTES = {
   DRIVER_DETAILS: '/drivers/:driverId',
   DRIVER_EDIT: '/drivers/:driverId/edit',
   PASSENGERS: '/passengers',
+  USER_DETAILS: '/users/:userId',
   PROMOTIONS: '/promotions',
   PROMOTION_CREATE: '/promotions/new',
   PROMOTION_DETAILS: '/promotions/:id',
