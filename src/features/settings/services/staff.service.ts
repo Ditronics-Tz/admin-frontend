@@ -5,6 +5,7 @@ import type {
   BackendStaffUser,
   BackendAuditLogsResponse,
   BackendStaffAuditLog,
+  BackendOperationEventsResponse,
   Page,
   ListParams,
 } from '@/lib/api/types'
@@ -22,6 +23,13 @@ export interface CreateStaffResponse {
 }
 
 export const staffService = {
+  async listOperationEvents(params: Record<string, string | number>) {
+    const response = await apiClient.get<BackendOperationEventsResponse>(
+      API_ENDPOINTS.ADMIN.OPERATION_EVENTS,
+      { params }
+    )
+    return response.data
+  },
   async listPage(params: ListParams = {}) {
     return (
       await apiClient.get<Page<BackendStaffUser, 'staff'>>(API_ENDPOINTS.ADMIN.STAFF, {

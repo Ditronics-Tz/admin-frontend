@@ -4,12 +4,15 @@ import { usePermission } from '@/features/auth/hooks/usePermission'
 import { SecuritySettings } from '../components/SecuritySettings'
 import { StaffManagement } from '../components/StaffManagement'
 import { AuditLogPanel } from '../components/AuditLogPanel'
+import { OperationEventsPanel } from '../components/OperationEventsPanel'
 
 export default function SettingsPage() {
   const { isAdmin } = usePermission()
   const [params, setParams] = useSearchParams()
   const selected = params.get('tab') || 'security'
-  const tab = ['security', 'staff', 'audit'].includes(selected) ? selected : 'security'
+  const tab = ['security', 'staff', 'audit', 'operations'].includes(selected)
+    ? selected
+    : 'security'
   return (
     <div className="space-y-6 p-4 sm:p-8">
       <div>
@@ -23,12 +26,13 @@ export default function SettingsPage() {
         onValueChange={(value) => setParams({ tab: value })}
         className="space-y-6"
       >
-        <TabsList>
+        <TabsList className="w-max max-w-full">
           <TabsTrigger value="security">My security</TabsTrigger>
           {isAdmin && (
             <>
               <TabsTrigger value="staff">Staff accounts</TabsTrigger>
               <TabsTrigger value="audit">Audit trail</TabsTrigger>
+              <TabsTrigger value="operations">Operations</TabsTrigger>
             </>
           )}
         </TabsList>
@@ -40,6 +44,9 @@ export default function SettingsPage() {
         </TabsContent>
         <TabsContent value="audit">
           {isAdmin ? <AuditLogPanel /> : <p>Administrator access required.</p>}
+        </TabsContent>
+        <TabsContent value="operations">
+          {isAdmin ? <OperationEventsPanel /> : <p>Administrator access required.</p>}
         </TabsContent>
       </Tabs>
     </div>

@@ -287,6 +287,26 @@ export interface BackendAuditLogsResponse {
   logs: BackendStaffAuditLog[]
 }
 
+export interface BackendOperationEvent {
+  id: string
+  actor_type: 'app' | 'staff' | 'anonymous'
+  actor_id: string
+  action: string
+  method: string
+  route: string
+  status: number
+  request_id: string
+  target_id: string
+  created_at: string
+}
+
+export interface BackendOperationEventsResponse {
+  events: BackendOperationEvent[]
+  total: number
+  limit: number
+  offset: number
+}
+
 /**
  * Backend Staff List Response
  */

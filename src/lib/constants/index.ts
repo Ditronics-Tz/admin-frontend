@@ -83,6 +83,7 @@ export const API_ENDPOINTS = {
     TICKETS: '/admin/tickets',
     UPDATE_TICKET: (id: string) => `/admin/tickets/${id}`,
     AUDIT_LOGS: '/admin/audit-logs',
+    OPERATION_EVENTS: '/admin/operation-events',
     STAFF: '/admin/staff',
     UPDATE_STAFF: (id: string) => `/admin/staff/${id}`,
     UPDATE_STAFF_ROLE: (id: string) => `/admin/staff/${id}/role`,
