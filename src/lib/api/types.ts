@@ -262,6 +262,16 @@ export interface BackendNotificationPage {
   offset: number
   by_status: { pending: number; processing: number; delivered: number; failed: number }
   sender_mode: 'logging_stub' | 'configured' | string
+  push_mode: 'disabled' | 'fcm' | string
+  inbox_count: number
+  push_by_status: {
+    pending: number
+    processing: number
+    sent: number
+    skipped: number
+    invalid: number
+    failed: number
+  }
 }
 
 /**

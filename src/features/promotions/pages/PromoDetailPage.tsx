@@ -43,7 +43,7 @@ export default function PromoDetailPage() {
       setShare(false)
       await cache.invalidateQueries({ queryKey: ['promotions'] })
       toast.success(
-        t('Notifications accepted for {count} passengers.', {
+        t('Inbox notifications queued for {count} passengers.', {
           count: result.notified_count,
         })
       )
@@ -170,7 +170,7 @@ export default function PromoDetailPage() {
             count: (p.audience_count || 0).toLocaleString(),
           })}
           description={t(
-            'Share this promo with the current audience. Sending again may notify the same passengers again.'
+            'Share this promo with the current audience. It appears in their app inbox; registered devices may also receive push. Sharing again creates another notification.'
           )}
           pending={mutation.isPending}
           error={mutation.error}

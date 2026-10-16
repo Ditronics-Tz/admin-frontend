@@ -55,8 +55,11 @@ also work when the 15-minute access token expires during editing.
   removed in the detail audience table. Initial and pasted identifiers referring
   to the same passenger are deduplicated by the backend.
 - Sharing confirms the audience count from detail and shows the returned count.
-  The current backend notifier logs acceptance and does not send SMS or push;
-  success says notifications were accepted, rather than claiming delivery.
+  The backend now persists one passenger inbox item per recipient. The preview
+  in the editor shows the title/body that will be used. Saving or activating a
+  promo does not notify passengers; sharing does. The admin Notifications page
+  shows inbox and optional FCM queue counts. FCM acceptance does not prove a
+  phone displayed the push. The legacy SMS sender remains a logging stub.
 - All displays/input conversions use Africa/Dar_es_Salaam (UTC+3), independent
   of the browser timezone. Money displays as `TSh 5,000`. Inputs accept whole
   numbers; unsafe JavaScript integers are rejected instead of silently rounding

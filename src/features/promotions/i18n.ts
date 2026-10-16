@@ -92,6 +92,11 @@ const sw: Record<string, string> = {
   'Notify {count} passengers?': 'Waarifu abiria {count}?',
   'Notifications accepted for {count} passengers.':
     'Arifa zimekubaliwa kwa abiria {count}.',
+  'Inbox notifications queued for {count} passengers.':
+    'Arifa zimehifadhiwa kwenye kikasha kwa abiria {count}.',
+  'Notification preview': 'Mwonekano wa arifa',
+  'Saving does not notify passengers. Activate, then use Share with audience on the promo details page.':
+    'Kuhifadhi hakutumi arifa. Washa promosheni, kisha tumia Shiriki na walengwa kwenye ukurasa wa maelezo.',
   'Referral settings': 'Mipangilio ya rufaa',
   'Enable referrals': 'Washa rufaa',
   'Reward for invited passenger': 'Zawadi kwa abiria aliyealikwa',

@@ -575,6 +575,16 @@ function PromoEditor({ original }: { original?: Promo }) {
               )}
             </p>
           </div>
+          <div className="space-y-2 rounded-lg border border-teal-100 bg-white p-4 text-sm">
+            <h3 className="font-semibold">{t('Notification preview')}</h3>
+            <p className="font-medium">{(values.title || t('Your next ride, for less')).slice(0, 160)}</p>
+            <p className="text-muted-foreground">
+              {(values.description || `Use code ${values.code || 'RIDA-…'} for your next eligible ride.`).slice(0, 500)}
+            </p>
+            <p className="text-xs text-muted-foreground">
+              {t('Saving does not notify passengers. Activate, then use Share with audience on the promo details page.')}
+            </p>
+          </div>
         </aside>
       </div>
       {picker && write && (
