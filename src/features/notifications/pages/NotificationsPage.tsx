@@ -29,7 +29,7 @@ export default function NotificationsPage() {
             {t('Notification deliveries')}
           </h1>
           <p className="mt-1 max-w-2xl text-sm text-slate-600">
-            {t('Review the passenger inbox, mobile push queue and safety delivery jobs.')}
+            {t('Review the passenger inbox and safety delivery jobs.')}
           </p>
         </div>
         <Button variant="outline" onClick={() => void query.refetch()}>
@@ -44,7 +44,7 @@ export default function NotificationsPage() {
             <div>
               <p className="font-semibold">{t('Legacy SMS sender is not configured')}</p>
               <p className="mt-1 leading-5">
-                {t('Legacy safety delivery status may reflect a logging stub. Passenger inbox messages are stored separately; FCM status below only means Firebase accepted the request, not that a phone displayed it.')}
+                {t('Legacy safety delivery status may reflect a logging stub. Passenger inbox messages are stored separately and are available through the mobile API.')}
               </p>
             </div>
           </div>
@@ -56,28 +56,15 @@ export default function NotificationsPage() {
           <div>
             <h2 className="font-semibold text-[#172B36]">{t('Passenger app notifications')}</h2>
             <p className="text-xs text-muted-foreground">
-              {t('Promo shares and supported account events appear in the mobile inbox. Push requires a registered device and FCM.')}
+              {t('Promo shares and supported account events appear in the mobile inbox. The app can receive updates while open and sync later when closed.')}
             </p>
           </div>
           <span className="rounded-full bg-slate-100 px-3 py-1 text-xs font-medium text-slate-700">
-            {query.data?.push_mode === 'fcm' ? t('FCM enabled') : t('Inbox only')}
+            {t('Mobile inbox active')}
           </span>
         </div>
-        <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
-          {[
-            { label: t('Inbox messages'), value: query.data?.inbox_count },
-            { label: t('Push pending'), value: query.data?.push_by_status?.pending },
-            { label: t('FCM accepted'), value: query.data?.push_by_status?.sent },
-            { label: t('Push failed'), value: query.data?.push_by_status?.failed },
-          ].map(({ label, value }) => (
-            <div key={label} className="rounded-lg border border-slate-200 p-3">
-              <p className="text-xs text-muted-foreground">{label}</p>
-              <p className="mt-1 text-xl font-semibold">{value?.toLocaleString() ?? '—'}</p>
-            </div>
-          ))}
-        </div>
-        <p className="text-xs text-muted-foreground">
-          {t('Skipped')}: {query.data?.push_by_status?.skipped ?? 0}; {t('Invalid tokens')}: {query.data?.push_by_status?.invalid ?? 0}; {t('Processing')}: {query.data?.push_by_status?.processing ?? 0}.
+        <p className="text-2xl font-semibold text-[#172B36]">
+          {query.data?.inbox_count?.toLocaleString() ?? '—'} {t('stored messages')}
         </p>
       </section>
 

@@ -170,7 +170,7 @@ export default function PromoDetailPage() {
             count: (p.audience_count || 0).toLocaleString(),
           })}
           description={t(
-            'Share this promo with the current audience. It appears in their app inbox; registered devices may also receive push. Sharing again creates another notification.'
+            'Share this promo with the current audience. It appears in their app inbox; open apps can detect it shortly. Sharing again creates another notification.'
           )}
           pending={mutation.isPending}
           error={mutation.error}
