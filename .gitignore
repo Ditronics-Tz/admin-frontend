@@ -32,3 +32,5 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+/.cursor/mcp.json
+/.agents/mcp_config.json
