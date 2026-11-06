@@ -44,7 +44,25 @@ export function mapBackendUserToDriver(
     availabilityStatus: profile?.is_online ? 'online' : 'offline',
     vehicle: {
       id: profile?.vehicle_card_number || `veh-${user.id.slice(0, 6)}`,
-      type: 'unknown',
+      type:
+        profile?.vehicle_type === 'bajaji'
+          ? 'bajaji'
+          : profile?.vehicle_type === 'boda'
+            ? 'motorcycle'
+            : [
+                  'car',
+                  'sedan',
+                  'suv',
+                  'van',
+                  'minivan',
+                  'hatchback',
+                  'standard',
+                  'comfort',
+                  'xl',
+                ].includes(profile?.vehicle_type ?? '')
+              ? 'car'
+              : 'unknown',
+      passengerSeats: profile?.passenger_seats,
       make: 'Not collected',
       model: profile?.vehicle_card_number
         ? `Card ${profile.vehicle_card_number}`

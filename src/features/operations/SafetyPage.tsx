@@ -5,7 +5,7 @@ import { useQuery } from '@tanstack/react-query'
 import { Button } from '@/components/ui/button'
 import { QueryError } from '@/components/feedback/QueryError'
 import { safetyApi } from './safety.api'
-import { useOperationsPermission } from './api'
+import { useOperationsPermission, type Party } from './api'
 import { useSafetyLive, useOpenSOS, AgeTimer } from './safety.live'
 import { SafetyMap } from './SafetyMap'
 import {
@@ -118,6 +118,12 @@ export function SOSDetailPage() {
   if (q.isError) return <QueryError error={q.error} retry={() => void q.refetch()} />
   const d = q.data,
     held = !!d.alert.assigned_to && d.alert.assigned_to !== access.user?.id
+  const pickup =
+    d.shared_trip?.pickup ??
+    (d.ride ? { lat: d.ride.pickup_lat, lng: d.ride.pickup_lng } : null)
+  const dropoff =
+    d.shared_trip?.dropoff ??
+    (d.ride ? { lat: d.ride.dropoff_lat, lng: d.ride.dropoff_lng } : null)
   return (
     <main className="space-y-5 p-4 sm:p-8">
       <Heading title="SOS alert">
@@ -134,13 +140,17 @@ export function SOSDetailPage() {
       )}
       <div className="grid gap-5 lg:grid-cols-2">
         <section className="space-y-3">
-          <SafetyMap
-            lat={d.alert.last_lat}
-            lng={d.alert.last_lng}
-            trail={d.trail}
-            pickup={{ lat: d.ride.pickup_lat, lng: d.ride.pickup_lng }}
-            dropoff={{ lat: d.ride.dropoff_lat, lng: d.ride.dropoff_lng }}
-          />
+          {pickup && dropoff ? (
+            <SafetyMap
+              lat={d.alert.last_lat}
+              lng={d.alert.last_lng}
+              trail={d.trail}
+              pickup={pickup}
+              dropoff={dropoff}
+            />
+          ) : (
+            <p>Trip route unavailable</p>
+          )}
           {d.alert.last_location_at && (
             <DateLabel value={d.alert.last_location_at} relative />
           )}
@@ -152,29 +162,31 @@ export function SOSDetailPage() {
           />
         </section>
         <div className="space-y-4">
-          {[d.passenger, d.driver].map((p) => (
-            <section key={p.id} className="rounded-lg border p-4">
-              <h2 className="font-semibold">
-                {p.name} · {p.role}
-              </h2>
-              <p>
-                {p.status} · {p.average_rating.toFixed(1)}/5 · {p.reports_received}{' '}
-                {t('reports')}
-              </p>
-              {reveal ? (
-                <a href={`tel:${d.phones[p.id]}`}>{d.phones[p.id]}</a>
-              ) : (
-                <span>{d.phones[p.id]}</span>
-              )}
-              {p.role === 'driver' && <p>{d.vehicle}</p>}
-              <p>
-                {d.flags
-                  .filter((f) => f.user_id === p.id)
-                  .map((f) => f.reason)
-                  .join(', ')}
-              </p>
-            </section>
-          ))}
+          {[d.passenger, d.driver]
+            .filter((p): p is Party => !!p)
+            .map((p) => (
+              <section key={p.id} className="rounded-lg border p-4">
+                <h2 className="font-semibold">
+                  {p.name} · {p.role}
+                </h2>
+                <p>
+                  {p.status} · {p.average_rating.toFixed(1)}/5 · {p.reports_received}{' '}
+                  {t('reports')}
+                </p>
+                {reveal ? (
+                  <a href={`tel:${d.phones[p.id]}`}>{d.phones[p.id]}</a>
+                ) : (
+                  <span>{d.phones[p.id]}</span>
+                )}
+                {p.role === 'driver' && <p>{d.vehicle}</p>}
+                <p>
+                  {d.flags
+                    .filter((f) => f.user_id === p.id)
+                    .map((f) => f.reason)
+                    .join(', ')}
+                </p>
+              </section>
+            ))}
           <section className="rounded-lg border p-4">
             <h2 className="font-semibold">{t('Emergency contacts')}</h2>
             <Button variant="outline" onClick={() => setReveal((v) => !v)}>
@@ -191,11 +203,29 @@ export function SOSDetailPage() {
       </div>
       <section className="rounded-lg border p-4">
         <h2>{t('Ride timeline')}</h2>
-        <p>
-          {d.ride.status} · {d.ride.pickup} → {d.ride.dropoff}
-        </p>
-        <DateLabel value={d.ride.created_at} />
-        {d.ride.completed_at && <DateLabel value={d.ride.completed_at} />}
+        {d.shared_trip ? (
+          <>
+            <p>Shared trip · {d.shared_trip.id}</p>
+            <p>
+              {d.shared_trip.status} · {d.shared_trip.pickup.address} →{' '}
+              {d.shared_trip.dropoff.address}
+            </p>
+            <p>{d.shared_trip.confirmed} confirmed passengers</p>
+            {Object.entries(d.shared_trip.passenger_names ?? {}).map(([id, name]) => (
+              <p key={id}>{name}</p>
+            ))}
+          </>
+        ) : d.ride ? (
+          <>
+            <p>
+              {d.ride.status} · {d.ride.pickup} → {d.ride.dropoff}
+            </p>
+            <DateLabel value={d.ride.created_at} />
+            {d.ride.completed_at && <DateLabel value={d.ride.completed_at} />}
+          </>
+        ) : (
+          <p>Trip details unavailable</p>
+        )}
       </section>
       <section className="rounded-lg border p-4">
         <h2>{t('SOS timeline')}</h2>

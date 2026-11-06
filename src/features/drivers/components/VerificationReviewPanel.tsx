@@ -72,6 +72,9 @@ export function VerificationReviewPanel({ driver }: { driver: Driver }) {
           </span>
         </div>
         <p className="text-sm">
+          Vehicle: {detail.profile.vehicle_type || 'Not registered'} · Passenger seats
+          excluding driver: {detail.profile.passenger_seats || 'Not registered'}
+          <br />
           {detail.profile.assigned_to
             ? owned
               ? 'You have claimed this review.'

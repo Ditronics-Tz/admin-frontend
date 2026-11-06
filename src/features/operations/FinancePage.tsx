@@ -87,7 +87,8 @@ export function FinanceDashboard() {
           <dl className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
             {[
               ['GMV', q.data.gmv],
-              ['Commission', q.data.commission],
+              ['Assessed commission', q.data.commission],
+              ['Uncollected commission', q.data.uncollected_commission ?? 0],
               ['Pending payouts', q.data.pending_payouts],
               ['Refunds', q.data.refunds],
             ].map(([label, value]) => (

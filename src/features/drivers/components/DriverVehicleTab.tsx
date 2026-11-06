@@ -5,6 +5,18 @@ export function DriverVehicleTab({ vehicle }: { vehicle: DriverVehicle }) {
       <h2 className="font-semibold">Vehicle information</h2>
       <dl className="space-y-3 text-sm">
         <div>
+          <dt className="text-muted-foreground">Vehicle type</dt>
+          <dd>{vehicle.type}</dd>
+        </div>
+        <div>
+          <dt className="text-muted-foreground">Passenger capacity (excluding driver)</dt>
+          <dd>
+            {vehicle.passengerSeats && vehicle.passengerSeats > 0
+              ? vehicle.passengerSeats
+              : 'Not registered — shared publishing unavailable'}
+          </dd>
+        </div>
+        <div>
           <dt className="text-muted-foreground">Plate number</dt>
           <dd>{vehicle.plateNumber}</dd>
         </div>

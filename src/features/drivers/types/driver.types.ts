@@ -13,6 +13,7 @@ export type DriverAvailabilityStatus =
 export type VehicleType = 'motorcycle' | 'bajaji' | 'car' | 'unknown'
 
 export interface DriverVehicle {
+  passengerSeats?: number
   id: string
   type: VehicleType
   make: string

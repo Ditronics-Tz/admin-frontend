@@ -103,27 +103,41 @@ function SupportDetail({ kind, id }: { kind: WorkKind; id: string }) {
         </p>
       </header>
       <p className="whitespace-pre-wrap">{item.description}</p>
+      {item.shared_trip_id && <p>Shared trip reference: {item.shared_trip_id}</p>}
       <section className="space-y-4 rounded-xl border bg-white p-4 sm:p-6">
         <div>
           <h2 className="font-semibold">{t('Conversation')}</h2>
-          <p className="text-sm text-muted-foreground">{t('Replies are visible to the passenger.')}</p>
+          <p className="text-sm text-muted-foreground">
+            {t('Replies are visible to the passenger.')}
+          </p>
         </div>
         {conversation.isPending ? (
           <p className="text-sm text-muted-foreground">{t('Loading conversation…')}</p>
         ) : conversation.isError ? (
-          <QueryError error={conversation.error} retry={() => void conversation.refetch()} />
+          <QueryError
+            error={conversation.error}
+            retry={() => void conversation.refetch()}
+          />
         ) : (
           <>
             <div className="space-y-3">
-              {conversation.data.messages.length ? conversation.data.messages.map((message) => (
-                <article key={message.id} className="rounded-lg border p-3">
-                  <div className="mb-1 flex flex-wrap justify-between gap-2 text-xs text-muted-foreground">
-                    <span>{message.actor_type === 'staff' ? t('Support team') : t('Passenger')}</span>
-                    <time>{formatDateTime(message.created_at)}</time>
-                  </div>
-                  <p className="whitespace-pre-wrap text-sm">{message.body}</p>
-                </article>
-              )) : <Empty message={t('No replies yet')} />}
+              {conversation.data.messages.length ? (
+                conversation.data.messages.map((message) => (
+                  <article key={message.id} className="rounded-lg border p-3">
+                    <div className="mb-1 flex flex-wrap justify-between gap-2 text-xs text-muted-foreground">
+                      <span>
+                        {message.actor_type === 'staff'
+                          ? t('Support team')
+                          : t('Passenger')}
+                      </span>
+                      <time>{formatDateTime(message.created_at)}</time>
+                    </div>
+                    <p className="whitespace-pre-wrap text-sm">{message.body}</p>
+                  </article>
+                ))
+              ) : (
+                <Empty message={t('No replies yet')} />
+              )}
             </div>
             {!!conversation.data.attachments.length && (
               <div className="space-y-2">
@@ -151,12 +165,17 @@ function SupportDetail({ kind, id }: { kind: WorkKind; id: string }) {
                         link.remove()
                         window.setTimeout(() => URL.revokeObjectURL(url), 60_000)
                       } catch (error) {
-                        toast.error(error instanceof Error ? error.message : t('Could not download attachment'))
+                        toast.error(
+                          error instanceof Error
+                            ? error.message
+                            : t('Could not download attachment')
+                        )
                       }
                     }}
                   >
                     <Paperclip className="h-4 w-4" />
-                    {attachment.content_type} · {(attachment.size / 1024).toFixed(0)} KB · {formatDateTime(attachment.created_at)}
+                    {attachment.content_type} · {(attachment.size / 1024).toFixed(0)} KB ·{' '}
+                    {formatDateTime(attachment.created_at)}
                   </button>
                 ))}
               </div>

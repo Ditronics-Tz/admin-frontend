@@ -5,6 +5,7 @@ import { ApiClientError } from '@/lib/api/errors'
 
 export type WorkKind = 'tickets' | 'complaints' | 'reports'
 export interface WorkItem {
+  shared_trip_id?: string
   id: string
   subject?: string
   title?: string
@@ -56,9 +57,13 @@ export const supportService = {
     return data
   },
   async reply(id: string, body: string) {
-    await apiClient.post<TicketMessage>(`${path('tickets', id)}/messages`, { body }, {
-      headers: { 'Idempotency-Key': crypto.randomUUID() },
-    })
+    await apiClient.post<TicketMessage>(
+      `${path('tickets', id)}/messages`,
+      { body },
+      {
+        headers: { 'Idempotency-Key': crypto.randomUUID() },
+      }
+    )
   },
   async attachment(id: string, attachmentId: string) {
     const { data } = await apiClient.get<Blob>(

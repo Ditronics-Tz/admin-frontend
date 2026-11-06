@@ -212,6 +212,8 @@ export const financeApi = {
     request(
       apiClient.get<{
         gmv: number
+        uncollected_commission?: number
+        commission_basis?: string
         commission: number
         pending_payouts: number
         refunds: number

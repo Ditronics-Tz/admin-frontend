@@ -9,6 +9,7 @@ import {
 } from './api'
 export type SOS = {
   id: string
+  shared_trip_id?: string
   ride_id: string
   triggered_by: string
   role: string
@@ -40,9 +41,18 @@ export type SOSEvent = {
 }
 export type SOSDetail = {
   alert: SOS
-  ride: Ride
-  driver: Party
-  passenger: Party
+  shared_trip?: {
+    id: string
+    status: string
+    pickup: { lat: number; lng: number; address: string }
+    dropoff: { lat: number; lng: number; address: string }
+    created: number
+    confirmed: number
+    passenger_names?: Record<string, string>
+  }
+  ride?: Ride
+  driver?: Party
+  passenger?: Party | null
   vehicle: string
   contacts: Contact[]
   phones: Record<string, string>

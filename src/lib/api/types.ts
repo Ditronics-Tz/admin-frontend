@@ -121,6 +121,8 @@ export interface BackendUserResponse {
  * Backend Driver Profile (models.DriverProfile)
  */
 export interface BackendDriverProfile {
+  vehicle_type?: string
+  passenger_seats?: number
   user_id: string
   licence_number: string
   vehicle_card_number: string
