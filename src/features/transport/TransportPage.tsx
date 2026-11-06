@@ -145,6 +145,32 @@ export default function TransportPage() {
       clearTimeout(timer)
     }
   }, [offset])
+  const [cancelId, setCancelId] = useState('')
+  const [reason, setReason] = useState('')
+  const [cancelling, setCancelling] = useState(false)
+  async function cancelTrip() {
+    if (!cancelId || !reason.trim()) return
+    setCancelling(true)
+    try {
+      await request(
+        apiClient.post('/admin/shared-trips/' + cancelId + '/cancel', {
+          reason: reason.trim(),
+        })
+      )
+      setTrips((current) =>
+        current.map((t) =>
+          t.id === cancelId ? { ...t, status: 'cancelled', confirmed: 0, held: 0 } : t
+        )
+      )
+      setCancelId('')
+      setReason('')
+      setNotice('Shared trip cancelled. Passenger seats have been released.')
+    } catch (err) {
+      setError(errorText(err))
+    } finally {
+      setCancelling(false)
+    }
+  }
   return (
     <main className="space-y-6 p-4">
       <h1 className="text-2xl font-semibold">Shared rides and trip fees</h1>
@@ -179,6 +205,43 @@ export default function TransportPage() {
               {t.fee.toLocaleString()}
               {t.status === 'completed' && ' collected'}
             </p>
+            {admin &&
+              t.status === 'waiting' &&
+              (cancelId === t.id ? (
+                <div className="mt-3 space-y-2">
+                  <label>
+                    Reason for cancellation
+                    <input
+                      className="block w-full rounded border p-2"
+                      maxLength={250}
+                      value={reason}
+                      onChange={(e) => setReason(e.target.value)}
+                    />
+                  </label>
+                  <button
+                    disabled={cancelling || !reason.trim()}
+                    onClick={() => void cancelTrip()}
+                  >
+                    Confirm cancellation
+                  </button>
+                  <button
+                    className="ml-4"
+                    disabled={cancelling}
+                    onClick={() => setCancelId('')}
+                  >
+                    Keep trip
+                  </button>
+                </div>
+              ) : (
+                <button
+                  onClick={() => {
+                    setCancelId(t.id)
+                    setReason('')
+                  }}
+                >
+                  Cancel trip
+                </button>
+              ))}
           </article>
         ))}
         <div className="flex gap-4">
