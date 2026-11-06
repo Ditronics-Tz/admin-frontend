@@ -72,6 +72,7 @@ const IncidentDetailPage = lazy(() =>
     default: m.IncidentDetailPage,
   }))
 )
+const TransportPage = lazy(() => import('@/features/transport/TransportPage'))
 const FinanceDashboard = lazy(() =>
   import('@/features/operations/FinancePage').then((m) => ({
     default: m.FinanceDashboard,
@@ -187,6 +188,7 @@ const router = createBrowserRouter([
           },
           { path: '/fraud/rules', element: <FraudRulesPage /> },
           { path: '/fraud/:id', element: <FraudDetailPage /> },
+          { path: '/transport', element: <TransportPage /> },
           { path: '/reports', element: <ReportsPage /> },
           { path: '/reports/flags', element: <FlagsPage /> },
           { path: '/reports/:id', element: <ReportDetailPage /> },

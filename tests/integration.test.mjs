@@ -1507,10 +1507,10 @@ test('safety, finance and fraud API clients send staff contracts and stable idem
   assert.equal(moneyHeaders('stable-key').headers['Idempotency-Key'], 'stable-key')
 })
 
-test('support lands on safety and login preserves report filters and password gates', async () => {
+test('support lands on support and login preserves report filters and password gates', async () => {
   const { staffLandingPath } = await import('../src/features/auth/landing.ts')
-  assert.equal(staffLandingPath({ role: 'support' }), '/safety')
-  assert.equal(staffLandingPath({ role: 'support' }, { pathname: '/' }), '/safety')
+  assert.equal(staffLandingPath({ role: 'support' }), '/support')
+  assert.equal(staffLandingPath({ role: 'support' }, { pathname: '/' }), '/support')
   assert.equal(staffLandingPath({ role: 'admin' }), '/dashboard')
   assert.equal(
     staffLandingPath(
@@ -1674,4 +1674,17 @@ test('support fraud rules stay read-only while the admin can edit them', async (
     Object.assign(accessState, restoreAccess)
     client.clear()
   }
+})
+
+test('transport fees keep support read-only and expose the whole-trip range to admins', async () => {
+  const { Fees } = await import('../src/features/transport/TransportPage.tsx')
+  const { createElement } = await import('react')
+  const { renderToStaticMarkup } = await import('react-dom/server')
+  const settings = { enabled: true, shared_fee: 750, hail_percent: 12, version: 3 }
+  const form = admin => renderToStaticMarkup(createElement(Fees, { settings, admin, onSave() {} }))
+  assert.match(form(false), /fieldset disabled/)
+  assert.doesNotMatch(form(false), /Save trip settings/)
+  assert.match(form(true), /Save trip settings/)
+  assert.match(form(true), /min="500" max="1000"/)
+  assert.match(form(true), /value="12"/)
 })
