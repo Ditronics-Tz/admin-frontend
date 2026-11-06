@@ -23,7 +23,7 @@ type Trip = {
 const errorText = (err: unknown) =>
   err instanceof Error ? err.message : 'Could not reach Rida.'
 
-function Fees({
+export function Fees({
   settings,
   onSave,
   admin,
