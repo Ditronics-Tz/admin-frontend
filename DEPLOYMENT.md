@@ -23,4 +23,10 @@ Do not replace existing proxy configuration until its active virtual hosts and c
 
 ## Continuous delivery
 
-`.github/workflows/ci.yml` runs typecheck, lint, tests, and the production build on every pull request and on `main`. A push to `main` deploys only after those checks pass. The deploy job uses the repository secrets `RIDA_DEPLOY_KEY` and `RIDA_DEPLOY_KNOWN_HOSTS` to run the server command `admin`, which updates `/opt/rida-admin-frontend` and recreates this container. It does not change the API, database, or other host services.
+Develop on `dev`, then merge into `main`. `.github/workflows/ci.yml` runs typecheck, lint, and the production build on pushes to `dev`/`main` and pull requests targeting those branches. Tests are excluded under the project's code-only rule. A push or merge to `main` automatically deploys after those checks pass; `dev` never deploys.
+
+The existing repository secrets `RIDA_DEPLOY_KEY` and `RIDA_DEPLOY_KNOWN_HOSTS` authenticate SSH with strict host-key verification. The workflow sends `admin <commit SHA>` to the restricted server entrypoint. It verifies that SHA is still current main, fast-forwards the clean `/opt/rida-admin-frontend` checkout, preserves the running image as `rida-admin-frontend:previous`, builds the replacement, and waits for container health. A shared host lock prevents simultaneous backend/admin deployment. The workflow then checks the public HTTPS `/healthz` endpoint. The API and database are not replaced by admin delivery.
+
+To retry, select **Actions → CI/CD → Run workflow → main**, or rerun the failed main run. Superseded revisions are skipped. Do not include `[skip ci]` in release merge messages. No additional GitHub secret is needed on the currently configured host.
+
+The shared server entrypoint is maintained in the backend repository at `deploy/gha-remote.sh`, installed as `/usr/local/sbin/rida-gha-deploy`. Changes to that entrypoint require operator installation; it no longer overwrites itself during deployments. See the backend's `deploy/README.md` for setup, backup and failure recovery. Failed builds preserve the current service; failed startup requires investigation or a corrective release. Successful commit IDs are recorded at `/var/lib/rida-deploy/admin.sha`.
