@@ -13,7 +13,6 @@ import { getDriverInitials } from '../utils/driver-formatters'
 import { MaskedValue } from '@/components/common/MaskedValue'
 import type { Driver } from '../types/driver.types'
 import { ROUTES } from '@/lib/constants'
-import { UserRoleAction } from '@/features/customers/components/UserRoleAction'
 
 interface DriverProfileHeaderProps {
   driver: Driver
@@ -79,7 +78,6 @@ export const DriverProfileHeader: React.FC<DriverProfileHeaderProps> = ({ driver
 
           {/* Action Buttons */}
           <div className="flex flex-wrap items-center gap-2">
-            <UserRoleAction id={driver.id} name={driver.fullName} role="driver" />
             <Button
               variant="outline"
               size="sm"

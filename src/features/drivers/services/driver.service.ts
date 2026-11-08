@@ -190,16 +190,6 @@ export const driverService = {
     )
     return { ...data, items }
   },
-  async updateUserRole(
-    userId: string,
-    role: 'driver' | 'passenger'
-  ): Promise<{ message: string }> {
-    const { data } = await apiClient.patch<{ message: string }>(
-      API_ENDPOINTS.ADMIN.UPDATE_USER_ROLE(userId),
-      { role }
-    )
-    return data
-  },
   async createDriver(_data: CreateDriverInput): Promise<Driver> {
     return unsupported('Staff registration of drivers')
   },

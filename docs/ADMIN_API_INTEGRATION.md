@@ -16,12 +16,12 @@ The frontend follows the handlers in `RideBackend-Rewrite-/routes/admin_routes.g
 | Account control | `POST /admin/users/:id/suspend` and `/reactivate`, with reason and optional suspension `until`; admin-only `/ban` |
 | Internal notes / account history | `GET/POST /admin/users/:id/notes`, admin-only DELETE note; `GET /admin/users/:id/history` |
 | Customers / profile | `GET /admin/users?role=passenger`, `GET /admin/users/:id` |
-| Account role change | Admin-only `PATCH /admin/users/:id/role` with `{ "role": "driver"/"passenger" }` |
+| Account role change | Not offered in the admin console. The backend still has admin-only `PATCH /admin/users/:id/role`. |
 | Staff settings | Admin-only `GET/POST /admin/staff`, `PATCH /admin/staff/:id`, `PATCH /admin/staff/:id/role`, `POST /admin/staff/:id/reset-password`, `POST /admin/staff/:id/revoke-sessions` |
 | Audit settings | Admin-only `GET /admin/audit-logs?limit=25&offset=…` |
 | Support | `GET /admin/tickets`, `GET /admin/complaints`; bodyless `PATCH /admin/tickets/:id` and `PATCH /admin/complaints/:id` acknowledgements |
 
-Support staff can access operational screens and their own security settings. Staff administration, audit logs, and app-user role changes are hidden for support. Backend authorization remains authoritative. A `require_2fa` response links to security setup. Temporary-password accounts are routed to password change before entering the dashboard.
+Support staff can access operational screens and their own security settings. Staff administration and audit logs are hidden for support. The console does not offer app-user role changes to any staff role. Backend authorization remains authoritative. A `require_2fa` response links to security setup. Temporary-password accounts are routed to password change before entering the dashboard.
 
 Concurrent expired requests share one refresh rotation. Retried requests use the new bearer token, including the current rotated refresh token when logging out. Late refresh responses cannot restore a cleared session. Login, logout, account changes, and cross-tab session changes clear cached account data.
 

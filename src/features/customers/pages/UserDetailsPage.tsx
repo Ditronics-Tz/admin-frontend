@@ -2,7 +2,6 @@ import { useQuery } from '@tanstack/react-query'
 import { ArrowLeft } from 'lucide-react'
 import { Link, useParams } from 'react-router-dom'
 import { customerService } from '../services/customer.service'
-import { UserRoleAction } from '../components/UserRoleAction'
 import { AccountSupportPanel } from '../components/AccountSupportPanel'
 import { UserSecurityPanel } from '../components/UserSecurityPanel'
 import { PassengerPromos } from '@/features/promotions/components/PassengerPromos'
@@ -46,11 +45,7 @@ export default function UserDetailsPage() {
       ) : query.isError ? (
         <QueryError error={query.error} retry={() => void query.refetch()} />
       ) : (
-        <UserDetailsContent
-          id={id}
-          detail={query.data}
-          onRoleChanged={() => void query.refetch()}
-        />
+        <UserDetailsContent id={id} detail={query.data} />
       )}
     </div>
   )
@@ -59,11 +54,9 @@ export default function UserDetailsPage() {
 function UserDetailsContent({
   id,
   detail,
-  onRoleChanged,
 }: {
   id: string
   detail: Awaited<ReturnType<typeof customerService.getCustomer>>
-  onRoleChanged: () => void
 }) {
   const t = useShipText()
   const { user, passenger_profile: passengerProfile } = detail
@@ -82,12 +75,6 @@ function UserDetailsContent({
         </div>
         <div className="flex flex-wrap items-center gap-3">
           <StatusBadge status={status} />
-          <UserRoleAction
-            id={id}
-            name={name || user.email}
-            role={user.role}
-            onChanged={onRoleChanged}
-          />
         </div>
       </header>
 
