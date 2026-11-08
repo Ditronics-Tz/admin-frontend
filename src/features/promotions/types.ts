@@ -22,6 +22,7 @@ export interface Promo {
   status: PromoStatus
   effective_status: EffectiveStatus
   created_at: string
+  source?: string
 }
 export type PromoInput = Omit<
   Promo,
@@ -31,6 +32,7 @@ export type PromoInput = Omit<
   | 'audience_count'
   | 'effective_status'
   | 'created_at'
+  | 'source'
 > & { audience_user_ids?: string[] }
 export type PromoPatch = Partial<Omit<PromoInput, 'status' | 'audience_user_ids'>>
 export interface Passenger {

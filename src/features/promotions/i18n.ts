@@ -42,6 +42,10 @@ const sw: Record<string, string> = {
   Pause: 'Sitisha',
   Resume: 'Endelea',
   Archive: 'Hifadhi',
+  Delete: 'Futa',
+  'Promo deleted': 'Promosheni imefutwa',
+  'Delete this promotion from admin and passenger listings? It cannot be restored. Existing reservations and redemption history are retained.':
+    'Futa promosheni hii kwenye orodha za msimamizi na abiria? Haiwezi kurejeshwa. Nafasi zilizohifadhiwa na historia ya matumizi zitahifadhiwa.',
   Cancel: 'Ghairi',
   Confirm: 'Thibitisha',
   Close: 'Funga',

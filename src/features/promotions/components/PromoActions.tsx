@@ -17,30 +17,39 @@ import { usePromoWriteAccess } from '../access'
 import { usePromoText } from '../i18n'
 import { ConfirmDialog } from './shared'
 
+type PromoAction = 'pause' | 'resume' | 'archive' | 'delete'
+
 export function PromoActions({ promo, menu = false }: { promo: Promo; menu?: boolean }) {
   const canWrite = usePromoWriteAccess(),
     t = usePromoText(),
     navigate = useNavigate(),
     cache = useQueryClient()
-  const [confirm, setConfirm] = useState<'pause' | 'resume' | 'archive' | null>(null)
+  const [confirm, setConfirm] = useState<PromoAction | null>(null)
   const mutation = useMutation({
-    mutationFn: (action: 'pause' | 'resume' | 'archive') =>
-      promoService.action(promo.id, action),
-    onSuccess: async () => {
+    mutationFn: async (action: PromoAction) =>
+      action === 'delete'
+        ? promoService.remove(promo.id)
+        : promoService.action(promo.id, action),
+    onSuccess: async (_data, action) => {
+      if (action === 'delete') {
+        if (!menu) navigate('/promotions', { replace: true })
+        cache.removeQueries({ queryKey: ['promotions', 'detail', promo.id], exact: true })
+      }
       await cache.invalidateQueries({ queryKey: ['promotions'] })
       setConfirm(null)
-      toast.success(t('Promo updated'))
+      toast.success(t(action === 'delete' ? 'Promo deleted' : 'Promo updated'))
     },
   })
   const label = (action: string) => t(action.replace(/^./, (c) => c.toUpperCase()))
-  const available: ('pause' | 'resume' | 'archive')[] =
+  const available: PromoAction[] =
     promo.status === 'archived'
       ? []
       : [
           ...(promo.status === 'active' ? ['pause' as const] : ['resume' as const]),
           'archive',
         ]
-  const choose = (action: 'pause' | 'resume' | 'archive') => {
+  if (promo.source === 'admin') available.push('delete')
+  const choose = (action: PromoAction) => {
     mutation.reset()
     setConfirm(action)
   }
@@ -69,7 +78,11 @@ export function PromoActions({ promo, menu = false }: { promo: Promo; menu?: boo
                   {t('Edit')}
                 </DropdownMenuItem>
                 {available.map((action) => (
-                  <DropdownMenuItem key={action} onSelect={() => choose(action)}>
+                  <DropdownMenuItem
+                    key={action}
+                    onSelect={() => choose(action)}
+                    className={action === 'delete' ? 'text-destructive' : undefined}
+                  >
                     {label(action)}
                   </DropdownMenuItem>
                 ))}
@@ -87,7 +100,11 @@ export function PromoActions({ promo, menu = false }: { promo: Promo; menu?: boo
               {t('Edit')}
             </Button>
             {available.map((action) => (
-              <Button key={action} variant="outline" onClick={() => choose(action)}>
+              <Button
+                key={action}
+                variant={action === 'delete' ? 'destructive' : 'outline'}
+                onClick={() => choose(action)}
+              >
                 {label(action)}
               </Button>
             ))}
@@ -99,11 +116,13 @@ export function PromoActions({ promo, menu = false }: { promo: Promo; menu?: boo
         <ConfirmDialog
           title={t('{action} {code}?', { action: label(confirm), code: promo.code })}
           description={t(
-            confirm === 'archive'
-              ? 'Archived promos cannot be resumed. Existing reservations are retained.'
-              : confirm === 'pause'
-                ? 'Passengers will be unable to reserve this promo while it is paused.'
-                : 'The promo will become available when its validity dates and limits allow.'
+            confirm === 'delete'
+              ? 'Delete this promotion from admin and passenger listings? It cannot be restored. Existing reservations and redemption history are retained.'
+              : confirm === 'archive'
+                ? 'Archived promos cannot be resumed. Existing reservations are retained.'
+                : confirm === 'pause'
+                  ? 'Passengers will be unable to reserve this promo while it is paused.'
+                  : 'The promo will become available when its validity dates and limits allow.'
           )}
           onClose={() => setConfirm(null)}
           pending={mutation.isPending}

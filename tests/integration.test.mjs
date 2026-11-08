@@ -1068,6 +1068,7 @@ test('promotions use every staff contract with filters, pagination and exact aud
   await promoService.settings()
   await promoService.saveSettings(referralSettings)
   await promoService.referrals('rewarded', 20, 20)
+  await promoService.remove('promo-1')
   assert.deepEqual(
     requests.map((r) => `${r.method} ${r.path}`),
     [
@@ -1089,6 +1090,7 @@ test('promotions use every staff contract with filters, pagination and exact aud
       'GET /api/v1/admin/referral-settings',
       'PUT /api/v1/admin/referral-settings',
       'GET /api/v1/admin/referrals?status=rewarded&limit=20&offset=20',
+      'DELETE /api/v1/admin/promos/promo-1',
     ]
   )
   assert.deepEqual(requests[8].body, audience)
@@ -1687,4 +1689,34 @@ test('transport fees keep support read-only and expose the whole-trip range to a
   assert.match(form(true), /Save trip settings/)
   assert.match(form(true), /min="500" max="1000"/)
   assert.match(form(true), /value="12"/)
+})
+
+test('admins can delete archived admin promotions but cannot convert passengers into drivers', async () => {
+  const React = await import('react')
+  const { renderToStaticMarkup } = await import('react-dom/server')
+  const { MemoryRouter } = await import('react-router-dom')
+  const { QueryClient, QueryClientProvider } = await import('@tanstack/react-query')
+  const { useAuthStore } = await import('../src/stores/useAuthStore.ts')
+  const { usePromotionAccess } = await import('../src/features/promotions/access.ts')
+  const { PromoActions } = await import('../src/features/promotions/components/PromoActions.tsx')
+  const { UserRoleAction } = await import('../src/features/customers/components/UserRoleAction.tsx')
+  const initialAuth = useAuthStore.getInitialState()
+  const initialAccess = usePromotionAccess.getInitialState()
+  const savedAuth = { ...initialAuth }, savedAccess = { ...initialAccess }
+  const cache = new QueryClient()
+  const render = child => renderToStaticMarkup(React.createElement(MemoryRouter, {},
+    React.createElement(QueryClientProvider, { client: cache }, child)))
+  Object.assign(initialAuth, { isAuthenticated: true, user: { id: 'admin-delete-fixture', role: 'admin' } })
+  Object.assign(initialAccess, { deniedFor: null })
+  try {
+    const archived = { ...promoFixture, status: 'archived', source: 'admin' }
+    assert.match(render(React.createElement(PromoActions, { promo: archived })), />Delete</)
+    assert.doesNotMatch(render(React.createElement(PromoActions, { promo: { ...archived, source: 'referral_reward' } })), />Delete</)
+    assert.equal(render(React.createElement(UserRoleAction, { id: 'passenger-fixture', name: 'Passenger', role: 'passenger' })), '')
+    assert.match(render(React.createElement(UserRoleAction, { id: 'driver-fixture', name: 'Driver', role: 'driver' })), /Change to passenger/)
+  } finally {
+    Object.assign(initialAuth, savedAuth)
+    Object.assign(initialAccess, savedAccess)
+    cache.clear()
+  }
 })

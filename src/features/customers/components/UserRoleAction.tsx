@@ -29,7 +29,7 @@ export function UserRoleAction({
   const [open, setOpen] = useState(false)
   const queryClient = useQueryClient()
   const navigate = useNavigate()
-  const next = role === 'driver' ? 'passenger' : 'driver'
+  const next = 'passenger'
   const mutation = useMutation({
     mutationFn: () => driverService.updateUserRole(id, next),
     onSuccess: async () => {
@@ -46,7 +46,7 @@ export function UserRoleAction({
       else navigate('/drivers')
     },
   })
-  if (!canChangeUserRoles) return null
+  if (!canChangeUserRoles || role !== 'driver') return null
   return (
     <>
       <Button

@@ -26,6 +26,7 @@ export const promoService = {
     promoRequest(apiClient.post<Promo>('/admin/promos', body)),
   update: (id: string, body: PromoPatch) =>
     promoRequest(apiClient.patch<Promo>(path(id), body)),
+  remove: (id: string) => promoRequest(apiClient.delete<{ message: string }>(path(id))),
   action: (id: string, action: 'pause' | 'resume' | 'archive') =>
     promoRequest(apiClient.post<Promo>(`${path(id)}/${action}`)),
   share: (id: string) =>

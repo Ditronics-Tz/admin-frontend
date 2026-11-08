@@ -8,9 +8,12 @@ import { Select } from '@/features/operations/shared'
 import { Button } from '@/components/ui/button'
 import { useShipText } from '@/components/common/ship-text'
 import { formatDateTime } from '@/lib/utils/formatters'
+import { useAuthStore } from '@/stores/useAuthStore'
+import { AnnouncementForm } from '../components/AnnouncementForm'
 
 export default function NotificationsPage() {
   const t = useShipText()
+  const isAdmin = useAuthStore((state) => state.user?.role === 'admin')
   const [status, setStatus] = useState('')
   const [offset, setOffset] = useState(0)
   const params = { status, offset, limit: 20 }
@@ -29,7 +32,7 @@ export default function NotificationsPage() {
             {t('Notification deliveries')}
           </h1>
           <p className="mt-1 max-w-2xl text-sm text-slate-600">
-            {t('Review the passenger inbox and safety delivery jobs.')}
+            {t('Review app notifications and safety delivery jobs.')}
           </p>
         </div>
         <Button variant="outline" onClick={() => void query.refetch()}>
@@ -37,14 +40,21 @@ export default function NotificationsPage() {
         </Button>
       </header>
 
+      {isAdmin && <AnnouncementForm />}
+
       {query.data?.sender_mode === 'logging_stub' && (
-        <aside role="status" className="rounded-lg border border-amber-300 bg-amber-50 p-4 text-sm text-amber-950">
+        <aside
+          role="status"
+          className="rounded-lg border border-amber-300 bg-amber-50 p-4 text-sm text-amber-950"
+        >
           <div className="flex items-start gap-3">
             <TriangleAlert className="mt-0.5 h-5 w-5 shrink-0" />
             <div>
               <p className="font-semibold">{t('Legacy SMS sender is not configured')}</p>
               <p className="mt-1 leading-5">
-                {t('Legacy safety delivery status may reflect a logging stub. Passenger inbox messages are stored separately and are available through the mobile API.')}
+                {t(
+                  'Legacy safety delivery status may reflect a logging stub. Passenger inbox messages are stored separately and are available through the mobile API.'
+                )}
               </p>
             </div>
           </div>
@@ -54,9 +64,13 @@ export default function NotificationsPage() {
       <section className="space-y-3 rounded-xl border border-slate-200 bg-white p-4 sm:p-5">
         <div className="flex flex-wrap items-center justify-between gap-2">
           <div>
-            <h2 className="font-semibold text-[#172B36]">{t('Passenger app notifications')}</h2>
+            <h2 className="font-semibold text-[#172B36]">
+              {t('Passenger and driver app notifications')}
+            </h2>
             <p className="text-xs text-muted-foreground">
-              {t('Promo shares and supported account events appear in the mobile inbox. The app can receive updates while open and sync later when closed.')}
+              {t(
+                'Ride updates and announcements are stored for recipients. Firebase delivers push alerts to registered phones when enabled.'
+              )}
             </p>
           </div>
           <span className="rounded-full bg-slate-100 px-3 py-1 text-xs font-medium text-slate-700">
@@ -66,19 +80,52 @@ export default function NotificationsPage() {
         <p className="text-2xl font-semibold text-[#172B36]">
           {query.data?.inbox_count?.toLocaleString() ?? '—'} {t('stored messages')}
         </p>
+        <p className="text-sm">
+          {t('Push delivery:')} {query.data?.push_mode === 'fcm' ? 'FCM' : t('Disabled')}
+        </p>
+        <p className="text-sm">
+          {t('Firebase accepted:')} {query.data?.push_by_status?.sent ?? 0} ·{' '}
+          {t('Pending:')} {query.data?.push_by_status?.pending ?? 0} · {t('Failed:')}{' '}
+          {query.data?.push_by_status?.failed ?? 0}
+        </p>
       </section>
 
       <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
         {[
-          { label: t('Pending'), value: counts?.pending, icon: Clock3, tone: 'text-amber-700' },
-          { label: t('Processing'), value: counts?.processing, icon: Activity, tone: 'text-sky-700' },
-          { label: t('Sender accepted'), value: counts?.delivered, icon: CheckCircle2, tone: 'text-emerald-700' },
-          { label: t('Failed'), value: counts?.failed, icon: Bell, tone: 'text-rose-700' },
+          {
+            label: t('Pending'),
+            value: counts?.pending,
+            icon: Clock3,
+            tone: 'text-amber-700',
+          },
+          {
+            label: t('Processing'),
+            value: counts?.processing,
+            icon: Activity,
+            tone: 'text-sky-700',
+          },
+          {
+            label: t('Sender accepted'),
+            value: counts?.delivered,
+            icon: CheckCircle2,
+            tone: 'text-emerald-700',
+          },
+          {
+            label: t('Failed'),
+            value: counts?.failed,
+            icon: Bell,
+            tone: 'text-rose-700',
+          },
         ].map(({ label, value, icon: Icon, tone }) => (
-          <section key={label} className="flex items-center justify-between rounded-xl border border-slate-200 bg-white p-4">
+          <section
+            key={label}
+            className="flex items-center justify-between rounded-xl border border-slate-200 bg-white p-4"
+          >
             <div>
               <p className="text-xs font-medium text-muted-foreground">{label}</p>
-              <p className="mt-1 text-2xl font-bold text-[#172B36]">{value?.toLocaleString() ?? '—'}</p>
+              <p className="mt-1 text-2xl font-bold text-[#172B36]">
+                {value?.toLocaleString() ?? '—'}
+              </p>
             </div>
             <Icon className={`h-5 w-5 ${tone}`} />
           </section>
@@ -88,8 +135,12 @@ export default function NotificationsPage() {
       <section className="space-y-4 rounded-xl border border-slate-200 bg-white p-4 sm:p-5">
         <div className="flex flex-wrap items-end justify-between gap-3">
           <div>
-            <h2 className="font-semibold text-[#172B36]">{t('Delivery queue history')}</h2>
-            <p className="text-xs text-muted-foreground">{t('Recipient phone numbers and personal identifiers are hidden.')}</p>
+            <h2 className="font-semibold text-[#172B36]">
+              {t('Delivery queue history')}
+            </h2>
+            <p className="text-xs text-muted-foreground">
+              {t('Recipient phone numbers and personal identifiers are hidden.')}
+            </p>
           </div>
           <Select
             label={t('Status')}
