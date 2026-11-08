@@ -23,7 +23,7 @@ Do not replace existing proxy configuration until its active virtual hosts and c
 
 ## Continuous delivery
 
-Develop on `dev`, then merge into `main`. `.github/workflows/ci.yml` runs typecheck, lint, and the production build on pushes to `dev`/`main` and pull requests targeting those branches. Tests are excluded under the project's code-only rule. A push or merge to `main` automatically deploys after those checks pass; `dev` never deploys.
+Develop on `dev`, then merge into `main`. `.github/workflows/ci.yml` runs typecheck, lint, and the production build only for pushes to `main` and pull requests targeting `main`. Tests are excluded under the project's code-only rule. That same `main` push deploys after the checks pass. Pushes to `dev` do not start this workflow, so they do not leave a skipped deploy job.
 
 The existing repository secrets `RIDA_DEPLOY_KEY` and `RIDA_DEPLOY_KNOWN_HOSTS` authenticate SSH with strict host-key verification. The workflow sends `admin <commit SHA>` to the restricted server entrypoint. It verifies that SHA is still current main, fast-forwards the clean `/opt/rida-admin-frontend` checkout, preserves the running image as `rida-admin-frontend:previous`, builds the replacement, and waits for container health. A shared host lock prevents simultaneous backend/admin deployment. The workflow then checks the public HTTPS `/healthz` endpoint. The API and database are not replaced by admin delivery.
 
