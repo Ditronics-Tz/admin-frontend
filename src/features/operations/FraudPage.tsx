@@ -24,8 +24,8 @@ import {
   DateLabel,
   Select,
   ActionDialog,
-  useOpsText,
 } from './shared'
+import { useOpsText } from './text'
 const explanations: Record<string, string> = {
   shared_device: 'More accounts than the configured limit used the same device.',
   duplicate_identifiers: 'Another account submitted a matching phone, licence or plate.',

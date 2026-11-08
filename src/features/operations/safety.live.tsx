@@ -1,15 +1,9 @@
 import { useEffect, useState } from 'react'
-import { create } from 'zustand'
-import { useQuery, useQueryClient } from '@tanstack/react-query'
+import { useQueryClient } from '@tanstack/react-query'
 import { tokenStorage, refreshStaffSession } from '@/lib/api/client'
 import { API_CONFIG } from '@/lib/api/config'
 import { useAuthStore } from '@/stores/useAuthStore'
-import { safetyApi } from './safety.api'
-export const useSafetyLive = create<{
-  connection: 'live' | 'reconnecting' | 'polling'
-  muted: boolean
-  setMuted: (v: boolean) => void
-}>((set) => ({ connection: 'polling', muted: true, setMuted: (muted) => set({ muted }) }))
+import { useOpenSOS, useSafetyLive } from './safety.state'
 export function SafetyMonitor() {
   const cache = useQueryClient(),
     user = useAuthStore((s) => s.user)
@@ -81,14 +75,6 @@ export function SafetyMonitor() {
     }
   }, [user, cache])
   return null
-}
-export function useOpenSOS(offset = 0) {
-  const connection = useSafetyLive((s) => s.connection)
-  return useQuery({
-    queryKey: ['operations', 'sos', 'open', offset],
-    queryFn: () => safetyApi.alerts({ status: 'open', limit: 100, offset }),
-    refetchInterval: connection === 'live' ? 30000 : 5000,
-  })
 }
 export function SOSNavBadge() {
   const q = useOpenSOS()

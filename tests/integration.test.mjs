@@ -1415,7 +1415,7 @@ test('promo edit locks used financial fields and referral settings are read-only
 test('report operations use staff contracts, respect 403 and mask phone labels', async () => {
   const { operationsApi, useOperationsAccess } =
     await import('../src/features/operations/api.ts')
-  const { maskPhone } = await import('../src/features/operations/shared.tsx')
+  const { maskPhone } = await import('../src/features/operations/format.ts')
   handle = (req, json) =>
     json(
       200,

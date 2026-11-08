@@ -13,7 +13,7 @@ import {
   DialogDescription,
 } from '@/components/ui/dialog'
 import { QueryError } from '@/components/feedback/QueryError'
-import { useUiStore } from '@/stores/useUiStore'
+import { useOpsText } from './text'
 import {
   PromoSkeleton,
   Empty,
@@ -31,56 +31,6 @@ export {
   Pagination,
   DateLabel,
   StatusBadge,
-}
-const sw: Record<string, string> = {
-  Reports: 'Malalamiko',
-  Safety: 'Usalama',
-  Fraud: 'Udanganyifu',
-  Finance: 'Fedha',
-  Open: 'Wazi',
-  'In review': 'Yanachunguzwa',
-  Resolved: 'Yametatuliwa',
-  Category: 'Aina',
-  Priority: 'Kipaumbele',
-  Status: 'Hali',
-  Date: 'Tarehe',
-  View: 'Tazama',
-  Notes: 'Maelezo',
-  Save: 'Hifadhi',
-  Cancel: 'Ghairi',
-  Confirm: 'Thibitisha',
-  Dismiss: 'Funga',
-  Warn: 'Onya',
-  Suspend: 'Simamisha',
-  Escalate: 'Peleka juu',
-  'Assign to me': 'Nikabidhi',
-  'No records found': 'Hakuna rekodi',
-  'Flagged accounts': 'Akaunti zilizowekewa alama',
-  'Assigned to me': 'Nilizokabidhiwa',
-  'Read-only access': 'Ruhusa ya kusoma tu',
-  'Action completed': 'Kitendo kimekamilika',
-  'Add note': 'Ongeza maelezo',
-  'Required note': 'Maelezo yanahitajika',
-  'End date': 'Tarehe ya mwisho',
-  'Registration date': 'Tarehe ya usajili',
-  'All time': 'Muda wote',
-  'Last 24 hours': 'Saa 24 zilizopita',
-  'Last 7 days': 'Siku 7 zilizopita',
-  'Last 30 days': 'Siku 30 zilizopita',
-  'Report detail': 'Maelezo ya lalamiko',
-  'Emergency contacts': 'Mawasiliano ya dharura',
-  Acknowledge: 'Pokea',
-  Resolve: 'Tatua',
-  'Call attempt': 'Jaribio la kupiga simu',
-  Payments: 'Malipo',
-  Refunds: 'Marejesho',
-  Payouts: 'Malipo kwa madereva',
-  Wallets: 'Pochi',
-  Settings: 'Mipangilio',
-}
-export function useOpsText() {
-  const locale = useUiStore((s) => s.locale)
-  return (text: string) => (locale === 'sw' ? sw[text] || text : text)
 }
 export function Heading({ title, children }: { title: string; children?: ReactNode }) {
   const t = useOpsText()
@@ -219,10 +169,4 @@ export function ActionDialog({
       </DialogContent>
     </Dialog>
   )
-}
-export function maskPhone(phone: string) {
-  return phone.length < 7 ? '•••' : `${phone.slice(0, 5)}** *** ${phone.slice(-3)}`
-}
-export function money(value: number) {
-  return `TSh ${value.toLocaleString('en-TZ')}`
 }

@@ -6,7 +6,8 @@ import { Button } from '@/components/ui/button'
 import { QueryError } from '@/components/feedback/QueryError'
 import { safetyApi } from './safety.api'
 import { useOperationsPermission, type Party } from './api'
-import { useSafetyLive, useOpenSOS, AgeTimer } from './safety.live'
+import { AgeTimer } from './safety.live'
+import { useOpenSOS, useSafetyLive } from './safety.state'
 import { SafetyMap } from './SafetyMap'
 import {
   Heading,
@@ -18,8 +19,8 @@ import {
   DateLabel,
   Select,
   ActionDialog,
-  useOpsText,
 } from './shared'
+import { useOpsText } from './text'
 export function SafetyPage() {
   const t = useOpsText(),
     [offset, setOffset] = useState(0),

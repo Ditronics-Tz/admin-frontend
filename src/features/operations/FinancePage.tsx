@@ -18,9 +18,9 @@ import {
   DateLabel,
   Select,
   ActionDialog,
-  useOpsText,
-  money,
 } from './shared'
+import { money } from './format'
+import { useOpsText } from './text'
 import { dateInputISO } from '@/features/promotions/utils'
 export function FinanceNav() {
   const { admin } = useOperationsPermission(),

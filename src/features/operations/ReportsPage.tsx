@@ -14,8 +14,8 @@ import {
   DateLabel,
   Select,
   ActionDialog,
-  useOpsText,
 } from './shared'
+import { useOpsText } from './text'
 import { dateInputISO as fromLocalDateTime } from '@/features/promotions/utils'
 
 export function ReportsPage() {
