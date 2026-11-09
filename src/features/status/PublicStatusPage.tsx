@@ -2,13 +2,12 @@ import { Link } from 'react-router-dom'
 import { ErrorScreen } from '@/components/feedback/ErrorScreen'
 import { ROUTES } from '@/lib/constants'
 import { useShipText } from '@/components/common/ship-text'
-import { apiStatusURL, useStatusReport } from './api'
+import { useStatusReport } from './api'
 import { StatusBoard, StatusSkeleton } from './StatusBoard'
 
 export default function PublicStatusPage() {
   const t = useShipText()
   const query = useStatusReport()
-  const apiPage = apiStatusURL()
   return (
     <main className="min-h-screen bg-[#f6f5f2] text-[#1c1b19]">
       <div className="mx-auto max-w-5xl px-5 py-8">
@@ -34,20 +33,7 @@ export default function PublicStatusPage() {
           <StatusBoard report={query.data} />
         )}
         <p className="mt-8 text-xs text-[#8a8478]">
-          {t(
-            'This page reads the API status module. The API also serves /status on its own, so the history stays available when an admin screen cannot load.'
-          )}
-          {apiPage && (
-            <>
-              {' '}
-              <a
-                className="font-medium text-[#1C7C70] underline-offset-4 hover:underline"
-                href={apiPage}
-              >
-                {apiPage}
-              </a>
-            </>
-          )}
+          {t('Updated about every 30 seconds.')}
         </p>
       </div>
     </main>

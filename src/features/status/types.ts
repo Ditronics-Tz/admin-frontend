@@ -11,17 +11,17 @@ export interface StatusLatency {
 }
 
 export interface StatusComponent {
-  id: string
+  id?: string
   name: string
-  description: string
+  description?: string
   group: string
   state: StatusState
   summary: string
   uptime_percent: number | null
-  latency_ms: number
-  latency_label: string
+  latency_ms?: number
+  latency_label?: string
   days: StatusDay[]
-  latency: StatusLatency[]
+  latency?: StatusLatency[]
 }
 
 export interface StatusLog {
@@ -37,9 +37,9 @@ export interface StatusReport {
   generated_at: string
   overall: 'operational' | 'degraded' | 'outage'
   summary: string
-  version: string
-  uptime_seconds: number
+  version?: string
+  uptime_seconds?: number
   range_days: number
   components: StatusComponent[]
-  logs: StatusLog[]
+  logs?: StatusLog[]
 }

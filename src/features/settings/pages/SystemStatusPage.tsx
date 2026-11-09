@@ -3,12 +3,12 @@ import { Button } from '@/components/ui/button'
 import { ErrorScreen } from '@/components/feedback/ErrorScreen'
 import { useShipText } from '@/components/common/ship-text'
 import { ROUTES } from '@/lib/constants'
-import { apiStatusURL, useStatusReport } from '@/features/status/api'
+import { apiStatusURL, useStaffStatus } from '@/features/status/api'
 import { StatusBoard, StatusSkeleton } from '@/features/status/StatusBoard'
 
 export default function SystemStatusPage() {
   const t = useShipText()
-  const query = useStatusReport()
+  const query = useStaffStatus()
   const apiPage = apiStatusURL()
   return (
     <section className="bg-[#f6f5f2] p-4 sm:p-8">

@@ -1,5 +1,6 @@
 import { useQuery } from '@tanstack/react-query'
 import { API_CONFIG } from '@/lib/api/config'
+import { apiClient } from '@/lib/api/client'
 import type { StatusReport } from './types'
 
 export function apiStatusURL() {
@@ -23,6 +24,15 @@ export function useStatusReport() {
   return useQuery({
     queryKey: ['public-status'],
     queryFn: loadStatus,
+    refetchInterval: 30_000,
+    retry: false,
+  })
+}
+
+export function useStaffStatus() {
+  return useQuery({
+    queryKey: ['staff-status'],
+    queryFn: async () => (await apiClient.get<StatusReport>('/admin/status')).data,
     refetchInterval: 30_000,
     retry: false,
   })

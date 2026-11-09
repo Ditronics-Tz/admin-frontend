@@ -104,7 +104,8 @@ function Sparkline({ points }: { points: StatusLatency[] }) {
 
 function ComponentRow({ component }: { component: StatusComponent }) {
   const t = useShipText()
-  const showSpark = component.latency_label !== '' && component.latency.length >= 2
+  const latency = component.latency ?? []
+  const showSpark = (component.latency_label ?? '') !== '' && latency.length >= 2
   return (
     <article className="border-t border-[#e6e2da] py-4">
       <div className="flex items-start justify-between gap-3">
@@ -145,10 +146,10 @@ function ComponentRow({ component }: { component: StatusComponent }) {
         {showSpark && (
           <div className="flex items-center gap-2">
             <span>
-              {t(component.latency_label)}
-              {component.latency_ms > 0 ? ` · ${component.latency_ms} ms` : ''}
+              {t(component.latency_label ?? '')}
+              {(component.latency_ms ?? 0) > 0 ? ` · ${component.latency_ms} ms` : ''}
             </span>
-            <Sparkline points={component.latency} />
+            <Sparkline points={latency} />
           </div>
         )}
       </div>
@@ -158,9 +159,11 @@ function ComponentRow({ component }: { component: StatusComponent }) {
 
 export function StatusBoard({ report }: { report: StatusReport }) {
   const t = useShipText()
-  const rows = report.components.map((component, index) => ({
+  const components = report.components ?? []
+  const logs = report.logs ?? []
+  const rows = components.map((component, index) => ({
     component,
-    showGroup: index === 0 || report.components[index - 1]?.group !== component.group,
+    showGroup: index === 0 || components[index - 1]?.group !== component.group,
   }))
   return (
     <div>
@@ -199,7 +202,7 @@ export function StatusBoard({ report }: { report: StatusReport }) {
         ))}
       </ul>
       {rows.map(({ component, showGroup }) => (
-        <div key={component.id}>
+        <div key={component.id || component.name}>
           {showGroup && (
             <h3 className="mb-1 mt-7 text-xs font-semibold uppercase tracking-[0.08em] text-[#8a8478]">
               {t(component.group)}
@@ -208,16 +211,14 @@ export function StatusBoard({ report }: { report: StatusReport }) {
           <ComponentRow component={component} />
         </div>
       ))}
-      <h3 className="mb-2 mt-7 text-xs font-semibold uppercase tracking-[0.08em] text-[#8a8478]">
-        {t('Recent checks')}
-      </h3>
-      {report.logs.length === 0 ? (
-        <p className="text-sm text-[#6f6a62]">
-          {t('Checks appear here as the monitor samples each component.')}
-        </p>
-      ) : (
+      {logs.length > 0 && (
+        <h3 className="mb-2 mt-7 text-xs font-semibold uppercase tracking-[0.08em] text-[#8a8478]">
+          {t('Recent checks')}
+        </h3>
+      )}
+      {logs.length > 0 && (
         <ol className="max-h-80 overflow-auto rounded-xl border border-[#e6e2da] bg-white">
-          {report.logs.map((log, index) => (
+          {logs.map((log, index) => (
             <li
               key={`${log.at}-${log.component_id}-${index}`}
               className="grid gap-1 border-t border-[#f0ece6] px-3 py-2 font-mono text-xs first:border-t-0 sm:grid-cols-[92px_minmax(120px,180px)_110px_1fr_auto] sm:items-baseline sm:gap-2.5"
@@ -237,10 +238,12 @@ export function StatusBoard({ report }: { report: StatusReport }) {
           ))}
         </ol>
       )}
-      <p className="mt-6 text-xs text-[#8a8478]">
-        {t('Version')} {report.version} · {t('Uptime')}{' '}
-        {processUptime(report.uptime_seconds)}
-      </p>
+      {report.version && (
+        <p className="mt-6 text-xs text-[#8a8478]">
+          {t('Version')} {report.version} · {t('Uptime')}{' '}
+          {processUptime(report.uptime_seconds ?? 0)}
+        </p>
+      )}
     </div>
   )
 }
