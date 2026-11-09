@@ -58,7 +58,7 @@ export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
   }
 
   return (
-    <div className="relative flex h-full w-full flex-col">
+    <div className="relative flex w-full flex-col">
       {!isAuthenticated && allowDevPreview && (
         <aside
           role="note"
@@ -70,7 +70,7 @@ export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
           mode.
         </aside>
       )}
-      <div className="flex-1 overflow-hidden">{children}</div>
+      <div className="min-h-0 flex-1">{children}</div>
     </div>
   )
 }
