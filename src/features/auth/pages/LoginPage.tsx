@@ -1,5 +1,5 @@
 import React from 'react'
-import { Navigate } from 'react-router-dom'
+import { Link, Navigate } from 'react-router-dom'
 import { BrandingPanel } from '../components/BrandingPanel'
 import { BrandLogo } from '../components/BrandLogo'
 import { LoginForm } from '../components/LoginForm'
@@ -7,6 +7,7 @@ import { useUiStore } from '@/stores/useUiStore'
 import { LOGIN_TRANSLATIONS } from '@/lib/constants/translations'
 import { useAuthStore } from '@/stores/useAuthStore'
 import { staffLandingPath } from '../landing'
+import { ROUTES } from '@/lib/constants'
 import { LoadingFallback } from '@/components/feedback/LoadingFallback'
 
 /**
@@ -47,6 +48,12 @@ export const LoginPage: React.FC = () => {
         className="flex flex-1 flex-col items-center justify-center bg-[#F5F7F8] px-6 py-10 sm:px-10 lg:min-h-[100dvh] lg:w-[47.5%] lg:px-12"
       >
         <LoginForm t={t} />
+        <Link
+          to={ROUTES.PUBLIC_STATUS}
+          className="mt-8 text-sm font-medium text-[#1C7C70] underline-offset-4 hover:underline"
+        >
+          {locale === 'sw' ? 'Hali ya mfumo' : 'System status'}
+        </Link>
       </section>
     </main>
   )

@@ -40,6 +40,8 @@ export const ROUTES = {
   SUPPORT: '/support',
   NOTIFICATIONS: '/notifications',
   SETTINGS: '/settings',
+  PUBLIC_STATUS: '/status',
+  SYSTEM_STATUS: '/system-status',
 } as const
 
 /**

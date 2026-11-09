@@ -9,6 +9,7 @@ import {
   Headset,
   Bell,
   Settings,
+  Activity,
   TicketPercent,
   Flag,
   ShieldAlert,
@@ -107,7 +108,12 @@ export const NAVIGATION_CONFIG: NavGroup[] = [
         path: ROUTES.SETTINGS,
         icon: Settings,
       },
-      { title: 'System status', path: '/system-status', icon: Settings, adminOnly: true },
+      {
+        title: 'System status',
+        path: ROUTES.SYSTEM_STATUS,
+        icon: Activity,
+        adminOnly: true,
+      },
     ],
   },
 ]

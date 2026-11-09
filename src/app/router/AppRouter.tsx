@@ -1,115 +1,134 @@
-import React, { Suspense, lazy } from 'react'
+import React, { Suspense } from 'react'
 import { createBrowserRouter, RouterProvider, Navigate, Outlet } from 'react-router-dom'
 import { ROUTES } from '@/lib/constants'
 import { LoadingFallback } from '@/components/feedback/LoadingFallback'
+import { RouteErrorPage } from '@/components/feedback/RouteErrorPage'
 import { ProtectedRoute } from '@/components/layout/ProtectedRoute'
 import { NotFoundPage } from '@/components/common/NotFoundPage'
 import { HomeRedirect } from '@/features/auth/components/HomeRedirect'
+import { lazyRetry } from '@/lib/lazy-retry'
 
-const LoginPage = lazy(() => import('@/features/auth/pages/LoginPage'))
-const MfaVerifyPage = lazy(() => import('@/features/auth/pages/MfaVerifyPage'))
-const MfaEnrollPage = lazy(() => import('@/features/auth/pages/MfaEnrollPage'))
-const SystemStatusPage = lazy(() => import('@/features/settings/pages/SystemStatusPage'))
-const SupportDetailPage = lazy(() => import('@/features/support/pages/SupportDetailPage'))
-const RideDetailPage = lazy(() => import('@/features/rides/pages/RideDetailPage'))
-const RatingsPage = lazy(() => import('@/features/ratings/RatingsPage'))
-const ChangePasswordPage = lazy(() => import('@/features/auth/pages/ChangePasswordPage'))
+const LoginPage = lazyRetry(() => import('@/features/auth/pages/LoginPage'))
+const MfaVerifyPage = lazyRetry(() => import('@/features/auth/pages/MfaVerifyPage'))
+const MfaEnrollPage = lazyRetry(() => import('@/features/auth/pages/MfaEnrollPage'))
+const SystemStatusPage = lazyRetry(
+  () => import('@/features/settings/pages/SystemStatusPage')
+)
+const SupportDetailPage = lazyRetry(
+  () => import('@/features/support/pages/SupportDetailPage')
+)
+const RideDetailPage = lazyRetry(() => import('@/features/rides/pages/RideDetailPage'))
+const RatingsPage = lazyRetry(() => import('@/features/ratings/RatingsPage'))
+const ChangePasswordPage = lazyRetry(
+  () => import('@/features/auth/pages/ChangePasswordPage')
+)
 
 // Lazy-loaded layouts & feature modules
-const AdminLayout = lazy(() => import('@/components/layout/AdminLayout'))
-const DashboardPage = lazy(() => import('@/features/dashboard/pages/DashboardPage'))
-const RidesPage = lazy(() => import('@/features/rides/pages/RidesPage'))
-const DriversPage = lazy(() => import('@/features/drivers/pages/DriversPage'))
-const DriverDetailsPage = lazy(() => import('@/features/drivers/pages/DriverDetailsPage'))
-const DriverEditPage = lazy(() => import('@/features/drivers/pages/DriverEditPage'))
-const DriverVerificationsPage = lazy(
+const AdminLayout = lazyRetry(() => import('@/components/layout/AdminLayout'))
+const DashboardPage = lazyRetry(() => import('@/features/dashboard/pages/DashboardPage'))
+const RidesPage = lazyRetry(() => import('@/features/rides/pages/RidesPage'))
+const DriversPage = lazyRetry(() => import('@/features/drivers/pages/DriversPage'))
+const DriverDetailsPage = lazyRetry(
+  () => import('@/features/drivers/pages/DriverDetailsPage')
+)
+const DriverEditPage = lazyRetry(() => import('@/features/drivers/pages/DriverEditPage'))
+const DriverVerificationsPage = lazyRetry(
   () => import('@/features/drivers/pages/DriverVerificationsPage')
 )
-const VerificationDetailsPage = lazy(
+const VerificationDetailsPage = lazyRetry(
   () => import('@/features/drivers/pages/VerificationDetailsPage')
 )
-const CustomersPage = lazy(() => import('@/features/customers/pages/CustomersPage'))
-const UserDetailsPage = lazy(() => import('@/features/customers/pages/UserDetailsPage'))
-const LiveOperationsPage = lazy(
+const CustomersPage = lazyRetry(() => import('@/features/customers/pages/CustomersPage'))
+const UserDetailsPage = lazyRetry(
+  () => import('@/features/customers/pages/UserDetailsPage')
+)
+const LiveOperationsPage = lazyRetry(
   () => import('@/features/live-operations/pages/LiveOperationsPage')
 )
-const PaymentsPage = lazy(() => import('@/features/payments/pages/PaymentsPage'))
-const AnalyticsPage = lazy(() => import('@/features/analytics/pages/AnalyticsPage'))
-const SupportPage = lazy(() => import('@/features/support/pages/SupportPage'))
-const NotificationsPage = lazy(
+const PaymentsPage = lazyRetry(() => import('@/features/payments/pages/PaymentsPage'))
+const AnalyticsPage = lazyRetry(() => import('@/features/analytics/pages/AnalyticsPage'))
+const SupportPage = lazyRetry(() => import('@/features/support/pages/SupportPage'))
+const NotificationsPage = lazyRetry(
   () => import('@/features/notifications/pages/NotificationsPage')
 )
-const SettingsPage = lazy(() => import('@/features/settings/pages/SettingsPage'))
-const PromotionsPage = lazy(() => import('@/features/promotions/pages/PromotionsPage'))
-const PromoDetailPage = lazy(() => import('@/features/promotions/pages/PromoDetailPage'))
-const PromoEditorPage = lazy(() => import('@/features/promotions/pages/PromoEditorPage'))
-const ReferralsPage = lazy(() => import('@/features/promotions/pages/ReferralsPage'))
-const ReportsPage = lazy(() =>
+const SettingsPage = lazyRetry(() => import('@/features/settings/pages/SettingsPage'))
+const PublicStatusPage = lazyRetry(() => import('@/features/status/PublicStatusPage'))
+const PromotionsPage = lazyRetry(
+  () => import('@/features/promotions/pages/PromotionsPage')
+)
+const PromoDetailPage = lazyRetry(
+  () => import('@/features/promotions/pages/PromoDetailPage')
+)
+const PromoEditorPage = lazyRetry(
+  () => import('@/features/promotions/pages/PromoEditorPage')
+)
+const ReferralsPage = lazyRetry(() => import('@/features/promotions/pages/ReferralsPage'))
+const ReportsPage = lazyRetry(() =>
   import('@/features/operations/ReportsPage').then((m) => ({ default: m.ReportsPage }))
 )
-const ReportDetailPage = lazy(() =>
+const ReportDetailPage = lazyRetry(() =>
   import('@/features/operations/ReportsPage').then((m) => ({
     default: m.ReportDetailPage,
   }))
 )
-const FlagsPage = lazy(() =>
+const FlagsPage = lazyRetry(() =>
   import('@/features/operations/ReportsPage').then((m) => ({ default: m.FlagsPage }))
 )
-const SafetyPage = lazy(() =>
+const SafetyPage = lazyRetry(() =>
   import('@/features/operations/SafetyPage').then((m) => ({ default: m.SafetyPage }))
 )
-const SOSDetailPage = lazy(() =>
+const SOSDetailPage = lazyRetry(() =>
   import('@/features/operations/SafetyPage').then((m) => ({ default: m.SOSDetailPage }))
 )
-const SOSHistoryPage = lazy(() =>
+const SOSHistoryPage = lazyRetry(() =>
   import('@/features/operations/SafetyPage').then((m) => ({ default: m.SOSHistoryPage }))
 )
-const IncidentsPage = lazy(() =>
+const IncidentsPage = lazyRetry(() =>
   import('@/features/operations/SafetyPage').then((m) => ({ default: m.IncidentsPage }))
 )
-const IncidentDetailPage = lazy(() =>
+const IncidentDetailPage = lazyRetry(() =>
   import('@/features/operations/SafetyPage').then((m) => ({
     default: m.IncidentDetailPage,
   }))
 )
-const TransportPage = lazy(() => import('@/features/transport/TransportPage'))
-const FinanceDashboard = lazy(() =>
+const TransportPage = lazyRetry(() => import('@/features/transport/TransportPage'))
+const FinanceDashboard = lazyRetry(() =>
   import('@/features/operations/FinancePage').then((m) => ({
     default: m.FinanceDashboard,
   }))
 )
-const PaymentDetailPage = lazy(() =>
+const PaymentDetailPage = lazyRetry(() =>
   import('@/features/operations/FinancePage').then((m) => ({
     default: m.PaymentDetailPage,
   }))
 )
-const RefundsPage = lazy(() =>
+const RefundsPage = lazyRetry(() =>
   import('@/features/operations/FinancePage').then((m) => ({ default: m.RefundsPage }))
 )
-const PayoutsPage = lazy(() =>
+const PayoutsPage = lazyRetry(() =>
   import('@/features/operations/FinancePage').then((m) => ({ default: m.PayoutsPage }))
 )
-const WalletsPage = lazy(() =>
+const WalletsPage = lazyRetry(() =>
   import('@/features/operations/FinancePage').then((m) => ({ default: m.WalletsPage }))
 )
-const PaymentSettingsPage = lazy(() =>
+const PaymentSettingsPage = lazyRetry(() =>
   import('@/features/operations/FinancePage').then((m) => ({
     default: m.PaymentSettingsPage,
   }))
 )
-const ReconciliationPage = lazy(() =>
+const ReconciliationPage = lazyRetry(() =>
   import('@/features/operations/FinancePage').then((m) => ({
     default: m.ReconciliationPage,
   }))
 )
 
-const FraudPage = lazy(() =>
+const FraudPage = lazyRetry(() =>
   import('@/features/operations/FraudPage').then((m) => ({ default: m.FraudPage }))
 )
-const FraudDetailPage = lazy(() =>
+const FraudDetailPage = lazyRetry(() =>
   import('@/features/operations/FraudPage').then((m) => ({ default: m.FraudDetailPage }))
 )
-const FraudRulesPage = lazy(() =>
+const FraudRulesPage = lazyRetry(() =>
   import('@/features/operations/FraudPage').then((m) => ({ default: m.FraudRulesPage }))
 )
 
@@ -128,6 +147,7 @@ const SuspenseLayout: React.FC = () => (
 const router = createBrowserRouter([
   {
     element: <SuspenseLayout />,
+    errorElement: <RouteErrorPage />,
     children: [
       // Support staff start with the SOS console.
       {
@@ -142,6 +162,10 @@ const router = createBrowserRouter([
       {
         path: ROUTES.LOGIN,
         element: <LoginPage />,
+      },
+      {
+        path: ROUTES.PUBLIC_STATUS,
+        element: <PublicStatusPage />,
       },
       {
         path: ROUTES.MFA_VERIFY,
@@ -168,7 +192,7 @@ const router = createBrowserRouter([
         ),
         children: [
           {
-            path: '/system-status',
+            path: ROUTES.SYSTEM_STATUS,
             element: (
               <ProtectedRoute requiredRole="admin">
                 <SystemStatusPage />

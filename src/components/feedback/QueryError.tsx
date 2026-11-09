@@ -1,9 +1,20 @@
 import { Link } from 'react-router-dom'
 import { Button } from '@/components/ui/button'
 import { formatApiError } from '@/lib/api/errors'
+import { ErrorScreen } from './ErrorScreen'
 
 export function QueryError({ error, retry }: { error: unknown; retry?: () => void }) {
   const detail = formatApiError(error)
+  if (detail.isNetworkError || (detail.status ?? 0) >= 500) {
+    return (
+      <ErrorScreen
+        compact
+        title={detail.isNetworkError ? 'Cannot reach Rida' : 'The server hit an error'}
+        detail={detail.message}
+        onRetry={retry}
+      />
+    )
+  }
   return (
     <div
       role="alert"
